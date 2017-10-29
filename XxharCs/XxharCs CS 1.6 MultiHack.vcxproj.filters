@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="杂项">
+      <UniqueIdentifier>{45603411-a862-43d3-9b77-bcbf8d703f37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="钩子">
+      <UniqueIdentifier>{8667275c-d00a-4819-9b9f-f22324868c2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\drawing">
+      <UniqueIdentifier>{45790ff8-8e97-4b8e-83d9-131de8971d0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\drawing">
+      <UniqueIdentifier>{84777e4e-0a00-4a67-bc63-25496f293c6b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\engine.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\parsemsg.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\splice.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\utils.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
+    <ClCompile Include="gamehooking.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="handlers.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="install.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="opengl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="players.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NoRecoil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NoSpread.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="weaponlist.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="playeritems.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stringfinder.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleSecurity.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Aimbot.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="perfectwall.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="textures.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="eventhook.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\memoryscan.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\offsetscan.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\detourxs.cpp">
+      <Filter>钩子</Filter>
+    </ClCompile>
+    <ClCompile Include="util_vector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="drawing\tablefont.cpp">
+      <Filter>源文件\drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="drawing\drawing.cpp">
+      <Filter>源文件\drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="menu.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="drawing\gui.cpp">
+      <Filter>源文件\drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="drawing\radar.cpp">
+      <Filter>源文件\drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="drawing\miniradar.cpp">
+      <Filter>源文件\drawing</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Misc\engine.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\opcodes.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\parsemsg.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\splice.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\utils.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="gamehooking.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="install.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="opengl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="players.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="detours.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cvars.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="menu.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NoRecoil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NoSpread.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="weaponlist.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="playeritems.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stringfinder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleSecurity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Aimbot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="perfectwall.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="textures.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="eventhook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\memoryscan.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\offsetscan.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\xorstr.h">
+      <Filter>杂项</Filter>
+    </ClInclude>
+    <ClInclude Include="detours\detourxs.h">
+      <Filter>钩子</Filter>
+    </ClInclude>
+    <ClInclude Include="clientdll.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="drawing\tablefont.h">
+      <Filter>头文件\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="drawing\drawing.h">
+      <Filter>头文件\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="drawing\gui.h">
+      <Filter>头文件\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="drawing\radar.h">
+      <Filter>头文件\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="drawing\miniradar.h">
+      <Filter>头文件\drawing</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="detours\hook.def">
+      <Filter>钩子</Filter>
+    </None>
+    <None Include="detours\LDE64x64.asm">
+      <Filter>钩子</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="detours\LDE64.asm">
+      <Filter>钩子</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
