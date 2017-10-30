@@ -4,6 +4,7 @@
 #include "cvars.h"
 #include "./drawing/drawing.h"
 #include "./drawing/radar.h"
+#include "NoSpread.h"
 
 #pragma comment(lib,"Winmm.lib")
 
@@ -756,6 +757,198 @@ void sMe::DoFastRun(usercmd_s * usercmd)
 		if (_FastRun) { _FastRun = false; usercmd->forwardmove -= 126.6; }
 		else { _FastRun = true;  usercmd->forwardmove += 126.6; }
 	}
+}
+
+void sMe::DoAntiRecoil(usercmd_s * usercmd, float frametime)
+{
+	vec3_t viewforward, viewright, viewup, aimforward, aimright, aimup;
+
+	float newforward, newright, newup;
+	float forward = usercmd->forwardmove;
+	float right = usercmd->sidemove;
+	float up = usercmd->upmove;
+
+	////////////////////////////////////////////////
+	gEngfuncs.pfnAngleVectors(usercmd->viewangles, viewforward, viewright, viewup);
+	float punch[3], length;
+	VectorCopy(punchangle, punch);
+	length = VectorLength(punch);
+	length -= (10.0 + length * 0.5) * frametime;
+	length = max(length, 0.0);
+	VectorScale(punch, length, punch);
+	usercmd->viewangles[0] += punch[0] + punch[0];
+	usercmd->viewangles[1] += punch[1] + punch[1];
+	gEngfuncs.pfnAngleVectors(usercmd->viewangles, aimforward, aimright, aimup);
+	/////////////////////////////////////////////////
+
+	newforward = DotProduct(forward * viewforward.Normalize(), aimforward) +
+		DotProduct(right * viewright.Normalize(), aimforward) +
+		DotProduct(up * viewup.Normalize(), aimforward
+		);
+
+	newright = DotProduct(forward * viewforward.Normalize(), aimright) +
+		DotProduct(right * viewright.Normalize(), aimright) +
+		DotProduct(up * viewup.Normalize(), aimright
+		);
+
+	newup = DotProduct(forward * viewforward.Normalize(), aimup) +
+		DotProduct(right * viewright.Normalize(), aimup) +
+		DotProduct(up * viewup.Normalize(), aimup
+		);
+
+	usercmd->forwardmove = newforward;
+	usercmd->sidemove = newright;
+	usercmd->upmove = newup;
+}
+
+extern cNoSpread gNoSpread;
+void sMe::DoAntiSpread(usercmd_s * usercmd)
+{
+	vec3_t viewforward, viewright, viewup, aimforward, aimright, aimup;
+
+	float newforward, newright, newup;
+	float forward = usercmd->forwardmove;
+	float right = usercmd->sidemove;
+	float up = usercmd->upmove;
+
+	////////////////////////////////////////////////
+	gEngfuncs.pfnAngleVectors(usercmd->viewangles, viewforward, viewright, viewup);
+	float offset[3];
+	gNoSpread.GetSpreadOffset(g_local.spread.random_seed, 1, usercmd->viewangles, g_local.pmVelocity, offset);
+	usercmd->viewangles[0] += offset[0];
+	usercmd->viewangles[1] += offset[1];
+	usercmd->viewangles[2] += offset[2];
+	gEngfuncs.pfnAngleVectors(usercmd->viewangles, aimforward, aimright, aimup);
+	/////////////////////////////////////////////////
+
+	newforward = DotProduct(forward * viewforward.Normalize(), aimforward) +
+		DotProduct(right * viewright.Normalize(), aimforward) +
+		DotProduct(up * viewup.Normalize(), aimforward
+		);
+
+	newright = DotProduct(forward * viewforward.Normalize(), aimright) +
+		DotProduct(right * viewright.Normalize(), aimright) +
+		DotProduct(up * viewup.Normalize(), aimright
+		);
+
+	newup = DotProduct(forward * viewforward.Normalize(), aimup) +
+		DotProduct(right * viewright.Normalize(), aimup) +
+		DotProduct(up * viewup.Normalize(), aimup
+		);
+
+	usercmd->forwardmove = newforward;
+	usercmd->sidemove = newright;
+	usercmd->upmove = newup;
+}
+
+void sMe::DoSilentAngles(usercmd_s * usercmd, float * aimangles)
+{
+	vec3_t viewforward, viewright, viewup, aimforward, aimright, aimup;
+
+	float newforward, newright, newup;
+	float forward = usercmd->forwardmove;
+	float right = usercmd->sidemove;
+	float up = usercmd->upmove;
+
+	/////////////////////////////////////////////
+	gEngfuncs.pfnAngleVectors(Vector(0.0f, aimangles[1], 0.0f), viewforward, viewright, viewup);
+	VectorCopy(aimangles, usercmd->viewangles);
+	gEngfuncs.pfnAngleVectors(Vector(0.0f, usercmd->viewangles[1], 0.0f), aimforward, aimright, aimup);
+	//////////////////////////////////////////
+
+	newforward = DotProduct(forward * viewforward.Normalize(), aimforward) +
+		DotProduct(right * viewright.Normalize(), aimforward) +
+		DotProduct(up * viewup.Normalize(), aimforward
+		);
+
+	newright = DotProduct(forward * viewforward.Normalize(), aimright) +
+		DotProduct(right * viewright.Normalize(), aimright) +
+		DotProduct(up * viewup.Normalize(), aimright
+		);
+
+	newup = DotProduct(forward * viewforward.Normalize(), aimup) +
+		DotProduct(right * viewright.Normalize(), aimup) +
+		DotProduct(up * viewup.Normalize(), aimup
+		);
+
+	usercmd->forwardmove = newforward;
+	usercmd->sidemove = newright;
+	usercmd->upmove = newup;
+}
+
+#define MIN_SMOOTH 0.000001f
+#define MIN_SMOOTH 2.0f
+#define MAX_SMOOTH 10.0f
+
+bool sMe::DoSmoothAngles(float * Source, float * Destination, float * NewDestination, float Factor)
+{
+	if (Factor < MIN_SMOOTH) Factor = MIN_SMOOTH;
+	if (Factor > MAX_SMOOTH) Factor = MAX_SMOOTH;
+
+	VectorSubtract(Destination, Source, NewDestination);
+
+	if (NewDestination[1] > 180.0f)
+		NewDestination[1] -= 360.0f;
+
+	if (NewDestination[1] < -180.0f)
+		NewDestination[1] += 360.0f;
+
+	// Do you like approximate values ? I do not.
+	if (NewDestination[0] < (MAX_SMOOTH - Factor + 3.0f) &&
+		NewDestination[0] > -(MAX_SMOOTH - Factor + 3.0f) &&
+		NewDestination[1] < (MAX_SMOOTH - Factor + 3.0f) &&
+		NewDestination[1] > -(MAX_SMOOTH - Factor + 3.0f))
+	{
+		NewDestination[0] = Destination[0];
+		NewDestination[1] = Destination[1];
+		return true;
+	}
+
+	NewDestination[0] = NewDestination[0] / Factor + Source[0];
+	NewDestination[1] = NewDestination[1] / Factor + Source[1];
+
+	if (NewDestination[1] > 360.0f)
+		NewDestination[1] -= 360.0f;
+
+	if (NewDestination[1] <   0.0f)
+		NewDestination[1] += 360.0f;
+
+	return false;
+}
+
+void sMe::DoSilentAngles(float * aimangles, usercmd_s * usercmd)
+{
+	vec3_t viewforward, viewright, viewup, aimforward, aimright, aimup;
+
+	float newforward, newright, newup;
+	float forward = usercmd->forwardmove;
+	float right = usercmd->sidemove;
+	float up = usercmd->upmove;
+
+	/////////////////////////////////////////////
+	gEngfuncs.pfnAngleVectors(Vector(0.0f, aimangles[1], 0.0f), viewforward, viewright, viewup);
+	VectorCopy(aimangles, usercmd->viewangles);
+	gEngfuncs.pfnAngleVectors(Vector(0.0f, usercmd->viewangles[1], 0.0f), aimforward, aimright, aimup);
+	//////////////////////////////////////////
+
+	newforward = DotProduct(forward * viewforward.Normalize(), aimforward) +
+		DotProduct(right * viewright.Normalize(), aimforward) +
+		DotProduct(up * viewup.Normalize(), aimforward
+		);
+
+	newright = DotProduct(forward * viewforward.Normalize(), aimright) +
+		DotProduct(right * viewright.Normalize(), aimright) +
+		DotProduct(up * viewup.Normalize(), aimright
+		);
+
+	newup = DotProduct(forward * viewforward.Normalize(), aimup) +
+		DotProduct(right * viewright.Normalize(), aimup) +
+		DotProduct(up * viewup.Normalize(), aimup
+		);
+
+	usercmd->forwardmove = newforward;
+	usercmd->sidemove = newright;
+	usercmd->upmove = newup;
 }
 
 #define NORMALIZE(v,dist) \

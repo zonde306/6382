@@ -4,6 +4,7 @@
 #include "../Misc/xorstr.h"
 #include "../players.h"
 #include "../cvars.h"
+#include "../opengl.h"
 
 extern cl_enginefuncs_s gEngfuncs;
 extern SCREENINFO screeninfo;
@@ -323,7 +324,10 @@ void overview_redraw()
 		gEngfuncs.pTriAPI->RenderMode(kRenderTransTexture);
 		gEngfuncs.pTriAPI->CullFace(TRI_NONE);
 
-		glEnable(GL_BLEND);
+		if(glEnable_detour != nullptr)
+			glEnable_detour(GL_BLEND);
+		else
+			glEnable(GL_BLEND);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 0.8f);//set alpha value here.000
 

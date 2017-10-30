@@ -3,6 +3,7 @@
 #include "../clientdll.h"
 #include "../misc/xorstr.h"
 #include "../players.h"
+#include "../opengl.h"
 
 ColorManager colorList;
 extern cl_enginefuncs_s gEngfuncs;
@@ -57,9 +58,22 @@ void DrawSmoothBox(int x, int y, int width, int height, float ubr, float ubg, fl
 {
 	glDisable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBegin(GL_QUADS);
+
+	if(glEnable_detour != nullptr)
+		glEnable_detour(GL_BLEND);
+	else
+		glEnable(GL_BLEND);
+
+	if(glBlendFunc_detour != nullptr)
+		glBlendFunc_detour(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	else
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	if(glBegin_detour != nullptr)
+		glBegin_detour(GL_QUADS);
+	else
+		glBegin(GL_QUADS);
+
 	glColor4f(ubr, ubg, ubb, ba);
 	glVertex2i(x, y);
 	glColor4f(ubr, ubg, ubb, ba);
@@ -68,8 +82,16 @@ void DrawSmoothBox(int x, int y, int width, int height, float ubr, float ubg, fl
 	glVertex2i(x + width, y + height);
 	glColor4f(lbr, lbg, lbb, ba);
 	glVertex2i(x, y + height);
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
+
+	if (glEnd_detour != nullptr)
+		glEnd_detour();
+	else
+		glEnd();
+
+	if (glEnable_detour != nullptr)
+		glEnable_detour(GL_TEXTURE_2D);
+	else
+		glEnable(GL_TEXTURE_2D);
 }
 
 /*
@@ -294,21 +316,53 @@ int DrawLen(char *fmt)
 }
 void DrawLine(int x1, int y1, int x2, int y2, byte r, byte g, byte b, byte a)
 {
-	glPushMatrix();
+	if (glPushMatrix_detour != nullptr)
+		glPushMatrix_detour();
+	else
+		glPushMatrix();
+
 	glLoadIdentity();
 	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	if(glEnable_detour != nullptr)
+		glEnable_detour(GL_BLEND);
+	else
+		glEnable(GL_BLEND);
+
+	if(glBlendFunc_detour != nullptr)
+		glBlendFunc_detour(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	else
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glColor4ub(r, g, b, a);
 	glLineWidth(1.0f);
-	glBegin(GL_LINES);
+
+	if(glBegin_detour != nullptr)
+		glBegin_detour(GL_LINES);
+	else
+		glBegin(GL_LINES);
+
 	glVertex2i(x1, y1);
 	glVertex2i(x2, y2);
-	glEnd();
+
+	if (glEnd_detour != nullptr)
+		glEnd_detour();
+	else
+		glEnd();
+
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glEnable(GL_TEXTURE_2D);
+
+	if (glEnable_detour != nullptr)
+		glEnable_detour(GL_TEXTURE_2D);
+	else
+		glEnable(GL_TEXTURE_2D);
+	
 	glDisable(GL_BLEND);
-	glPopMatrix();
+
+	if (glPopMatrix_detour != nullptr)
+		glPopMatrix_detour();
+	else
+		glPopMatrix();
 }
 //==============================================================================
 void DrawHudStringCenter(int x, int y, int r, int g, int b, const char *fmt, ...)

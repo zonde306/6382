@@ -65,6 +65,12 @@ struct sMe
 	void AdjustSpeed(double speed);
 	void DoFastWalk();
 	void DoFastRun(struct usercmd_s *usercmd);
+
+	void DoAntiRecoil(struct usercmd_s* usercmd, float frametime);
+	void DoAntiSpread(struct usercmd_s* usercmd);
+	void DoSilentAngles(struct usercmd_s* usercmd, float* aimangles);
+	bool DoSmoothAngles(float* Source, float* Destination, float* NewDestination, float Factor);
+	void DoSilentAngles(float* aimangles, struct usercmd_s* usercmd);
 };
 
 enum 

@@ -520,16 +520,21 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 	
 	gClient.CL_CreateMove(frametime, cmd, active);
 
-	ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
+	// ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
+	if (cvars.norecoil)
+		g_local.DoAntiRecoil(cmd, frametime);
 	
 	//nospread
-	if (cvars.nospread && g_local.alive)
+	if (cvars.nospread)
 	{
+		/*
 		float offset[3];
 		gNoSpread.GetSpreadOffset(g_local.spread.random_seed, 1, cmd->viewangles, g_local.pmVelocity, offset);
 		cmd->viewangles[0] += offset[0];
 		cmd->viewangles[1] += offset[1];
 		cmd->viewangles[2] += offset[2];
+		*/
+		g_local.DoAntiSpread(cmd);
 	}
 
 	if(cvars.bunnyhop) 

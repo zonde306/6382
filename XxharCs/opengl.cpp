@@ -46,19 +46,19 @@ DETOUR_TRAMPOLINE(void APIENTRY glTranslatef_detour(GLfloat x, GLfloat y, GLfloa
 DETOUR_TRAMPOLINE(void APIENTRY glPushMatrix_detour(void), glPushMatrix);
 */
 
-typedef void(APIENTRY* FnglBegin)(GLenum);
-typedef void(APIENTRY* FnglEnd)();
+// typedef void(APIENTRY* FnglBegin)(GLenum);
+// typedef void(APIENTRY* FnglEnd)();
 typedef void(APIENTRY* FnglClear)(GLbitfield);
 typedef void(APIENTRY* FnglVertex3fv)(const GLfloat*);
 typedef void(APIENTRY* FnglVertex3f)(GLfloat, GLfloat, GLfloat);
-typedef void(APIENTRY* FnglEnable)(GLenum);
+// typedef void(APIENTRY* FnglEnable)(GLenum);
 typedef void(APIENTRY* FnglVertex2f)(GLfloat, GLfloat);
 typedef void(APIENTRY* FnglViewport)(GLint, GLint, GLsizei, GLsizei);
 typedef void(APIENTRY* FnwglSwapBuffers)(HDC);
-typedef void(APIENTRY* FnglBlendFunc)(GLenum, GLenum);
-typedef void(APIENTRY* FnglPopMatrix)();
+// typedef void(APIENTRY* FnglBlendFunc)(GLenum, GLenum);
+// typedef void(APIENTRY* FnglPopMatrix)();
 typedef void(APIENTRY* FnglTranslatef)(GLfloat, GLfloat, GLfloat);
-typedef void(APIENTRY* FnglPushMatrix)();
+// typedef void(APIENTRY* FnglPushMatrix)();
 // typedef void(APIENTRY* FnglReadPixels)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid*);
 // typedef BOOL(__stdcall* FnBitBlt)(HDC, int, int, int, int, HDC, int, int, DWORD);
 
@@ -347,7 +347,6 @@ void DrawMenu(int x, int y)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glBegin(GLenum mode)
 {
-
 	// entity g_oglDraw start
 	if (!bStartedDrawingEnts && bDrawnWorld && cvars.wallhack > 1) {
 		if (mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN) {
@@ -436,7 +435,11 @@ void APIENTRY hooked_glBegin(GLenum mode)
 			(*glGetFloatv)(GL_CURRENT_COLOR, curcol);
 
 			glDisable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
+
+			if(glEnable_detour != nullptr)
+				glEnable_detour(GL_BLEND);
+			else
+				glEnable(GL_BLEND);
 
 			(*glBlendFunc_detour)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -481,15 +484,12 @@ void APIENTRY hooked_glBegin(GLenum mode)
 
 	if (glBegin_detour)
 		(*glBegin_detour)(mode);
-
-
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glClear(GLbitfield mask)
 {
-	if (mask == GL_DEPTH_BUFFER_BIT)
+	if (mask == GL_DEPTH_BUFFER_BIT && (cvars.wallhack || cvars.skyRemoval))
 	{
 		(*glClear_detour)(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -501,10 +501,7 @@ void APIENTRY hooked_glClear(GLbitfield mask)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glVertex3fv(const GLfloat *v)
 {
-	if (bSmoke == true)
-		return;
-
-	if (bSky)
+	if (bSmoke || ((cvars.wallhack || cvars.skyRemoval) && bSky && v[2] > 3000.0f))
 		return;
 
 	(*glVertex3fv_detour)(v);
@@ -549,13 +546,28 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 		glDisable(GL_DEPTH_TEST);
 		glMatrixMode(GL_MODELVIEW);
 
-		glPushMatrix();
+		if (glPushMatrix_detour != nullptr)
+			glPushMatrix_detour();
+		else
+			glPushMatrix();
+
 		glLoadIdentity();
 		glDisable(GL_TEXTURE_2D);
-		glTranslatef(0.375f, 0.375f, 0.0f);
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		if(glTranslatef_detour != nullptr)
+			glTranslatef_detour(0.375f, 0.375f, 0.0f);
+		else
+			glTranslatef(0.375f, 0.375f, 0.0f);
+
+		if(glEnable_detour != nullptr)
+			glEnable_detour(GL_BLEND);
+		else
+			glEnable(GL_BLEND);
+
+		if(glBlendFunc_detour != nullptr)
+			glBlendFunc_detour(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		else
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		/*
 		hud_player_info_t pInfo;
@@ -606,29 +618,61 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 				}
 
 				glColor4ub(r, g, b, a);
-				glBegin(GL_QUADS);
 
-				glVertex2f(x - h - w, y - h - w);
-				glVertex2f(x + h + w, y - h - w);
-				glVertex2f(x + h + w, y - h);
-				glVertex2f(x - h - w, y - h);
+				if(glBegin_detour != nullptr)
+					glBegin_detour(GL_QUADS);
+				else
+					glBegin(GL_QUADS);
 
-				glVertex2f(x - h - w, y + h - w);
-				glVertex2f(x + h + w, y + h - w);
-				glVertex2f(x + h + w, y + h);
-				glVertex2f(x - h - w, y + h);
+				if (glVertex2f_detour != nullptr)
+				{
+					glVertex2f_detour(x - h - w, y - h - w);
+					glVertex2f_detour(x + h + w, y - h - w);
+					glVertex2f_detour(x + h + w, y - h);
+					glVertex2f_detour(x - h - w, y - h);
 
-				glVertex2f(x - h - w, y - h);
-				glVertex2f(x - h, y - h);
-				glVertex2f(x - h, y + h);
-				glVertex2f(x - h - w, y + h);
+					glVertex2f_detour(x - h - w, y + h - w);
+					glVertex2f_detour(x + h + w, y + h - w);
+					glVertex2f_detour(x + h + w, y + h);
+					glVertex2f_detour(x - h - w, y + h);
 
-				glVertex2f(x + h, y - h);
-				glVertex2f(x + h + w, y - h);
-				glVertex2f(x + h + w, y + h);
-				glVertex2f(x + h, y + h);
+					glVertex2f_detour(x - h - w, y - h);
+					glVertex2f_detour(x - h, y - h);
+					glVertex2f_detour(x - h, y + h);
+					glVertex2f_detour(x - h - w, y + h);
 
-				glEnd();
+					glVertex2f_detour(x + h, y - h);
+					glVertex2f_detour(x + h + w, y - h);
+					glVertex2f_detour(x + h + w, y + h);
+					glVertex2f_detour(x + h, y + h);
+				}
+				else
+				{
+					glVertex2f(x - h - w, y - h - w);
+					glVertex2f(x + h + w, y - h - w);
+					glVertex2f(x + h + w, y - h);
+					glVertex2f(x - h - w, y - h);
+
+					glVertex2f(x - h - w, y + h - w);
+					glVertex2f(x + h + w, y + h - w);
+					glVertex2f(x + h + w, y + h);
+					glVertex2f(x - h - w, y + h);
+
+					glVertex2f(x - h - w, y - h);
+					glVertex2f(x - h, y - h);
+					glVertex2f(x - h, y + h);
+					glVertex2f(x - h - w, y + h);
+
+					glVertex2f(x + h, y - h);
+					glVertex2f(x + h + w, y - h);
+					glVertex2f(x + h + w, y + h);
+					glVertex2f(x + h, y + h);
+				}
+
+				if (glEnd_detour != nullptr)
+					glEnd_detour();
+				else
+					glEnd();
 			}
 		}
 
@@ -708,8 +752,15 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 
 		glDisable(GL_BLEND);
 
-		glPopMatrix();
-		glEnable(GL_TEXTURE_2D);
+		if (glPopMatrix_detour != nullptr)
+			glPopMatrix_detour();
+		else
+			glPopMatrix();
+
+		if(glEnable_detour != nullptr)
+			glEnable_detour(GL_TEXTURE_2D);
+		else
+			glEnable(GL_TEXTURE_2D);
 
 		maxEnts = 0;
 	}
@@ -925,11 +976,24 @@ void APIENTRY hooked_glBlendFunc(GLenum sfactor, GLenum dfactor)
 		glColor3f(0.3f, 0.3f, 1.0f);
 	}
 
+	if (oglSubtractive)
+	{
+		sfactor = GL_SRC_ALPHA;
+		dfactor = GL_ONE_MINUS_SRC_ALPHA;
+	}
+
 	(*glBlendFunc_detour)(sfactor, dfactor);
 }
 
+extern engine_studio_api_t g_Studio;
 void APIENTRY hooked_glPopMatrix(void)
 {
+	cl_entity_t* ent = g_Studio.GetCurrentEntity();
+	if (ent != nullptr && ent->player)
+	{
+		g_playerList[ent->index].bDrawn = true;
+	}
+	
 	(*glPopMatrix_detour)();
 
 	// if (cvars.dmAimbot)
