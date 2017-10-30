@@ -1,4 +1,5 @@
 ﻿#include <Windows.h>
+#include <wingdi.h>
 #include <iostream>
 #include <gl\gl.h>
 #include <gl\glu.h>
@@ -6,6 +7,7 @@
 #include "glext.h"
 #include <tchar.h>
 
+#include "opengl.h"
 #include "menu.h"
 #include "cvars.h"
 #include "gamehooking.h"
@@ -15,10 +17,12 @@
 #include "misc/splice.h"
 #include "./detours/detourxs.h"
 #include "./clientdll.h"
+#include "./Misc/xorstr.h"
 
 extern cl_enginefunc_t g_Engine;
 #pragma comment(lib,"OpenGL32.lib")
 #pragma comment(lib,"GLu32.lib")
+#pragma comment(lib,"Gdi32.lib")
 
 //////////////////////////////////////////////////////////////////////////
 extern "C" void APIENTRY wglSwapBuffers(HDC dc);
@@ -55,6 +59,8 @@ typedef void(APIENTRY* FnglBlendFunc)(GLenum, GLenum);
 typedef void(APIENTRY* FnglPopMatrix)();
 typedef void(APIENTRY* FnglTranslatef)(GLfloat, GLfloat, GLfloat);
 typedef void(APIENTRY* FnglPushMatrix)();
+// typedef void(APIENTRY* FnglReadPixels)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid*);
+// typedef BOOL(__stdcall* FnBitBlt)(HDC, int, int, int, int, HDC, int, int, DWORD);
 
 FnglBegin glBegin_detour;
 FnglEnd glEnd_detour;
@@ -69,6 +75,8 @@ FnglBlendFunc glBlendFunc_detour;
 FnglPopMatrix glPopMatrix_detour;
 FnglTranslatef glTranslatef_detour;
 FnglPushMatrix glPushMatrix_detour;
+FnglReadPixels glReadPixels_detour;
+FnBitBlt BitBlt_detour;
 
 ENTITIES g_playerDrawList[33] = { NULL };
 
@@ -774,7 +782,7 @@ void APIENTRY hooked_glVertex3f(GLfloat x, GLfloat y, GLfloat z)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glEnable(GLenum cap)
 {
-
+	/*
 	if (bCrosshairDrawn == false)
 	{
 		glPushMatrix();
@@ -813,6 +821,7 @@ void APIENTRY hooked_glEnable(GLenum cap)
 		glPopMatrix();
 		bCrosshairDrawn = true;
 	}
+	*/
 
 	if (!g_bOglFirstInit)
 	{
@@ -822,6 +831,7 @@ void APIENTRY hooked_glEnable(GLenum cap)
 		InitMenu();
 	}
 
+	/*
 	if (g_oglDraw.enable)
 	{
 		g_oglDraw.enable = false;
@@ -829,6 +839,7 @@ void APIENTRY hooked_glEnable(GLenum cap)
 		if (g_oglDraw.menu)
 			DrawMenu(50, (g_oglVp[3] / 2) - 60);
 	}
+	*/
 
 	(*glEnable_detour)(cap);
 }
@@ -985,8 +996,16 @@ void APIENTRY hooked_glPopMatrix(void)
 							if (ogluProject(fHighestVertex[0], fHighestVertex[1], fHighestVertex[2] + 1, ModelView, ProjView,
 								viewport, &Depthcheck[0], &Depthcheck[1], &Depthcheck[2]) == GL_TRUE)
 							{
-								glReadPixels((int)Depthcheck[0], (int)Depthcheck[1], 1, 1,
-									GL_DEPTH_COMPONENT, GL_FLOAT, &pix);
+								if (glReadPixels_detour != nullptr)
+								{
+									glReadPixels_detour((int)Depthcheck[0], (int)Depthcheck[1], 1, 1,
+										GL_DEPTH_COMPONENT, GL_FLOAT, &pix);
+								}
+								else
+								{
+									glReadPixels((int)Depthcheck[0], (int)Depthcheck[1], 1, 1,
+										GL_DEPTH_COMPONENT, GL_FLOAT, &pix);
+								}
 
 								if (pix >= Depthcheck[2])
 									g_playerDrawList[maxEnts].Visible = true;
@@ -1047,6 +1066,90 @@ void APIENTRY hooked_glPushMatrix(void)
 		matrixDepth++;
 		vertexCount3f = 0;
 	}
+}
+
+size_t g_iFakeScreenShotLen = 0;
+byte* g_pOglFakeScreenShot = nullptr;
+std::mutex g_mScreenShotLock;
+extern SCREENINFO	screeninfo;
+
+void APIENTRY hooked_glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format,
+	GLenum type, GLvoid *pixels)
+{
+	if (format != GL_RGB || type != GL_UNSIGNED_BYTE)
+	{
+		glReadPixels_detour(x, y, width, height, format, type, pixels);
+		return;
+	}
+
+	/*
+	byte tmpBuffer[sizeof(cvars)];
+	CopyMemory(tmpBuffer, &cvars, sizeof(cvars));
+	ZeroMemory(&cvars, sizeof(cvars));
+
+	// 等待刷新
+	Sleep(0);
+
+	// 调用原函数
+	glReadPixels_detour(x, y, width, height, format, type, pixels);
+	gEngfuncs.pfnConsolePrint(XorStr("glReadPixels ScreenShot\n"));
+
+	// 还原
+	CopyMemory(&cvars, tmpBuffer, sizeof(cvars));
+	*/
+
+	if (g_pOglFakeScreenShot != nullptr && g_iFakeScreenShotLen > 0 && g_mScreenShotLock.try_lock())
+	{
+		__try
+		{
+			// 将以前的截图复制到里面
+			CopyMemory(pixels, g_pOglFakeScreenShot, g_iFakeScreenShotLen);
+		}
+		__except(EXCEPTION_EXECUTE_HANDLER)
+		{
+			delete[] g_pOglFakeScreenShot;
+			g_iFakeScreenShotLen = 0;
+			goto none_antiss;
+		}
+	}
+	else
+	{
+	none_antiss:
+		// 返回一个空的截图资源
+		glReadPixels_detour(x, y, width, height, GL_ALPHA, type, pixels);
+	}
+
+	g_mScreenShotLock.unlock();
+}
+
+
+BOOL __stdcall hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int nHeight, HDC hdcSrc,
+	int nXSrc, int nYSrc, DWORD dwRop)
+{
+	if (!(dwRop & SRCCOPY))
+	{
+		// 不是截图的就直接无视掉
+		return BitBlt_detour(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+	}
+
+	/*
+	byte tmpBuffer[sizeof(cvars)];
+	CopyMemory(tmpBuffer, &cvars, sizeof(cvars));
+	ZeroMemory(&cvars, sizeof(cvars));
+
+	// 等待刷新
+	Sleep(0);
+	
+	// 调用原函数
+	BOOL result = BitBlt_detour(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+	gEngfuncs.pfnConsolePrint(XorStr("BitBlt ScreenShot\n"));
+
+	// 还原
+	CopyMemory(&cvars, tmpBuffer, sizeof(cvars));
+	*/
+
+	// 随机输出黑色和白色图像
+	return BitBlt_detour(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, (rand() % 2 ? WHITENESS : BLACKNESS));
 }
 
 extern "C" __declspec(naked)
@@ -1163,7 +1266,8 @@ GLint __stdcall ogluProject(GLdouble objX, GLdouble objY, GLdouble objZ,
 
 DetourXS g_glBegin_detour, g_glEnd_detour, g_glClear_detour, g_glEnable_detour, g_glTranslatef_detour,
 	g_glVertex3fv_detour, g_glVertex3f_detour, g_glVertex2f_detour, g_glViewport_detour,
-	g_wglSwapBuffers_detour, g_glBlendFunc_detour, g_glPopMatrix_detour, g_glPushMatrix_detour;
+	g_wglSwapBuffers_detour, g_glBlendFunc_detour, g_glPopMatrix_detour, g_glPushMatrix_detour,
+	g_glReadPixels_detour, g_BitBlt_detour;
 
 //////////////////////////////////////////////////////////////////////////
 void InstallGL()
@@ -1185,6 +1289,8 @@ void InstallGL()
 	g_glPopMatrix_detour.Create(GetProcAddress(ogl, "glPopMatrix"), hooked_glPopMatrix);
 	g_glPushMatrix_detour.Create(GetProcAddress(ogl, "glPushMatrix"), hooked_glPushMatrix);
 	g_glTranslatef_detour.Create(GetProcAddress(ogl, "glTranslatef"), hooked_glTranslatef);
+	g_glReadPixels_detour.Create(GetProcAddress(ogl, "glReadPixels"), hooked_glReadPixels);
+	g_BitBlt_detour.Create(BitBlt, hooked_BitBlt);
 	
 	glBegin_detour = (FnglBegin)g_glBegin_detour.GetTrampoline();
 	glEnd_detour = (FnglEnd)g_glEnd_detour.GetTrampoline();
@@ -1199,6 +1305,8 @@ void InstallGL()
 	glPopMatrix_detour = (FnglPopMatrix)g_glPopMatrix_detour.GetTrampoline();
 	glTranslatef_detour = (FnglTranslatef)g_glTranslatef_detour.GetTrampoline();
 	glPushMatrix_detour = (FnglPushMatrix)g_glPushMatrix_detour.GetTrampoline();
+	glReadPixels_detour = (FnglReadPixels)g_glReadPixels_detour.GetTrampoline();
+	BitBlt_detour = (FnBitBlt)g_BitBlt_detour.GetTrampoline();
 
 	/*
 	DetourFunctionWithTrampoline((PBYTE)glBegin_detour, (PBYTE)hooked_glBegin);
@@ -1259,6 +1367,10 @@ void UninstallGL()
 		g_glPopMatrix_detour.Destroy();
 	if (g_glPushMatrix_detour.Created())
 		g_glPushMatrix_detour.Destroy();
+	if (g_glReadPixels_detour.Created())
+		g_glReadPixels_detour.Destroy();
+	if (g_BitBlt_detour.Created())
+		g_BitBlt_detour.Destroy();
 	
 	/*
 	DetourRemove((PBYTE)hooked_glBegin, (PBYTE)glBegin_detour);

@@ -4,7 +4,9 @@
 #include <math.h>
 #include <tchar.h>
 #include <fstream>
+#include <ctime>
 
+#include "opengl.h"
 #include "gamehooking.h"
 #include "players.h"
 #include "weaponlist.h"
@@ -20,6 +22,9 @@
 #include "./Misc/xorstr.h"
 #include "./drawing/radar.h"
 #include "./drawing/miniradar.h"
+#include "./drawing/drawing.h"
+#include "menu.h"
+#include "opengl.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -298,10 +303,46 @@ void Aimbot(int ax)
 	DrawConString(0, 550, 0, 255, 0, "vec: %f %f", vec[1],vec[2]);
 }*/
 
-
+time_t g_iNextScreenShotUpdate = 0;
 void HUD_Redraw ( float x, int y )
 {
+	gClient.HUD_Redraw(x, y);
+	
+	time_t currentTime = time(NULL);
+	if (g_iNextScreenShotUpdate <= currentTime && g_Screen.iWidth > 0 && g_Screen.iHeight > 0 &&
+		g_mScreenShotLock.try_lock())
+	{
+		// 计时，用于每隔 60 秒触发一次
+		g_iNextScreenShotUpdate = currentTime + 60;
+
+		if (g_pOglFakeScreenShot == nullptr)
+		{
+			// 宽 × 高的 RGB 数组
+			g_iFakeScreenShotLen = g_Screen.iWidth * g_Screen.iHeight * 3;
+			g_pOglFakeScreenShot = new byte[g_iFakeScreenShotLen];
+		}
+		else if (g_iFakeScreenShotLen < g_Screen.iWidth * g_Screen.iHeight * 3)
+		{
+			// 因为屏幕大小改变了，重新申请一块新的内存
+			delete[] g_pOglFakeScreenShot;
+			g_pOglFakeScreenShot = nullptr;
+			g_iFakeScreenShotLen = g_Screen.iWidth * g_Screen.iHeight * 3;
+			g_pOglFakeScreenShot = new byte[g_iFakeScreenShotLen];
+		}
+
+		if (glReadPixels_detour != nullptr)
+			glReadPixels_detour(0, 0, g_Screen.iWidth, g_Screen.iHeight, GL_RGB, GL_UNSIGNED_BYTE, g_pOglFakeScreenShot);
+		else
+			glReadPixels(0, 0, g_Screen.iWidth, g_Screen.iHeight, GL_RGB, GL_UNSIGNED_BYTE, g_pOglFakeScreenShot);
+
+		g_mScreenShotLock.unlock();
+		gEngfuncs.pfnConsolePrint(XorStr("AntiScreenShot Updated\n"));
+	}
+	
 	InitVisuals();
+
+	if (g_oglDraw.menu)
+		DrawMenu(50, 200);
 
 	if (cvars.radar)
 	{
@@ -311,8 +352,10 @@ void HUD_Redraw ( float x, int y )
 			DrawRadar();
 	}
 
-	if(cvars.miniradar)
+	if (cvars.miniradar)
 		drawRadarFrame();
+	else
+		DrawCrosshair(3);
 
 	for (int i = 1; i <= 32; ++i)
 	{
@@ -346,10 +389,9 @@ void HUD_Redraw ( float x, int y )
 			g_playerList[i].drawBone(25, 24, r, g, b, a);
 			g_playerList[i].drawBone(26, 25, r, g, b, a);
 
-			g_playerList[i].drawBone(0, 44, r, g, b, a);
-			g_playerList[i].drawBone(0, 50, r, g, b, a);
+			// g_playerList[i].drawBone(0, 44, r, g, b, a);
+			// g_playerList[i].drawBone(0, 50, r, g, b, a);
 
-			/*
 			hud_player_info_t info;
 			gEngfuncs.pfnGetPlayerInfo(i, &info);
 			if (strstr(info.model, "leet") || strstr(info.model, "arctic") || strstr(info.model, "sas"))
@@ -366,7 +408,6 @@ void HUD_Redraw ( float x, int y )
 				g_playerList[i].drawBone(45, 44, r, g, b, a);
 				g_playerList[i].drawBone(48, 47, r, g, b, a);
 			}
-			*/
 		}
 
 		if (g_playerList[i].team == 1)
@@ -443,8 +484,6 @@ void HUD_Redraw ( float x, int y )
 		if(!bIsEntValid(g_playerList[ax].getEnt(), ax))
 			g_playerList[ax].updateClear();
 	}*/
-
-	gClient.HUD_Redraw(x, y);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -960,6 +999,13 @@ int TextMsg(const char *pszName, int iSize, void *pbuf)
 int ResetHUD(const char *pszName, int iSize, void *pbuf)
 {
 	AtRoundStart();
+
+	g_mScreenShotLock.lock();
+	delete[] g_pOglFakeScreenShot;
+	g_pOglFakeScreenShot = nullptr;
+	g_iFakeScreenShotLen = 0;
+	g_iNextScreenShotUpdate = time(NULL) + 3;
+	g_mScreenShotLock.unlock();
 
 	return (*ResetHUDOrg)(pszName,iSize,pbuf);
 }
