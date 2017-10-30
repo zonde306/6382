@@ -28,6 +28,8 @@ int			displayCenterX = 640;
 int			displayCenterY = 480;
 float		fCurrentFOV = 90;
 SCREENINFO	screeninfo;
+FnGetCrossHairTeam GetCrossHairTeam;
+DWORD* g_pCrossHairTeam;
 
 float mainViewAngles[3];
 
@@ -417,9 +419,39 @@ inline void _fastcall VectorAngles(const float *forward, float *angles)
 
 void sMe::DoTriggerBot(usercmd_s * usercmd)
 {
-	if ((usercmd->buttons & IN_ATTACK) || this->iClip <= 0)
+	if (this->iClip <= 0)
 		return;
 	
+	/*
+	if (GetCrossHairTeam != nullptr)
+	{
+		// 准星显示敌人的信息，1=队友，2=敌人
+		int _team = GetCrossHairTeam();
+
+		if (_team == 1)
+			usercmd->buttons &= ~IN_ATTACK;
+		else if (_team == 2)
+		{
+			usercmd->buttons |= IN_ATTACK;
+			return;
+		}
+	}
+	*/
+
+	if (g_pCrossHairTeam != nullptr)
+	{
+		if(*g_pCrossHairTeam == 1)
+			usercmd->buttons &= ~IN_ATTACK;
+		else if (*g_pCrossHairTeam == 2)
+		{
+			usercmd->buttons |= IN_ATTACK;
+			return;
+		}
+	}
+
+	if (usercmd->buttons & IN_ATTACK)
+		return;
+
 	// float finalAngle[3] = { 0.0f, 0.0f, 0.0f };
 	Vector finalAngle;
 

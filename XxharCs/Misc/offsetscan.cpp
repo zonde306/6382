@@ -234,6 +234,15 @@ void * COffsets::Slots()
 	return (void*)(address + 0x01);
 }
 
+void * COffsets::GetCurosrTeam()
+{
+	DWORD address = FindPattern(HwBase, HwBase + HwSize, XorStr("A1 ? ? ? ? 8B 0D ? ? ? ? 8D 50 ? 3B D1 7E ? C7 05 60 7F A2 01 ? ? ? ? 83 C8 ? C3 8B 0D ? ? ? ? 56 66 0F ? ? ? ? 66 0F ? ? ? C1 E6 ? 03 F0 89 15 ? ? ? ? 0F BF ? 5E C3 90 90 90 90 90 90 90 90 90 90 90 90 90 90 A1"));
+	if (address == 0)
+		return nullptr;
+
+	return (void*)address;
+}
+
 void *COffsets::SpeedHackPtr(void)
 {
 	DWORD Old = NULL;

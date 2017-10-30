@@ -31,6 +31,9 @@
 #include "misc/utils.h"
 #include "Engine/cdll_dll.h"
 
+typedef int (*FnGetCrossHairTeam)();
+extern FnGetCrossHairTeam GetCrossHairTeam;
+extern DWORD* g_pCrossHairTeam;
 
 #define M_PI 3.14159265358979323846
 #define POW(x) ((x)*(x))

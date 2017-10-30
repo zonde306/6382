@@ -133,6 +133,8 @@ void InstallCheat()
 	g_pDynamicSound = (PDWORD)g_offsetScanner.Sound();
 	g_pSpeedBooster = (PDWORD)g_offsetScanner.SpeedHackPtr();
 	g_pSlots = (PDWORD)g_offsetScanner.Slots();
+	GetCrossHairTeam = (FnGetCrossHairTeam)g_offsetScanner.GetCurosrTeam();
+	g_pCrossHairTeam = (DWORD*)(g_offsetScanner.HwBase + 0x61B82C);
 	g_offsetScanner.GameInfo();
 
 	g_pEngine->Con_Printf(XorStr("clientBase = 0x%X\n"), (DWORD)clientBase);
@@ -142,6 +144,7 @@ void InstallCheat()
 	g_pEngine->Con_Printf(XorStr("g_pDynamicSound = 0x%X\n"), (DWORD)g_pDynamicSound);
 	g_pEngine->Con_Printf(XorStr("g_pSpeedBooster = 0x%X\n"), (DWORD)g_pSpeedBooster);
 	g_pEngine->Con_Printf(XorStr("g_pSlots = 0x%X\n"), (DWORD)g_pSlots);
+	g_pEngine->Con_Printf(XorStr("GetCrossHairTeam = 0x%X\n"), (DWORD)GetCrossHairTeam);
 
 	// 备份，一会要还原的
 	RtlCopyMemory(&g_Client, g_pClient, sizeof(cl_clientfunc_t));

@@ -22,6 +22,7 @@ public:
 	void *SpeedHackPtr(void);
 	void *ClientFuncs(void);
 	void *EngineFuncs(void);
+	void* GetCurosrTeam();
 	void* Slots();
 	void* FireBullets();
 	DWORD EngineStudio(void);
