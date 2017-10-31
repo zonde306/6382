@@ -119,7 +119,7 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void InstallCheat()
+DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
 
@@ -132,7 +132,7 @@ void InstallCheat()
 	g_pStudio = (engine_studio_api_t*)g_offsetScanner.EngineStudio();
 	g_pDynamicSound = (PDWORD)g_offsetScanner.Sound();
 	g_pSpeedBooster = (PDWORD)g_offsetScanner.SpeedHackPtr();
-	g_pSlots = (PDWORD)g_offsetScanner.Slots();
+	g_pSlots = *(PDWORD*)g_offsetScanner.Slots();
 	GetCrossHairTeam = (FnGetCrossHairTeam)g_offsetScanner.GetCurosrTeam();
 	g_pCrossHairTeam = (DWORD*)(g_offsetScanner.HwBase + 0x61B82C);
 	g_offsetScanner.GameInfo();

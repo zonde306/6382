@@ -47,7 +47,6 @@ double* globalTime;
 engine_studio_api_t IEngineStudio		= { NULL };
 extern CLIENT gClient;
 
-
 extern cl_clientfunc_t *g_pClient;
 extern cl_clientfunc_t g_Client;
 extern cl_enginefunc_t *g_pEngine;
@@ -55,7 +54,6 @@ extern engine_studio_api_t *g_pStudio;
 extern engine_studio_api_t g_Studio;
 extern SCREENINFO g_Screen;
 extern char g_szHackDir[256];
-
 
 cl_clientfunc_t *g_pClient = NULL;
 PDWORD g_pSlots = NULL;
@@ -87,6 +85,7 @@ extern float fCurrentFOV;
 extern int	displayCenterX;
 extern int	displayCenterY;
 extern bool oglSubtractive;
+#define NOT_LTFX_SLOTS()		(g_offsetScanner.BuildInfo.Protocol >= 48 || g_pSlots == nullptr)
 
 void ConsolePrintColor(char* fmt, BYTE R, BYTE G, BYTE B, char* csxx)
 {
@@ -107,11 +106,11 @@ void ConsolePrintColor(char* fmt, BYTE R, BYTE G, BYTE B, char* csxx)
 void HUD_Init ( void )
 {
 	gClient.HUD_Init();
-
 }
 
 int Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 {
+	
 	return gClient.Initialize(pEnginefuncs, iVersion);
 }
 
@@ -134,6 +133,8 @@ void InitHack()
 	gEngfuncs.pfnGetScreenInfo( &g_Screen );
 
 	gEngfuncs.pfnConsolePrint(XorStr("\nXxharCs MultiHack has been loaded\nby XxharCs\n\nCS 1.6 Version:\n-------------------\n"));
+	gEngfuncs.Con_Printf(XorStr("Protocol = %d\n"), g_offsetScanner.BuildInfo.Protocol);
+	
 	// gEngfuncs.Con_Printf("gEngfuncs = 0x%X\n", (DWORD)g_pEngine);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pClient);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pStudio);
@@ -150,7 +151,9 @@ void HUD_Frame( double time )
 		g_offsetScanner.ConsoleColorInitalize();
 		Init = true;
 	}
-	gClient.HUD_Frame( time );
+
+	if(NOT_LTFX_SLOTS())
+		gClient.HUD_Frame( time );
 }
 
 int HUD_GetStudioModelInterface ( int version, struct r_studio_interface_s **ppinterface, struct engine_studio_api_s *pstudio )
@@ -306,7 +309,8 @@ void Aimbot(int ax)
 time_t g_iNextScreenShotUpdate = 0;
 void HUD_Redraw ( float x, int y )
 {
-	gClient.HUD_Redraw(x, y);
+	if(NOT_LTFX_SLOTS())
+		gClient.HUD_Redraw(x, y);
 	
 	time_t currentTime = time(NULL);
 	if (g_iNextScreenShotUpdate <= currentTime && g_Screen.iWidth > 0 && g_Screen.iHeight > 0 &&
@@ -504,7 +508,8 @@ void HUD_PlayerMove ( struct playermove_s *ppmove, qboolean server )
 
 	VectorCopy(ppmove->angles,g_local.viewAngles);
 
-	gClient.HUD_PlayerMove(ppmove, server);
+	if (NOT_LTFX_SLOTS())
+		gClient.HUD_PlayerMove(ppmove, server);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -518,7 +523,8 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 		g_local.DoAntiAim2(cmd);
 	}
 	
-	gClient.CL_CreateMove(frametime, cmd, active);
+	if (NOT_LTFX_SLOTS())
+		gClient.CL_CreateMove(frametime, cmd, active);
 
 	// ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
 	if (cvars.norecoil)
@@ -596,45 +602,33 @@ void PreV_CalcRefdef ( struct ref_params_s *pparams )
 		}
 	}
 
-	gClient.V_CalcRefdef(pparams);
-
-	VectorCopy(pparams->viewangles, mainViewAngles);
-	VectorCopy(pparams->vieworg, mainViewOrigin);
+	if (NOT_LTFX_SLOTS())
+	{
+		gClient.V_CalcRefdef(pparams);
+		PostV_CalcRefdef(pparams);
+	}
 }
-/*
+
 //==================================================================================
 // Called after V_CalcRefdef Client Function
 //==================================================================================
 void PostV_CalcRefdef ( struct ref_params_s *pparams )
 {
-	if( pparams->nextView == 0 )
-	{
-		// Primary Screen, below all other Viewports Sent
-		// update vectors for CalcScreen
-		VectorCopy(pparams->viewangles,mainViewAngles);
-		VectorCopy(pparams->vieworg,mainViewOrigin);	
-		if ( g_local.alive )          
-		if ( bAim )          
-		if ( g_local.iClip )           
-		if ( Aimbot.HasTarget() )
-		{
-			// auto aim	
-			Aimbot.CalculateAimingView();
-			VectorCopy(Aimbot.aim_viewangles, pparams->viewangles);	
-			Aimbot.active = true;
-		}
-	}
-}*/
+	if (cvars.quake)
+		g_local.DoQuakeGuns(2);
+
+	VectorCopy(pparams->viewangles, mainViewAngles);
+	VectorCopy(pparams->vieworg, mainViewOrigin);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // HUD_AddEntity Client Function
 //////////////////////////////////////////////////////////////////////////
+extern int AddEntResult;
 int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 {
-	int AddEntResult;
-
 	UpdateMe();
-	AddEntResult=1;
+	AddEntResult = 1;
 	if( isValidEnt(ent) ) 
 	{
 		if(g_local.alive)
@@ -662,9 +656,10 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 
 	}
 	if(g_local.ent->curstate.iuser1 == 4 && g_local.ent->curstate.iuser2 == ent->index)
-		AddEntResult=0;
+		AddEntResult = 0;
 
-	gClient.HUD_AddEntity(type, ent, modelname);
+	if (NOT_LTFX_SLOTS())
+		gClient.HUD_AddEntity(type, ent, modelname);
 
 	return AddEntResult;
 }
@@ -674,7 +669,8 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 //////////////////////////////////////////////////////////////////////////
 void HUD_PostRunCmd ( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
 {
-	gClient.HUD_PostRunCmd(from, to, cmd, runfuncs, time, random_seed);
+	if (NOT_LTFX_SLOTS())
+		gClient.HUD_PostRunCmd(from, to, cmd, runfuncs, time, random_seed);
 
 	if (runfuncs && g_local.iWeaponId > 0)
 	{
@@ -700,17 +696,22 @@ void HUD_UpdateClientData(client_data_t *cdata, float flTime)
 
 	WeaponListUpdate(cdata->iWeaponBits);
 
-	gClient.HUD_UpdateClientData(cdata, flTime);
+	if (NOT_LTFX_SLOTS())
+		gClient.HUD_UpdateClientData(cdata, flTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // HUD_Key_Event Client Function
 //////////////////////////////////////////////////////////////////////////
+extern int KeyEventResult;
 int HUD_Key_Event ( int eventcode, int keynum, const char *pszCurrentBinding )
 {
 	//DoHLHAiming(eventcode);
+	
+	if(NOT_LTFX_SLOTS())
+		KeyEventResult = gClient.HUD_Key_Event(eventcode, keynum, pszCurrentBinding);
 
-	return gClient.HUD_Key_Event(eventcode, keynum, pszCurrentBinding);
+	return KeyEventResult;
 }
 
 //////////////////////////////////////////////////////////////////////////

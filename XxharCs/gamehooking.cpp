@@ -5,6 +5,7 @@
 #include "clientdll.h"
 #include "install.h"
 #include "./Misc/xorstr.h"
+#include "./Misc/offsetscan.h"
 
 //////////////////////////////////////////////////////////////////////////
 _CLIENT_* pClient;
@@ -110,26 +111,369 @@ int HookUserMsg2()
 	return hooked;
 }
 
+
+//==================================================================================
+// Client functions jumpgates...
+//==================================================================================
+DWORD retaddress;
+
+__declspec(naked)void Gateway2_V_CalcRefdef(void)
+{
+	__asm
+	{
+		call PostV_CalcRefdef;
+		jmp retaddress;
+	}
+}
+
+DWORD _CalcRefdef = (DWORD)&Gateway2_V_CalcRefdef;
+__declspec(naked)void Gateway1_V_CalcRefdef(void)
+{
+
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x10];
+		push esi;
+		call PreV_CalcRefdef;
+		add esp, 4;
+		mov esi, dword ptr ss : [esp + 0x0c];
+		mov retaddress, esi;
+		push _CalcRefdef;
+		pop esi;
+		mov dword ptr ss : [esp + 0x0c], esi;
+		pop esi;
+		ret;
+	}
+}
+
+__declspec(naked)void Gateway2_CL_CreateMove(void)
+{
+	__asm
+	{
+		call CL_CreateMove;
+		jmp retaddress;
+	}
+}
+
+DWORD _CreateMove = (DWORD)&Gateway2_CL_CreateMove;
+__declspec(naked)void Gateway1_CL_CreateMove(void)
+{
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x28];
+		mov retaddress, esi;
+		push _CreateMove;
+		pop esi;
+		mov dword ptr ss : [esp + 0x28], esi;
+		pop esi;
+		ret;
+	}
+}
+__declspec(naked) void Gateway1_CL_CreateMoveDOD(void)
+{
+	_asm push esi
+	_asm mov esi, dword ptr ss : [esp + 0x30]
+		_asm mov retaddress, esi
+	_asm push _CreateMove
+	_asm pop esi
+	_asm mov dword ptr ss : [esp + 0x30], esi
+	_asm pop esi
+	_asm ret
+}
+
+int RedrawResult;
+__declspec(naked)void Gateway2_HUD_Redraw(void)
+{
+	__asm
+	{
+		mov eax, RedrawResult;
+		call HUD_Redraw;
+		mov eax, RedrawResult;
+		jmp retaddress;
+	}
+}
+
+DWORD _Redraw = (DWORD)&Gateway2_HUD_Redraw;
+__declspec(naked)void Gateway1_HUD_Redraw(void)
+{
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x10];
+		mov retaddress, esi;
+		push _Redraw
+		pop esi;
+		mov dword ptr ss : [esp + 0x10], esi;
+		pop esi;
+		ret;
+	}
+}
+
+__declspec(naked)void Gateway2_HUD_PostRunCmd(void)
+{
+	__asm
+	{
+		call HUD_PostRunCmd;
+		jmp retaddress;
+	}
+}
+
+DWORD _PostRunCmd = (DWORD)&Gateway2_HUD_PostRunCmd;
+__declspec(naked)void Gateway1_HUD_PostRunCmd(void)
+{
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x38];
+		mov retaddress, esi;
+		push _PostRunCmd
+		pop esi;
+		mov dword ptr ss : [esp + 0x38], esi;
+		pop esi;
+		ret;
+	}
+}
+__declspec(naked) void Gateway1_HUD_PostRunCmdDOD(void)
+{
+	_asm nop
+	_asm nop
+	_asm nop
+	_asm push esi
+	_asm mov esi, dword ptr ss : [esp + 0x40]
+		_asm mov retaddress, esi
+	_asm push _PostRunCmd
+	_asm pop esi
+	_asm mov dword ptr ss : [esp + 0x40], esi
+	_asm pop esi
+	_asm ret
+}
+
+__declspec(naked)void Gateway2_HUD_PlayerMove(void)
+{
+	__asm
+	{
+		call HUD_PlayerMove;
+		jmp retaddress;
+	}
+}
+
+DWORD _PlayerMove = (DWORD)&Gateway2_HUD_PlayerMove;
+__declspec(naked)void Gateway1_HUD_PlayerMove(void)
+{
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x10];
+		mov retaddress, esi;
+		push _PlayerMove
+		pop esi;
+		mov dword ptr ss : [esp + 0x10], esi;
+		pop esi;
+		ret;
+	}
+}
+
+__declspec(naked)void Gateway2_HUD_Init(void)
+{
+	__asm
+	{
+		call HUD_Init;
+		jmp retaddress;
+	}
+}
+DWORD _Init = (DWORD)&Gateway2_HUD_Init;
+__declspec(naked)void Gateway1_HUD_Init(void)
+{
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x08];
+		mov retaddress, esi;
+		push _Init
+		pop esi;
+		mov dword ptr ss : [esp + 0x08], esi;
+		pop esi;
+		ret;
+	}
+}
+int AddEntResult = 1;
+__declspec(naked)void Gateway2_HUD_AddEntity(void)
+{
+	__asm
+	{
+		mov AddEntResult, eax;
+		call HUD_AddEntity;
+		mov eax, AddEntResult;
+		jmp retaddress;
+	}
+}
+
+DWORD _AddEnt = (DWORD)&Gateway2_HUD_AddEntity;
+__declspec(naked)void Gateway1_HUD_AddEntity(void)
+{
+
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x14];
+		mov retaddress, esi;
+		push _AddEnt
+		pop esi;
+		mov dword ptr ss : [esp + 0x14], esi;
+		pop esi;
+		ret;
+	}
+}
+void HUD_AddEntity_Substitute(int type, struct cl_entity_s **model, const char **modelname)
+{
+	HUD_AddEntity(type, *model, *modelname);
+}
+
+__declspec(naked) void Gateway1_HUD_AddEntityDOD(void)
+{
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0xE0];
+		mov retaddress, esi;
+		push _AddEnt
+		pop esi;
+		mov dword ptr ss : [esp + 0xE0], esi;
+		pop esi;
+		ret;
+	}
+}
+
+int KeyEventResult = 1;
+__declspec(naked)void Gateway2_HUD_Key_Event(void)
+{
+	__asm
+	{
+		mov KeyEventResult, eax;
+		call HUD_Key_Event;
+		mov eax, KeyEventResult;
+		jmp retaddress;
+	}
+}
+
+DWORD _KeyEvent = (DWORD)&Gateway2_HUD_Key_Event;
+__declspec(naked)void Gateway1_HUD_Key_Event(void)
+{
+
+	__asm
+	{
+		push esi;
+		mov esi, dword ptr ss : [esp + 0x14];
+		mov retaddress, esi;
+		push _KeyEvent
+		pop esi;
+		mov dword ptr ss : [esp + 0x14], esi;
+		pop esi;
+		ret;
+	}
+}
+
+int iUpdateResult;
+__declspec(naked) void JumpGate_HUD_UpdateClientData() // Thank you Patrick for
+{														 // giving me the Client-
+	_asm	mov[iUpdateResult], eax						 // Gateway for this Function
+	_asm	call HUD_UpdateClientData
+	_asm	mov eax, [iUpdateResult]
+	_asm	jmp[retaddress]
+}
+
+DWORD _UpdateClientData = (DWORD)&JumpGate_HUD_UpdateClientData;
+__declspec(naked) void GateWay_HUD_UpdateClientData()
+{
+	_asm	push esi
+	_asm	mov esi, [esp + 0x10]
+	_asm	mov[retaddress], esi
+	_asm	push[_UpdateClientData]
+	_asm	pop esi
+	_asm	mov[esp + 0x10], esi
+	_asm	pop esi
+	_asm	retn
+}
+
+__declspec(naked) void Gateway2_HUD_Frame(void)
+{
+	__asm call HUD_Frame
+	__asm jmp retaddress
+}
+
+DWORD _Frame = (DWORD)&Gateway2_HUD_Frame;
+__declspec(naked) void Gateway1_HUD_Frame(void)
+{
+	__asm push esi
+	__asm mov esi, dword ptr ss : [esp + 0x0c]
+		__asm mov retaddress, esi
+	__asm push _Frame
+	__asm pop esi
+	__asm mov dword ptr ss : [esp + 0x0c], esi
+	__asm pop esi
+	__asm ret
+}
+
 //////////////////////////////////////////////////////////////////////////
 CLIENT gClient = { NULL };
+extern COffsets g_offsetScanner;
+extern PDWORD g_pSlots;
+
 BOOL ActivateClient()
 {
 	// Copy client  to local structure
 	memcpy( &gClient, (LPVOID)g_pClient, sizeof (CLIENT) );
 	
-	// Hook client  functions
-	g_pClient->Initialize =					( INITIALIZE_FUNCTION)			&Initialize;
-	g_pClient->HUD_Init =						( decltype(g_pClient->HUD_Init) )			&HUD_Init;
-	g_pClient->HUD_Frame =					( HUD_FRAME_FUNCTION )			&HUD_Frame;
-	g_pClient->HUD_Redraw =					( decltype(g_pClient->HUD_Redraw) )			&HUD_Redraw;
-	g_pClient->HUD_PlayerMove =				( HUD_CLIENTMOVE_FUNCTION)		&HUD_PlayerMove;
-	g_pClient->CL_CreateMove =				( HUD_CL_CREATEMOVE_FUNCTION )	&CL_CreateMove;
-	g_pClient->V_CalcRefdef =					( HUD_V_CALCREFDEF_FUNCTION )	&PreV_CalcRefdef;
-	g_pClient->HUD_AddEntity =				( HUD_ADDENTITY_FUNCTION )		&HUD_AddEntity;
-	g_pClient->HUD_PostRunCmd =				( HUD_POSTRUNCMD_FUNCTION )		&HUD_PostRunCmd;
-	g_pClient->HUD_Key_Event =				( HUD_KEY_EVENT_FUNCTION )		&HUD_Key_Event;
-	g_pClient->HUD_UpdateClientData =			( HUD_UPDATECLIENTDATA_FUNCTION)&HUD_UpdateClientData;
-	g_pClient->HUD_GetStudioModelInterface =  ( HUD_STUDIO_INTERFACE_FUNCTION) &HUD_GetStudioModelInterface;
+	g_Engine.Con_Printf(XorStr("Game Protocol %d\n"), g_offsetScanner.BuildInfo.Protocol);
+
+	DWORD failTick = 0;
+	while (GetModuleHandleA(XorStr("vgui2.dll")) == nullptr)
+	{
+		++failTick;
+		Sleep(500);
+
+		if (failTick >= 20)
+		{
+			g_offsetScanner.BuildInfo.Protocol = 48;
+			g_Engine.pfnConsolePrint(XorStr("vgui2.dll Not Found!\n"));
+			break;
+		}
+	}
+
+	if (g_offsetScanner.BuildInfo.Protocol >= 48 || g_pSlots == nullptr)
+	{
+		// Hook client  functions
+		// g_pClient->Initialize = (INITIALIZE_FUNCTION)&Initialize;
+		// g_pClient->HUD_Init = (decltype(g_pClient->HUD_Init))&HUD_Init;
+		g_pClient->HUD_Frame = (HUD_FRAME_FUNCTION)&HUD_Frame;
+		g_pClient->HUD_Redraw = (decltype(g_pClient->HUD_Redraw))&HUD_Redraw;
+		g_pClient->HUD_PlayerMove = (HUD_CLIENTMOVE_FUNCTION)&HUD_PlayerMove;
+		g_pClient->CL_CreateMove = (HUD_CL_CREATEMOVE_FUNCTION)&CL_CreateMove;
+		g_pClient->V_CalcRefdef = (HUD_V_CALCREFDEF_FUNCTION)&PreV_CalcRefdef;
+		g_pClient->HUD_AddEntity = (HUD_ADDENTITY_FUNCTION)&HUD_AddEntity;
+		g_pClient->HUD_PostRunCmd = (HUD_POSTRUNCMD_FUNCTION)&HUD_PostRunCmd;
+		g_pClient->HUD_Key_Event = (HUD_KEY_EVENT_FUNCTION)&HUD_Key_Event;
+		g_pClient->HUD_UpdateClientData = (HUD_UPDATECLIENTDATA_FUNCTION)&HUD_UpdateClientData;
+		// g_pClient->HUD_GetStudioModelInterface = (HUD_STUDIO_INTERFACE_FUNCTION)&HUD_GetStudioModelInterface;
+
+		g_Engine.pfnConsolePrint(XorStr("Install Defalut Hooks...\n"));
+	}
+	else
+	{
+		g_pSlots[3] = (DWORD)Gateway1_HUD_Redraw;
+		g_pSlots[4] = (DWORD)GateWay_HUD_UpdateClientData;
+		g_pSlots[6] = (DWORD)Gateway1_HUD_PlayerMove;
+		g_pSlots[14] = (DWORD)Gateway1_CL_CreateMove;
+		g_pSlots[19] = (DWORD)Gateway1_V_CalcRefdef;
+		g_pSlots[20] = (DWORD)Gateway1_HUD_AddEntity;
+		g_pSlots[25] = (DWORD)Gateway1_HUD_PostRunCmd;
+		g_pSlots[33] = (DWORD)Gateway1_HUD_Frame;
+		g_pSlots[34] = (DWORD)Gateway1_HUD_Key_Event;
+
+		g_Engine.pfnConsolePrint(XorStr("Install LTFX Slots...\n"));
+	}
 
 	bClientActive = TRUE;
 	return TRUE;

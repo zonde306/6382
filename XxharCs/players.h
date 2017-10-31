@@ -71,6 +71,7 @@ struct sMe
 	void DoSilentAngles(struct usercmd_s* usercmd, float* aimangles);
 	bool DoSmoothAngles(float* Source, float* Destination, float* NewDestination, float Factor);
 	void DoSilentAngles(float* aimangles, struct usercmd_s* usercmd);
+	void DoQuakeGuns(int mode);
 };
 
 enum 

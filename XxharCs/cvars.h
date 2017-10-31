@@ -30,6 +30,7 @@ public:
 	bool boneesp;
 	bool radar;
 	bool miniradar;
+	bool quake;
 
 	int antiaim_y = 1;
 	int antiaim_x = 1;

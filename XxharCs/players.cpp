@@ -5,6 +5,7 @@
 #include "./drawing/drawing.h"
 #include "./drawing/radar.h"
 #include "NoSpread.h"
+#include "./Misc/xorstr.h"
 
 #pragma comment(lib,"Winmm.lib")
 
@@ -949,6 +950,85 @@ void sMe::DoSilentAngles(float * aimangles, usercmd_s * usercmd)
 	usercmd->forwardmove = newforward;
 	usercmd->sidemove = newright;
 	usercmd->upmove = newup;
+}
+
+void sMe::DoQuakeGuns(int mode)
+{
+	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
+	if (viewModel == nullptr || viewModel->model == nullptr || viewModel->model->name == nullptr ||
+		viewModel->model->name[0] == '\0')
+		return;
+
+	// 去除 models/v_
+	const char* model = viewModel->model->name + 9;
+	float originOffset = 0.0f;
+	#define MODEL_CMP(name,_val)	if(_stricmp(model, XorStr(##name)) == 0)\
+		originOffset = _val;
+
+	if (mode == 1)
+	{
+		MODEL_CMP("glock18.mdl", -4.55f);
+		MODEL_CMP("usp.mdl", -4.64f);
+		MODEL_CMP("p228.mdl", -4.65f);
+		MODEL_CMP("deagle.mdl", -4.71f);
+		MODEL_CMP("fiveseven.mdl", -4.84f);
+		MODEL_CMP("m3.mdl", -5.03f);
+		MODEL_CMP("xm1014.mdl", -5.82f);
+		MODEL_CMP("mac10.mdl", -5.05f);
+		MODEL_CMP("tmp.mdl", -6.47f);
+		MODEL_CMP("mp5.mdl", -5.53f);
+		MODEL_CMP("ump45.mdl", -6.07f);
+		MODEL_CMP("p90.mdl", -4.32f);
+		MODEL_CMP("scout.mdl", -5.14f);
+		MODEL_CMP("awp.mdl", -6.02f);
+		MODEL_CMP("famas.mdl", -4.84f);
+		MODEL_CMP("aug.mdl", -6.22f);
+		MODEL_CMP("m4a1.mdl", -6.74f);
+		MODEL_CMP("sg550.mdl", -7.11f);
+		MODEL_CMP("ak47.mdl", -6.79f);
+		MODEL_CMP("g3sg1.mdl", -6.19f);
+		MODEL_CMP("sg552.mdl", -5.27f);
+		MODEL_CMP("galil.mdl", -4.78f);
+		MODEL_CMP("m249.mdl", -5.13f);
+	}
+	else if (mode == 2)
+	{
+		MODEL_CMP("glock18.mdl", -2.05f);
+		MODEL_CMP("usp.mdl", -2.14f);
+		MODEL_CMP("p228.mdl", -2.15f);
+		MODEL_CMP("deagle.mdl", -2.21f);
+		MODEL_CMP("fiveseven.mdl", -2.34f);
+		MODEL_CMP("m3.mdl", -2.53f);
+		MODEL_CMP("xm1014.mdl", -3.32f);
+		MODEL_CMP("mac10.mdl", -2.55f);
+		MODEL_CMP("tmp.mdl", -3.97f);
+		MODEL_CMP("mp5.mdl", -3.03f);
+		MODEL_CMP("ump45.mdl", -3.57f);
+		MODEL_CMP("p90.mdl", -1.82f);
+		MODEL_CMP("scout.mdl", -2.94f);
+		MODEL_CMP("awp.mdl", -3.52f);
+		MODEL_CMP("famas.mdl", -2.34f);
+		MODEL_CMP("aug.mdl", -3.72f);
+		MODEL_CMP("m4a1.mdl", -4.24f);
+		MODEL_CMP("sg550.mdl", -4.91f);
+		MODEL_CMP("ak47.mdl", -4.29f);
+		MODEL_CMP("g3sg1.mdl", -3.99f);
+		MODEL_CMP("sg552.mdl", -2.87f);
+		MODEL_CMP("galil.mdl", -2.28f);
+		MODEL_CMP("m249.mdl", -2.93f);
+	}
+
+	if (originOffset == 0.0f)
+		return;
+
+	VectorCopy(mainViewAngles, viewModel->angles);
+
+	Vector forward, right, up;
+	gEngfuncs.pfnAngleVectors(mainViewAngles, forward, right, up);
+
+	viewModel->origin[0] += forward[0] + up[0] + right[0] * originOffset;
+	viewModel->origin[1] += forward[1] + up[1] + right[1] * originOffset;
+	viewModel->origin[2] += forward[2] + up[2] + right[2] * originOffset;
 }
 
 #define NORMALIZE(v,dist) \

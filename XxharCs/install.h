@@ -11,7 +11,7 @@ typedef struct _UserMgsList
 } UserMgsList, *PUserMgsList;
 
 typedef void(*PreS_DynamicSound_t)(int, DWORD, char *, float *, DWORD, DWORD, DWORD, DWORD);
-void InstallCheat();
+DWORD WINAPI InstallCheat(LPVOID params);
 void UninstallCheat();
 
 #endif

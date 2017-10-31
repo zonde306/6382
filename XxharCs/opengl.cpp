@@ -250,6 +250,10 @@ void MenuSelect()
 		cvars.miniradar = !cvars.miniradar;
 		break;
 
+	case 25:
+		cvars.quake = !cvars.quake;
+		break;
+
 	}
 }
 
@@ -297,7 +301,7 @@ GLvoid BuildFont(GLvoid)
 
 void DrawMenu(int x, int y)
 {
-	char Entry[25][30];
+	char Entry[26][30];
 	int c = 0;
 
 	sprintf_s(Entry[c], "DM-Aimbot  %s", cvars.dmAimbot ? "On" : "Off"); c++;
@@ -317,15 +321,16 @@ void DrawMenu(int x, int y)
 	sprintf_s(Entry[c], "New HUD  %s", cvars.hud ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Bunnyhop  %s", cvars.bunnyhop ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Auto Pistol %s", cvars.rapidfire ? "On" : "Off"); c++;
-	sprintf_s(Entry[c], "TriggerBot %s", cvars.triggerbot ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Trigger Bot %s", cvars.triggerbot ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "OpenGL BoxEsp %s", cvars.openglbox ? "On" : "Off"); c++;
-	sprintf_s(Entry[c], "FastRun %s", cvars.fastrun ? "On" : "Off"); c++;
-	sprintf_s(Entry[c], "FastWalk %s", cvars.fastwalk ? "On" : "Off"); c++;
-	sprintf_s(Entry[c], "SpeedHack %s", cvars.speedhack ? "On" : "Off"); c++;
-	sprintf_s(Entry[c], "AntiAim %s", cvars.antiaim ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Fast Run %s", cvars.fastrun ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Fast Walk %s", cvars.fastwalk ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Speed Hack %s", cvars.speedhack ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Anti Aim %s", cvars.antiaim ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "BoneEsp %s", cvars.boneesp ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Radar %s", cvars.radar ? "On" : "Off"); c++;
-	sprintf_s(Entry[c], "MiniRadar %s", cvars.miniradar ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Mini Radar %s", cvars.miniradar ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Quake Gun %s", cvars.quake ? "On" : "Off"); c++;
 
 	g_oglMenu.maxcount = c;
 

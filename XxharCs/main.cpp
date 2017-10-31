@@ -14,7 +14,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 		//RemovePeHeader((DWORD)hinstDLL);
 
 		utilsDPrint("Initializing...");
-		InstallCheat();
+		CreateThread(NULL, NULL, InstallCheat, hinstDLL, NULL, NULL);
 
 		break;
 
