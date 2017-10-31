@@ -25,6 +25,7 @@
 #include "./drawing/drawing.h"
 #include "menu.h"
 #include "opengl.h"
+#include "./drawing/tablefont.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -435,6 +436,73 @@ void HUD_Redraw ( float x, int y )
 			drawMiniRadarPoint(g_playerList[i].origin(), r, g, b, true, 4);
 	}
 
+	if (cvars.entityesp)
+	{
+		cl_entity_s* ent = nullptr;
+		for (int i = 33; i < 1024; ++i)
+		{
+			ent = gEngfuncs.GetEntityByIndex(i);
+			if (ent == nullptr || ent->curstate.messagenum + 10 <= g_local.ent->curstate.messagenum ||
+				ent->model == nullptr || ent->model->name == nullptr || ent->player)
+				continue;
+
+			float screen[2];
+			if (!CalcScreen(ent->origin, screen))
+				continue;
+
+			std::string entName = ent->model->name;
+			size_t wBegin = entName.find("w_");
+			if (wBegin != std::string::npos)
+			{
+				// 去掉 models/w_
+				wBegin += 2;
+				entName = entName.substr(wBegin, entName.rfind(".mdl") - wBegin);
+				
+				if (entName == "thighpack")
+				{
+					// 给 CT 阵营的玩家显示拆弹钳
+					if (g_local.team == 2 && cvars.radar)
+						drawRadarPoint(ent->origin, 128, 0, 255, 255, true, 2);
+
+					g_tableFont.drawString(true, screen[0], screen[1], 128, 0, 255, "thighpack");
+				}
+				else if (entName == "backpack")
+				{
+					if(cvars.radar)
+						drawRadarPoint(ent->origin, 255, 0, 128, 255, true, 3);
+					if (cvars.miniradar)
+						drawMiniRadarPoint(ent->origin, 255, 0, 128, true, 3);
+					
+					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
+				}
+				else if (entName == "c4")
+				{
+					if (cvars.radar)
+						drawRadarPoint(ent->origin, 255, 0, 255, 255, true, 3);
+					if (cvars.miniradar)
+						drawMiniRadarPoint(ent->origin, 255, 0, 255, true, 3);
+					
+					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
+				}
+				else
+				{
+					if (cvars.radar)
+						drawRadarPoint(ent->origin, 255, 128, 128, 255, true, 4);
+					
+					g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
+				}
+			}
+			else if (entName.find("hostage") != std::string::npos)
+			{
+				if (cvars.radar)
+					drawRadarPoint(ent->origin, 255, 128, 0, 255, true, 4);
+				if(cvars.miniradar)
+					drawMiniRadarPoint(ent->origin, 255, 128, 0, true, 4);
+				// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
+			}
+		}
+	}
+
 	//DoEspAim();
 	
 	
@@ -642,6 +710,47 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 		ent->curstate.rendermode = kRenderNormal;	// Against the Evil Admins
 		ent->curstate.renderfx = kRenderFxNone;		// and WC3 Mod
 		playerCalcExtraData(ent->index, ent);
+
+		if (cvars.barrel)
+		{
+			Vector begin, end, forward, right, up;
+			VectorCopy(ent->origin, begin);
+
+			if (ent->curstate.usehull)
+				begin[2] += 12.0f;
+			else
+				begin[2] += 17.0f;
+			
+			gEngfuncs.pfnAngleVectors(ent->angles, forward, right, up);
+			forward[2] = -forward[2];
+
+			begin[0] += forward[0] * 10.0f;
+			begin[1] += forward[1] * 10.0f;
+			begin[2] += forward[2] * 10.0f;
+
+			end = begin + forward * 999.0f;
+
+			static int laserbeam = 0;
+			if (laserbeam == 0)
+				laserbeam = gEngfuncs.pEventAPI->EV_FindModelIndex(XorStr("sprites/laserbeam.spr"));
+
+			byte r = 255, g = 255, b = 255;
+			if (g_playerList[ent->index].team == 1)
+			{
+				r = 255;
+				g = 0;
+				b = 0;
+			}
+			else if (g_playerList[ent->index].team == 2)
+			{
+				r = 0;
+				g = 0;
+				b = 255;
+			}
+
+			gEngfuncs.pEfxAPI->R_BeamPoints(begin, end, laserbeam, 0.001f, 1.0f, 0.0f, 32.0f, 2.0f,
+				0, 0.0f, r / 255.0f, g / 255.0f, b / 255.0f);
+		}
 	}
 	else
 	{

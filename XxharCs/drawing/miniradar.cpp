@@ -78,9 +78,9 @@ void drawRadarFrame()
 	int radar_x = displayCenterX;
 	int radar_y = displayCenterY;
 	int  size = cvars.miniradar_size;
-	ColorEntry* cDivider = colorList.get(0);
+	// ColorEntry* cDivider = colorList.get(0);
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(radar_x, radar_y - size, 1, 2 * size, cDivider->r, cDivider->g, cDivider->b, 255);
-	gEngfuncs.pfnFillRGBA(radar_x - size, radar_y, 2 * size, 1, cDivider->r, cDivider->g, cDivider->b, 255);
+	gEngfuncs.pfnFillRGBA(radar_x, radar_y - size, 1, 2 * size, 255, 128, 0, 255);
+	gEngfuncs.pfnFillRGBA(radar_x - size, radar_y, 2 * size, 1, 255, 128, 0, 255);
 	oglSubtractive = false;
 }

@@ -254,6 +254,14 @@ void MenuSelect()
 		cvars.quake = !cvars.quake;
 		break;
 
+	case 26:
+		cvars.barrel = !cvars.barrel;
+		break;
+
+	case 27:
+		cvars.entityesp = !cvars.entityesp;
+		break;
+
 	}
 }
 
@@ -301,7 +309,7 @@ GLvoid BuildFont(GLvoid)
 
 void DrawMenu(int x, int y)
 {
-	char Entry[26][30];
+	char Entry[28][30];
 	int c = 0;
 
 	sprintf_s(Entry[c], "DM-Aimbot  %s", cvars.dmAimbot ? "On" : "Off"); c++;
@@ -331,6 +339,8 @@ void DrawMenu(int x, int y)
 	sprintf_s(Entry[c], "Radar %s", cvars.radar ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Mini Radar %s", cvars.miniradar ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Quake Gun %s", cvars.quake ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Player Barrel %s", cvars.barrel ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "Entity ESP %s", cvars.entityesp ? "On" : "Off"); c++;
 
 	g_oglMenu.maxcount = c;
 
