@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <unordered_map>
 #include "gamehooking.h"
 #include "NoSpread.h"
@@ -408,7 +408,7 @@ __declspec(naked) void Gateway1_HUD_Frame(void)
 {
 	__asm push esi
 	__asm mov esi, dword ptr ss : [esp + 0x0c]
-		__asm mov retaddress, esi
+	__asm mov retaddress, esi
 	__asm push _Frame
 	__asm pop esi
 	__asm mov dword ptr ss : [esp + 0x0c], esi
@@ -416,10 +416,15 @@ __declspec(naked) void Gateway1_HUD_Frame(void)
 	__asm ret
 }
 
+__declspec(naked) void Gateway_NullStub(void)
+{
+	__asm ret;
+}
+
 //////////////////////////////////////////////////////////////////////////
 CLIENT gClient = { NULL };
 extern COffsets g_offsetScanner;
-extern PDWORD g_pSlots;
+extern cl_clientslots_s* g_pSlots;
 
 BOOL ActivateClient()
 {
@@ -462,6 +467,7 @@ BOOL ActivateClient()
 	}
 	else
 	{
+		/*
 		g_pSlots[3] = (DWORD)Gateway1_HUD_Redraw;
 		g_pSlots[4] = (DWORD)GateWay_HUD_UpdateClientData;
 		g_pSlots[6] = (DWORD)Gateway1_HUD_PlayerMove;
@@ -471,9 +477,25 @@ BOOL ActivateClient()
 		g_pSlots[25] = (DWORD)Gateway1_HUD_PostRunCmd;
 		g_pSlots[33] = (DWORD)Gateway1_HUD_Frame;
 		g_pSlots[34] = (DWORD)Gateway1_HUD_Key_Event;
+		*/
+
+		g_pSlots->HUD_Redraw = (decltype(g_pSlots->HUD_Redraw))Gateway1_HUD_Redraw;
+		g_pSlots->HUD_UpdateClientData = (decltype(g_pSlots->HUD_UpdateClientData))GateWay_HUD_UpdateClientData;
+		g_pSlots->HUD_PlayerMove = (decltype(g_pSlots->HUD_PlayerMove))Gateway1_HUD_PlayerMove;
+		g_pSlots->CL_CreateMove = (decltype(g_pSlots->CL_CreateMove))Gateway1_CL_CreateMove;
+		g_pSlots->V_CalcRefdef = (decltype(g_pSlots->V_CalcRefdef))Gateway1_V_CalcRefdef;
+		g_pSlots->HUD_AddEntity = (decltype(g_pSlots->HUD_AddEntity))Gateway1_HUD_AddEntity;
+		g_pSlots->HUD_PostRunCmd = (decltype(g_pSlots->HUD_PostRunCmd))Gateway1_HUD_PostRunCmd;
+		g_pSlots->HUD_Frame = (decltype(g_pSlots->HUD_Frame))Gateway1_HUD_Frame;
+		g_pSlots->HUD_Key_Event = (decltype(g_pSlots->HUD_Key_Event))Gateway1_HUD_Key_Event;
 
 		g_Engine.pfnConsolePrint(XorStr("Install LTFX Slots...\n"));
 	}
+
+	// 移除子弹击中墙壁掉灰和火花
+	g_pEngine->pEfxAPI->R_BulletImpactParticles = (decltype(g_pEngine->pEfxAPI->R_BulletImpactParticles))Gateway_NullStub;
+	g_pEngine->pEfxAPI->R_StreakSplash = (decltype(g_pEngine->pEfxAPI->R_StreakSplash))Gateway_NullStub;
+	g_pEngine->pEfxAPI->R_Sprite_Smoke = (decltype(g_pEngine->pEfxAPI->R_Sprite_Smoke))Gateway_NullStub;
 
 	bClientActive = TRUE;
 	return TRUE;

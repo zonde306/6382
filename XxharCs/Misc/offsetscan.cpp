@@ -7,7 +7,7 @@
 extern cl_clientfunc_t *g_pClient;
 extern cl_enginefunc_t *g_pEngine;
 extern engine_studio_api_t *g_pStudio;
-extern PDWORD g_pSlots;
+extern cl_clientslots_s* g_pSlots;
 
 #define RENDERTYPE_UNDEFINED	0
 #define RENDERTYPE_SOFTWARE		1

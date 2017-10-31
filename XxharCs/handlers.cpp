@@ -58,7 +58,7 @@ extern SCREENINFO g_Screen;
 extern char g_szHackDir[256];
 
 cl_clientfunc_t *g_pClient = NULL;
-PDWORD g_pSlots = NULL;
+cl_clientslots_s* g_pSlots = NULL;
 //cl_enginefunc_t *g_pEngine = NULL;
 engine_studio_api_t *g_pStudio = NULL;
 // cl_enginefunc_t g_Engine;

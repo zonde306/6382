@@ -14,7 +14,7 @@ extern COffsets g_offsetScanner;
 extern cl_clientfunc_t *g_pClient;
 extern cl_enginefunc_t *g_pEngine;
 extern engine_studio_api_t *g_pStudio;
-extern PDWORD g_pSlots;
+extern cl_clientslots_s* g_pSlots;
 extern PDWORD g_pDynamicSound;
 extern PDWORD g_pSpeedBooster;
 
@@ -132,7 +132,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pStudio = (engine_studio_api_t*)g_offsetScanner.EngineStudio();
 	g_pDynamicSound = (PDWORD)g_offsetScanner.Sound();
 	g_pSpeedBooster = (PDWORD)g_offsetScanner.SpeedHackPtr();
-	g_pSlots = *(PDWORD*)g_offsetScanner.Slots();
+	g_pSlots = *(decltype(g_pSlots)*)g_offsetScanner.Slots();
 	GetCrossHairTeam = (FnGetCrossHairTeam)g_offsetScanner.GetCurosrTeam();
 	g_pCrossHairTeam = (DWORD*)(g_offsetScanner.HwBase + 0x61B82C);
 	g_offsetScanner.GameInfo();
