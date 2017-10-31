@@ -108,7 +108,24 @@ Vector CrossProduct(const Vector& a, const Vector& b);
 #define vec3_t Vector
 #endif
 
+#ifndef M_PI
+#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#endif
 
+#define M_PI_F		((float)(M_PI))	// Shouldn't collide with anything.
+#ifndef RAD2DEG
+#define RAD2DEG(x)  ((float)(x) * (float)(180.f / M_PI_F))
+#define RadiansToDegrees RAD2DEG
+#endif
+
+#ifndef DEG2RAD
+#define DEG2RAD(x)  ((float)(x) * (float)(M_PI_F / 180.f))
+#define DegreesToRadians DEG2RAD
+#endif
+
+void SinCos(float radians, float *sine, float *cosine);
+void AngleVectors(const Vector& angles, Vector& forward);
+// void VectorAngles(const Vector& forward, Vector& angles);
 #define VectorAdd(a,b,c) {(c)[0]=(a)[0]+(b)[0];(c)[1]=(a)[1]+(b)[1];(c)[2]=(a)[2]+(b)[2];}
 #define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
 #define VectorClear(a) { a[0]=0.0;a[1]=0.0;a[2]=0.0;}

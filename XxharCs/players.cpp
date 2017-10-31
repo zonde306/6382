@@ -386,7 +386,7 @@ void sMe::DoAutoPistol(usercmd_s * usercmd)
 	}
 }
 
-inline void _fastcall VectorAngles(const float *forward, float *angles)
+void _fastcall VectorAngles(const float *forward, float *angles)
 {
 	float tmp, yaw, pitch;
 	if (forward[1] == 0 && forward[0] == 0)

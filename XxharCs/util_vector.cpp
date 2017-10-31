@@ -199,6 +199,55 @@ Vector CrossProduct(const Vector& a, const Vector& b)
 	return Vector(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
 }
 
+void SinCos(float radians, float * sine, float * cosine)
+{
+	*sine = sin(radians);
+	*cosine = cos(radians);
+}
+
+/*
+void AngleVectors(const Vector & angles, Vector & forward)
+{
+	float	sp, sy, cp, cy;
+
+	SinCos(DEG2RAD(angles[1]), &sy, &cy);
+	SinCos(DEG2RAD(angles[0]), &sp, &cp);
+
+	forward.x = cp*cy;
+	forward.y = cp*sy;
+	forward.z = -sp;
+}
+*/
+
+void VectorAngles(const Vector & forward, Vector & angles)
+{
+	float	tmp, yaw, pitch;
+
+	if (forward[1] == 0 && forward[0] == 0)
+	{
+		yaw = 0;
+		if (forward[2] > 0)
+			pitch = 270;
+		else
+			pitch = 90;
+	}
+	else
+	{
+		yaw = (atan2(forward[1], forward[0]) * 180 / M_PI);
+		if (yaw < 0)
+			yaw += 360;
+
+		tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
+		pitch = (atan2(-forward[2], tmp) * 180 / M_PI);
+		if (pitch < 0)
+			pitch += 360;
+	}
+
+	angles[0] = pitch;
+	angles[1] = yaw;
+	angles[2] = 0;
+}
+
 Vector & Vector::operator*=(float fl)
 {
 	x *= fl;

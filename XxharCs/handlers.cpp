@@ -26,6 +26,7 @@
 #include "menu.h"
 #include "opengl.h"
 #include "./drawing/tablefont.h"
+#include "Aimbot.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -307,6 +308,22 @@ void Aimbot(int ax)
 	DrawConString(0, 550, 0, 255, 0, "vec: %f %f", vec[1],vec[2]);
 }*/
 
+static const int Cstrike_SequenceInfo[] =
+{
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0..9   
+	0, 1, 2, 0, 1, 2, 0, 1, 2, 0, // 10..19 
+	1, 2, 0, 1, 1, 2, 0, 1, 1, 2, // 20..29 
+	0, 1, 2, 0, 1, 2, 0, 1, 2, 0, // 30..39 
+	1, 2, 0, 1, 2, 0, 1, 2, 0, 1, // 40..49 
+	2, 0, 1, 2, 0, 0, 0, 8, 0, 8, // 50..59 
+	0, 16, 0, 16, 0, 0, 1, 1, 2, 0, // 60..69 
+	1, 1, 2, 0, 1, 0, 1, 0, 1, 2, // 70..79 
+	0, 1, 2, 32, 40, 32, 40, 32, 32, 32, // 80..89
+	33, 64, 33, 34, 64, 65, 34, 32, 32, 4, // 90..99
+	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, // 100..109
+	4                                      	// 110
+};
+
 time_t g_iNextScreenShotUpdate = 0;
 void HUD_Redraw ( float x, int y )
 {
@@ -349,6 +366,18 @@ void HUD_Redraw ( float x, int y )
 	if (g_oglDraw.menu)
 		DrawMenu(50, 200);
 
+	if (cvars.flashRemoval)
+	{
+		screenfade_t sf;
+		gEngfuncs.pfnGetScreenFade(&sf);
+
+		if (sf.fadealpha > 64)
+		{
+			sf.fadealpha = 64;
+			gEngfuncs.pfnSetScreenFade(&sf);
+		}
+	}
+
 	if (cvars.radar)
 	{
 		if(mapLoaded)
@@ -369,6 +398,13 @@ void HUD_Redraw ( float x, int y )
 			g_playerList[i].updateClear();
 			continue;
 		}
+
+		hud_player_info_t info;
+		gEngfuncs.pfnGetPlayerInfo(i, &info);
+		cl_entity_s* ent = g_playerList[i].getEnt();
+		if (i == g_local.entindex || ent->model == nullptr || info.model == nullptr ||
+			info.name == nullptr || ent->model->name == nullptr || !ent->player)
+			continue;
 
 		byte r = 255, g = 255, b = 255, a = 255;
 		if (g_playerList[i].team == 1)
@@ -397,8 +433,6 @@ void HUD_Redraw ( float x, int y )
 			// g_playerList[i].drawBone(0, 44, r, g, b, a);
 			// g_playerList[i].drawBone(0, 50, r, g, b, a);
 
-			hud_player_info_t info;
-			gEngfuncs.pfnGetPlayerInfo(i, &info);
 			if (strstr(info.model, "leet") || strstr(info.model, "arctic") || strstr(info.model, "sas"))
 			{
 				g_playerList[i].drawBone(43, 0, r, g, b, a);
@@ -434,6 +468,40 @@ void HUD_Redraw ( float x, int y )
 			drawRadarPoint(g_playerList[i].origin(), r, g, b, a, true, 4);
 		if(cvars.miniradar)
 			drawMiniRadarPoint(g_playerList[i].origin(), r, g, b, true, 4);
+
+		float screen[2];
+		bool inScreen = CalcScreen(g_playerList[i].origin(), screen);
+
+		if (cvars.openglbox)
+		{
+			if (info.name != nullptr && info.name[0] != '\0' && inScreen)
+				DrawConStringCenter((int)(screen[0] + 15), (int)(screen[1] + 10), r, g, b, info.name);
+		}
+
+		if (cvars.entityesp)
+		{
+			model_s* weaponModel = g_Studio.GetModelByIndex(ent->curstate.weaponmodel);
+			if (weaponModel != nullptr && weaponModel->name != nullptr &&
+				weaponModel->name[0] != '\0')
+			{
+				char weaponName[32];
+				if (!strstr(weaponModel->name, "shield"))
+				{
+					size_t len = strlen(weaponModel->name + 9) - 4;
+					strncpy(weaponName, weaponModel->name + 9, len);
+					weaponName[len] = '\0';
+				}
+				else
+				{
+					size_t len = strlen(weaponModel->name + 16) - 4;
+					strncpy(weaponName, weaponModel->name + 16, len);
+					weaponName[len] = '\0';
+				}
+
+				if(inScreen)
+					DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
+			}
+		}
 	}
 
 	if (cvars.entityesp)
@@ -727,6 +795,9 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 			begin[0] += forward[0] * 10.0f;
 			begin[1] += forward[1] * 10.0f;
 			begin[2] += forward[2] * 10.0f;
+			
+			VectorCopy(begin, g_playerList[ent->index].eyePosition);
+			VectorAngles(forward, g_playerList[ent->index].eyeAngles);
 
 			end = begin + forward * 999.0f;
 

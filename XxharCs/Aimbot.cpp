@@ -84,6 +84,7 @@ bool bSoonvisible(int iIndex)
 
 //==============================================================================
 
+/*
 void VectorAngles( const float *forward, float *angles )
 {
 	float tmp, yaw, pitch;
@@ -113,6 +114,7 @@ void VectorAngles( const float *forward, float *angles )
 	angles[1] = yaw;
 	angles[2] = 0;
 }
+*/
 
 //==============================================================================
 int CanPenetrate( float *start, float *end, int power ) 

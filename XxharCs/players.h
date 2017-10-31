@@ -131,7 +131,9 @@ public:
 	bool bDrawn;
 	Vector hitbox[13];
 	Vector bone[MAXSTUDIOBONES];
-	float SoundOrigin[3];
+	Vector SoundOrigin;
+	Vector eyePosition;
+	Vector eyeAngles;
 
 	void setAlive() { alive = true;  }
 	void setDead() { alive = false;  }
@@ -253,5 +255,6 @@ bool WorldToScreen(float *flOrigin, float *flOut);
 void CalcAngle(Vector src, Vector end, Vector& out);
 float GetAntiAimAngles();
 float GetNoRecoilValue(int weaponId);
+void _fastcall VectorAngles(const float *forward, float *angles);
 
 #endif
