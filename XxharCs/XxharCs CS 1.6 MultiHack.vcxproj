@@ -120,6 +120,7 @@
     <ClCompile Include="playeritems.cpp" />
     <ClCompile Include="players.cpp" />
     <ClCompile Include="stringfinder.cpp" />
+    <ClCompile Include="swfx.cpp" />
     <ClCompile Include="textures.cpp" />
     <ClCompile Include="util_vector.cpp" />
     <ClCompile Include="weaponlist.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="playeritems.h" />
     <ClInclude Include="players.h" />
     <ClInclude Include="stringfinder.h" />
+    <ClInclude Include="swfx.h" />
     <ClInclude Include="textures.h" />
     <ClInclude Include="weaponlist.h" />
   </ItemGroup>

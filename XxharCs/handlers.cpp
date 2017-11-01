@@ -27,6 +27,7 @@
 #include "opengl.h"
 #include "./drawing/tablefont.h"
 #include "Aimbot.h"
+#include "swfx.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -134,12 +135,20 @@ void InitHack()
 	g_Screen.iSize = sizeof( SCREENINFO );
 	gEngfuncs.pfnGetScreenInfo( &g_Screen );
 
+	if (g_pWeaponSwitch == nullptr)
+		g_pWeaponSwitch = new CSwitchWeaponEffect();
+
 	gEngfuncs.pfnConsolePrint(XorStr("\nXxharCs MultiHack has been loaded\nby XxharCs\n\nCS 1.6 Version:\n-------------------\n"));
 	gEngfuncs.Con_Printf(XorStr("Protocol = %d\n"), g_offsetScanner.BuildInfo.Protocol);
 	
 	// gEngfuncs.Con_Printf("gEngfuncs = 0x%X\n", (DWORD)g_pEngine);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pClient);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pStudio);
+
+	gEngfuncs.pfnAddCommand("nextinv", CmdFunc_NextWeapon);
+	gEngfuncs.pfnAddCommand("previnv", CmdFunc_PrevWeapon);
+	gEngfuncs.pfnClientCmd("alias invnext nextinv");
+	gEngfuncs.pfnClientCmd("alias invprev previnv");
 
 	gEngfuncs.pfnClientCmd("version");
 	gEngfuncs.pfnClientCmd("toggleconsole");
@@ -571,6 +580,12 @@ void HUD_Redraw ( float x, int y )
 		}
 	}
 
+	// 滚轮快速切枪
+	{
+		if (g_pWeaponSwitch->CanDraw())
+			g_pWeaponSwitch->Draw();
+	}
+
 	//DoEspAim();
 	
 	
@@ -884,6 +899,7 @@ void HUD_UpdateClientData(client_data_t *cdata, float flTime)
 	}
 
 	WeaponListUpdate(cdata->iWeaponBits);
+	g_pWeaponSwitch->m_iBits = cdata->iWeaponBits;
 
 	if (NOT_LTFX_SLOTS())
 		gClient.HUD_UpdateClientData(cdata, flTime);
@@ -1082,6 +1098,12 @@ int CurWeapon(const char *pszName, int iSize, void *pbuf )
 	{
 		g_local.iClip = iClip;
 		g_local.iWeaponId = iID;
+
+		if (iID != g_pWeaponSwitch->m_iWpn)
+		{
+			g_pWeaponSwitch->m_iWpn = iID;
+			g_pWeaponSwitch->m_fTime = gEngfuncs.GetClientTime() + g_pWeaponSwitch->m_pDisplayTime->value;
+		}
 	}
 
 	return (*CurWeaponOrg)(pszName,iSize,pbuf);
@@ -1239,6 +1261,11 @@ int WeaponList(const char *pszName, int iSize, void *pbuf )
 	int flags = READ_BYTE();
 
 	WeaponListAdd(weaponName, ammoType1, maxAmmo1, ammoType2, maxAmmo2, slot, slotPosition, id, flags);
+	if (slot < 6)
+	{
+		g_pWeaponSwitch->ParseWeapon(weaponName, slot, id);
+	}
+
 	return (*WeaponListOrg)(pszName,iSize,pbuf);
 }
 

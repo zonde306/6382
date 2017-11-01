@@ -6,6 +6,7 @@
 #include "install.h"
 #include "./Misc/xorstr.h"
 #include "./Misc/offsetscan.h"
+#include "swfx.h"
 
 //////////////////////////////////////////////////////////////////////////
 _CLIENT_* pClient;
@@ -41,6 +42,7 @@ extern pfnUserMsgHook DamageOrg;
 extern pfnUserMsgHook AmmoXOrg;
 extern pfnUserMsgHook WeaponListOrg;
 extern pfnUserMsgHook MoneyOrg;
+
 
 //////////////////////////////////////////////////////////////////////////
 int	HookUserMsg (char *szMsgName, pfnUserMsgHook pfn)
@@ -501,9 +503,53 @@ BOOL ActivateClient()
 	return TRUE;
 }
 
+//////////////////////////////////////////////////////////////////////
+void(*g_pfnOldNextWeapon)(void) = nullptr;
+void(*g_pfnOldPrevWeapon)(void) = nullptr;
+
+void CmdFunc_NextWeapon(void)
+{
+	if (g_pWeaponSwitch == nullptr || !g_pWeaponSwitch->m_pFastSwitch->value ||
+		gEngfuncs.GetLocalPlayer()->curstate.iuser1)
+	{
+		if(g_pfnOldNextWeapon != nullptr)
+			g_pfnOldNextWeapon();
+		return;
+	}
+
+	g_pWeaponSwitch->GetNextWpn();
+}
+
+void CmdFunc_PrevWeapon(void)
+{
+	if (g_pWeaponSwitch == nullptr || !g_pWeaponSwitch->m_pFastSwitch->value ||
+		gEngfuncs.GetLocalPlayer()->curstate.iuser1)
+	{
+		if(g_pfnOldPrevWeapon != nullptr)
+			g_pfnOldPrevWeapon();
+		return;
+	}
+
+	g_pWeaponSwitch->GetPrevWpn();
+}
+
 int AddCommand(char *cmd_name, void(*function)(void))
 {
 	//add_log("AddCommand: %s",cmd_name);
+
+	if (strcmpi(cmd_name, "invnext") == 0)
+	{
+		g_pfnOldNextWeapon = function;
+		gEngfuncs.pfnAddCommand(cmd_name, CmdFunc_NextWeapon);
+		return 1;
+	}
+	else if (strcmpi(cmd_name, "invprev") == 0)
+	{
+		g_pfnOldPrevWeapon = function;
+		gEngfuncs.pfnAddCommand(cmd_name, CmdFunc_PrevWeapon);
+		return 1;
+	}
+
 	return 0;
 }
 

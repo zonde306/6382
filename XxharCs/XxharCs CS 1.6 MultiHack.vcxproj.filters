@@ -117,6 +117,9 @@
     <ClCompile Include="drawing\miniradar.cpp">
       <Filter>源文件\drawing</Filter>
     </ClCompile>
+    <ClCompile Include="swfx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\engine.h">
@@ -214,6 +217,9 @@
     </ClInclude>
     <ClInclude Include="drawing\miniradar.h">
       <Filter>头文件\drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="swfx.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

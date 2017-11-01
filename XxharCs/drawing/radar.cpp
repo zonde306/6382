@@ -1,3 +1,5 @@
+#include <fstream>
+#include <vector>
 #include "radar.h"
 #include "gui.h"
 #include "../clientdll.h"
@@ -60,7 +62,7 @@ float ov_dy = 4;
 
 //-------------------------------------------
 
-bool parse_overview(char* overview_txt)
+bool parse_overview(const std::string& overview_txt)
 {
 	// defaults
 	m_OverviewData.origin[0] = 0.0f;
@@ -71,6 +73,167 @@ bool parse_overview(char* overview_txt)
 	m_OverviewData.layersHeights[0] = 0.0f;
 	m_OverviewData.layersImages[0][0] = 0;
 
+	static std::string path;
+	if (path.empty())
+	{
+		char buffer[MAX_PATH];
+		GetModuleFileNameA(NULL, buffer, MAX_PATH);
+		path = buffer;
+		path = path.substr(0, path.rfind('\\'));
+		path += "\\cstrike\\overviews\\";
+	}
+
+	std::string line;
+	std::ifstream file(path + overview_txt + ".txt", std::ios::in|std::ios::beg);
+	
+	if (file.bad() || !file.is_open())
+		return false;
+
+	static auto trim = [](const std::string& s, const std::string& delim = " \r\n\t") -> std::string
+	{
+		if (s.empty())
+			return s;
+
+		std::string result = s;
+		for (char c : delim)
+		{
+			result.erase(0, result.find_first_not_of(c));
+			result.erase(result.find_last_not_of(c) + 1);
+		}
+
+		return result;
+	};
+
+	static auto split = [](const std::string& s, const std::string& delim) ->std::vector<std::string>
+	{
+		std::vector<std::string> result;
+		size_t last = 0;
+		size_t index = s.find_first_of(delim, last);
+		while (index != std::string::npos)
+		{
+			result.push_back(s.substr(last, index - last));
+			last = index + 1;
+			index = s.find_first_of(delim, last);
+		}
+		if (index - last > 0)
+		{
+			result.push_back(s.substr(last, index - last));
+		}
+
+		return result;
+	};
+
+	static auto replace = [](const std::string& s, const std::string& f, const std::string& r) -> std::string
+	{
+		std::string::size_type pos = 0;
+		std::string newString = s;
+		while ((pos = newString.find(f, pos)) != std::string::npos)
+		{
+			newString.replace(pos, f.length(), r.c_str());
+			pos = pos + r.length();
+		}
+
+		return newString;
+	};
+
+	bool inGlobal = false, inLayer = false;
+	while (file.good())
+	{
+		std::getline(file, line);
+		if (line.empty())
+			continue;
+
+		size_t breaker = line.find("//");
+		if (breaker != std::string::npos)
+			line = line.substr(0, breaker);
+
+		line = trim(line);
+		if (line == "global")
+		{
+			inGlobal = true;
+			continue;
+		}
+		if (line == "layer")
+		{
+			inLayer = true;
+			continue;
+		}
+		if (line == "}")
+		{
+			if(inLayer)
+				++m_OverviewData.layers;
+			
+			inGlobal = false;
+			inLayer = false;
+			continue;
+		}
+
+		if (line == "{")
+			continue;
+
+		size_t offset = std::string::npos;
+		if (inGlobal)
+		{
+			if ((offset = line.find("ZOOM")) != std::string::npos)
+			{
+				line = line.substr(offset + 4);
+				line = trim(line);
+				m_OverviewZoom = atof(line.c_str());
+				m_OverviewData.zoom = m_OverviewZoom;
+			}
+			else if ((offset = line.find("ORIGIN")) != std::string::npos)
+			{
+				size_t index = 0;
+
+				line = line.substr(offset + 6);
+				line = replace(line, "\t", " ");
+				line = replace(line, "  ", " ");
+				line = trim(line);
+
+				auto vec = split(line, " ");
+				
+				for (auto val : vec)
+				{
+					if (val.empty() || val == " " || index >= 3)
+						continue;
+
+					val = trim(val);
+					m_OverviewData.origin[index++] = atof(val.c_str());
+				}
+			}
+			else if ((offset = line.find("ROTATED")) != std::string::npos)
+			{
+				line = line.substr(offset + 7);
+				line = trim(line);
+
+				m_OverviewData.rotated = atoi(line.c_str());
+			}
+		}
+		else if (inLayer)
+		{
+			if ((offset = line.find("IMAGE")) != std::string::npos)
+			{
+				line = line.substr(offset + 5);
+				line = line.substr(line.find('\"') + 1, line.rfind('\"'));
+				line = replace(line, "\"", "");
+				line = trim(line);
+
+				strcpy_s(m_OverviewData.layersImages[m_OverviewData.layers], line.c_str());
+			}
+			else if ((offset = line.find("HEIGHT")) != std::string::npos)
+			{
+				line = line.substr(offset + 6);
+				line = trim(line);
+
+				m_OverviewData.layersHeights[m_OverviewData.layers] = atof(line.c_str());
+			}
+		}
+	}
+
+	if (file.is_open())
+		file.close();
+
+	/*
 	// parse file:
 	char token[1024];
 	char* pfile = (char *)gEngfuncs.COM_LoadFile(overview_txt, 5, NULL);
@@ -165,26 +328,58 @@ bool parse_overview(char* overview_txt)
 			m_OverviewData.layers++;
 		}
 	}
+	*/
 	return true;
 }
 
-void overview_load(char* levelname)
+void overview_load(const std::string& levelname)
 {
+	static std::string lastLevelName;
+	if (lastLevelName == levelname)
+		return;
+
+	std::string newLevelName = levelname;
+	if (newLevelName.empty())
+		newLevelName = XorStr("de_dust2");
+
+	if (!parse_overview(newLevelName))
+	{
+		lastLevelName = newLevelName;
+		mapLoaded = false;
+		return;
+	}
+
+	m_MapSprite = gEngfuncs.LoadMapSprite(m_OverviewData.layersImages[0]);
+	if (m_MapSprite == nullptr)
+	{
+		lastLevelName = newLevelName;
+		mapLoaded = false;
+		return;
+	}
+
+	/*
 	// dont load same map again
 	static char last_levelname[256] = "";
 	char overview_txt[256];
 
 	if (!strcmp(last_levelname, levelname)) { return; }
 
+	char tmpMapName[255];
+	tmpMapName[0] = '\0';
+
 	// parse file
-	if (levelname[0] == NULL)::strcpy(levelname, XorStr("cs_militia"));
-	sprintf(overview_txt, XorStr("overviews/%s.txt"), levelname);
+	if (levelname[0] == NULL)
+		strcpy_s(tmpMapName, XorStr("cs_militia"));
+	else
+		strcpy_s(tmpMapName, levelname);
+
+	sprintf(overview_txt, XorStr("overviews/%s.txt"), tmpMapName);
 	bool parse_success = parse_overview(overview_txt);
 
 	if (!parse_success)
 	{
 		//gConsole.echo("couldnt parse %s",overview_txt);
-		strcpy(last_levelname, levelname);
+		strcpy_s(last_levelname, tmpMapName);
 		mapLoaded = false;
 		return;
 	}
@@ -195,10 +390,11 @@ void overview_load(char* levelname)
 	if (!m_MapSprite)
 	{
 		//gConsole.echo("couldnt load %s",m_OverviewData.layersImages[0]);
-		strcpy(last_levelname, levelname);
+		strcpy_s(last_levelname, tmpMapName);
 		mapLoaded = false;
 		return;
 	}
+	*/
 
 	mapLoaded = true;
 
@@ -221,7 +417,13 @@ void overview_loadcurrent()
 
 	levelname[strlen(levelname) - 4] = 0;
 
-	// overview_load( (char*)((std::string)levelname).substr(5).c_str() );
+	std::string strMapName = levelname;
+	if(strMapName.find("maps/") != std::string::npos)
+		strMapName = strMapName.substr(strMapName.find("maps/") + 5);
+	if (strMapName.rfind(".bsp") != std::string::npos)
+		strMapName = strMapName.substr(0, strMapName.rfind(".bsp"));
+
+	overview_load(strMapName);
 }
 bool initi = false;
 

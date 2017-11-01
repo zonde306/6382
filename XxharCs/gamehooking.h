@@ -92,6 +92,8 @@ pfnUserMsgHook pSetFOV = NULL;
 int HookUserMsg( char *szMsgName, pfnUserMsgHook pfn );
 int HookUserMsg2();
 
+void CmdFunc_NextWeapon(void);
+void CmdFunc_PrevWeapon(void);
 
 typedef int					( *INITIALIZE_FUNCTION )					( struct cl_enginefuncs_s*, int );
 typedef void				( *HUD_INIT_FUNCTION )						( void );
