@@ -33,6 +33,7 @@ public:
 	bool quake;
 	bool barrel;
 	bool entityesp;
+	bool autostrafe;
 
 	int antiaim_y = 1;
 	int antiaim_x = 1;

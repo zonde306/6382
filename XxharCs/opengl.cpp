@@ -262,6 +262,10 @@ void MenuSelect()
 		cvars.entityesp = !cvars.entityesp;
 		break;
 
+	case 28:
+		cvars.autostrafe = !cvars.autostrafe;
+		break;
+
 	}
 }
 
@@ -309,7 +313,7 @@ GLvoid BuildFont(GLvoid)
 
 void DrawMenu(int x, int y)
 {
-	char Entry[28][30];
+	char Entry[29][30];
 	int c = 0;
 
 	sprintf_s(Entry[c], "DM-Aimbot  %s", cvars.dmAimbot ? "On" : "Off"); c++;
@@ -341,6 +345,7 @@ void DrawMenu(int x, int y)
 	sprintf_s(Entry[c], "Quake Gun %s", cvars.quake ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Player Barrel %s", cvars.barrel ? "On" : "Off"); c++;
 	sprintf_s(Entry[c], "Entity ESP %s", cvars.entityesp ? "On" : "Off"); c++;
+	sprintf_s(Entry[c], "AutoStrafe %s", cvars.autostrafe ? "On" : "Off"); c++;
 
 	g_oglMenu.maxcount = c;
 
@@ -552,7 +557,7 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 	bStartedDrawingEnts = false;
 	g_iOglViewportCount = 0;
 
-	// if (cvars.dmAimbot)
+	if (cvars.dmAimbot || cvars.openglbox)
 	{
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -817,7 +822,7 @@ void APIENTRY hooked_glVertex3f(GLfloat x, GLfloat y, GLfloat z)
 
 	(*glVertex3f_detour)(x, y, z);
 
-	// if (cvars.dmAimbot)
+	if (cvars.dmAimbot || cvars.openglbox)
 	{
 		vertexCount3f++;
 
@@ -915,7 +920,7 @@ void APIENTRY hooked_glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	bCrosshairDrawn = false;
 
-	// if (cvars.dmAimbot)
+	if (cvars.dmAimbot || cvars.openglbox)
 	{
 		viewport[0] = x;
 		viewport[1] = y;
@@ -1011,7 +1016,7 @@ void APIENTRY hooked_glPopMatrix(void)
 	
 	(*glPopMatrix_detour)();
 
-	// if (cvars.dmAimbot)
+	if (cvars.dmAimbot || cvars.openglbox)
 	{
 		matrixDepth--;
 
@@ -1123,7 +1128,7 @@ void APIENTRY hooked_glPopMatrix(void)
 
 void APIENTRY hooked_glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 {
-	// if (cvars.dmAimbot)
+	if (cvars.dmAimbot || cvars.openglbox)
 	{
 		if (x != 0.0f && y != 0.0f && z != 0.0f)
 		{
@@ -1140,7 +1145,7 @@ void APIENTRY hooked_glPushMatrix(void)
 {
 	(*glPushMatrix_detour)();
 
-	// if (cvars.dmAimbot)
+	if (cvars.dmAimbot || cvars.openglbox)
 	{
 		matrixDepth++;
 		vertexCount3f = 0;

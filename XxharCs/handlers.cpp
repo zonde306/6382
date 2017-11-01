@@ -641,6 +641,9 @@ void HUD_PlayerMove ( struct playermove_s *ppmove, qboolean server )
 	g_local.pmEyePos[2] += ppmove->origin[2];
 	g_local.pmFlags = ppmove->flags;
 	g_local.maxspeed = ppmove->maxspeed;
+	g_local.groundspeed = sqrt(ppmove->velocity[0] * ppmove->velocity[0] + ppmove->velocity[1] * ppmove->velocity[1]);
+	g_local.airaccele = ppmove->movevars->airaccelerate;
+	g_local.pmMoveType = ppmove->movetype;
 
 	VectorCopy(ppmove->angles,g_local.viewAngles);
 
@@ -716,6 +719,12 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 	{
 		// 快速跑步
 		g_local.DoFastRun(cmd);
+	}
+	
+	if (cvars.autostrafe && g_local.alive)
+	{
+		if (!(g_local.pmFlags & (FL_ONGROUND | FL_INWATER)) && g_local.groundspeed != 0.0f)
+			g_local.DoAutoStrafe(cmd);
 	}
 }
 

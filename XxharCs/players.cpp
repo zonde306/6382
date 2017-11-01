@@ -760,6 +760,25 @@ void sMe::DoFastRun(usercmd_s * usercmd)
 	}
 }
 
+void sMe::DoAutoStrafe(usercmd_s * cmd)
+{
+	static bool m_switch = true;
+	float current_y = cmd->viewangles.y;
+	cmd->forwardmove = 17.75 * this->maxspeed / this->groundspeed;
+	if (m_switch)
+	{
+		cmd->sidemove = -this->maxspeed;
+		cmd->viewangles.y -= 20;
+	}
+	else
+	{
+		cmd->sidemove = +this->maxspeed;
+		cmd->viewangles.y += 40;
+	}
+	cmd->viewangles.y = current_y;
+	m_switch = !m_switch;
+}
+
 void sMe::DoAntiRecoil(usercmd_s * usercmd, float frametime)
 {
 	vec3_t viewforward, viewright, viewup, aimforward, aimright, aimup;

@@ -291,6 +291,14 @@ DWORD COffsets::EngineStudio(void)
 	void* EngineStudioPtr = (void*)*(DWORD*)(FindReference(HwBase, HwBase + HwSize, Address) - 0x14);
 	if (FarProc((DWORD)EngineStudioPtr, HwBase, HwEnd))
 		Error("Couldn't find EngineStudioPtr pointer.");
+
+	/*
+	if (g_pClient->HUD_GetStudioModelInterface == nullptr && g_pSlots->HUD_GetStudioModelInterface != nullptr)
+		g_pClient->HUD_GetStudioModelInterface = g_pSlots->HUD_GetStudioModelInterface;
+	*/
+	if (g_pClient->HUD_GetStudioModelInterface == nullptr)
+		return 0;
+
 	DWORD dwStudioone = 0;
 	for (DWORD i = 0; i <= 60; i++)
 	{

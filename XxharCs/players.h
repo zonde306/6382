@@ -49,6 +49,8 @@ struct sMe
 	spread_info spread;
 
 	float maxspeed;
+	float groundspeed;
+	float airaccele;
 	float fNextPrimAttack;
 	float fNextSecAttack;
 	bool bInReloading;
@@ -65,6 +67,7 @@ struct sMe
 	void AdjustSpeed(double speed);
 	void DoFastWalk();
 	void DoFastRun(struct usercmd_s *usercmd);
+	void DoAutoStrafe(struct usercmd_s *cmd);
 
 	void DoAntiRecoil(struct usercmd_s* usercmd, float frametime);
 	void DoAntiSpread(struct usercmd_s* usercmd);

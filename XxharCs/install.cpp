@@ -127,12 +127,12 @@ DWORD WINAPI InstallCheat(LPVOID params)
 		Sleep(100);
 
 	DWORD clientBase = g_offsetScanner.ClientBase();
+	g_pSlots = *(decltype(g_pSlots)*)g_offsetScanner.Slots();
 	g_pClient = (cl_clientfunc_t*)g_offsetScanner.ClientFuncs();
 	g_pEngine = (cl_enginefunc_t*)g_offsetScanner.EngineFuncs();
 	g_pStudio = (engine_studio_api_t*)g_offsetScanner.EngineStudio();
 	g_pDynamicSound = (PDWORD)g_offsetScanner.Sound();
 	g_pSpeedBooster = (PDWORD)g_offsetScanner.SpeedHackPtr();
-	g_pSlots = *(decltype(g_pSlots)*)g_offsetScanner.Slots();
 	GetCrossHairTeam = (FnGetCrossHairTeam)g_offsetScanner.GetCurosrTeam();
 	g_pCrossHairTeam = (DWORD*)(g_offsetScanner.HwBase + 0x61B82C);
 	g_offsetScanner.GameInfo();
@@ -145,6 +145,16 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->Con_Printf(XorStr("g_pSpeedBooster = 0x%X\n"), (DWORD)g_pSpeedBooster);
 	g_pEngine->Con_Printf(XorStr("g_pSlots = 0x%X\n"), (DWORD)g_pSlots);
 	g_pEngine->Con_Printf(XorStr("GetCrossHairTeam = 0x%X\n"), (DWORD)GetCrossHairTeam);
+
+	if (g_pClient == nullptr || g_pEngine == nullptr || g_pStudio == nullptr)
+	{
+		InitOffsets();
+		g_pEngine = pEngfuncs;
+		g_pClient = (decltype(g_pClient))pClient;
+		g_pStudio = pStudio;
+
+		g_pEngine->pfnConsolePrint(XorStr("MetaHook Plus Detected!\n"));
+	}
 
 	// 备份，一会要还原的
 	RtlCopyMemory(&g_Client, g_pClient, sizeof(cl_clientfunc_t));
