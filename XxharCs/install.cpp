@@ -9,6 +9,7 @@
 #include "./Misc/xorstr.h"
 #include "./detours/detourxs.h"
 #include "clientdll.h"
+#include "xEngine.h"
 
 extern COffsets g_offsetScanner;
 extern cl_clientfunc_t *g_pClient;
@@ -224,6 +225,21 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	enginePatchEngine();
 	InstallGL();
 	HookUserMsg2();
+
+	dwClientCmd = (DWORD)pEngfuncs->pfnClientCmd;
+	dwCenterPrint = (DWORD)pEngfuncs->pfnCenterPrint;
+	dwCreateVisibleEntity = (DWORD)pEngfuncs->CL_CreateVisibleEntity;
+	dwGetEntityByIndex = (DWORD)pEngfuncs->GetEntityByIndex;
+	dwConsolePrint = (DWORD)pEngfuncs->pfnConsolePrint;
+	dwSetScreenFade = (DWORD)pEngfuncs->pfnSetScreenFade;
+	dwGetScreenFade = (DWORD)pEngfuncs->pfnGetScreenFade;
+	dwSetViewAngles = (DWORD)pEngfuncs->SetViewAngles;
+	dwDrawConsoleString = (DWORD)pEngfuncs->pfnDrawConsoleString;
+	dwDrawSetTextColor = (DWORD)pEngfuncs->pfnDrawSetTextColor;
+	dwGetViewModel = (DWORD)pEngfuncs->GetViewModel;
+	dwDrawCharacter = (DWORD)pEngfuncs->pfnDrawCharacter;
+	dwGetScreenInfo = (DWORD)pEngfuncs->pfnGetScreenInfo;
+	dwDrawConsoleStringLen = (DWORD)pEngfuncs->pfnDrawConsoleStringLen;
 }
 
 //////////////////////////////////////////////////////////////////////////

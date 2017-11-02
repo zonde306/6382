@@ -120,6 +120,12 @@
     <ClCompile Include="swfx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="xEngine.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cvars.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\engine.h">
@@ -219,6 +225,9 @@
       <Filter>头文件\drawing</Filter>
     </ClInclude>
     <ClInclude Include="swfx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="xEngine.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

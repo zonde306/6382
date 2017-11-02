@@ -67,7 +67,7 @@ public:
 	// void AddMenu(bool bSubMenu, char *cVarName, float *fValue, float fStep, float fMin, float fMax, char *cVarDescription);
 
 	void ClearMenu();
-	MenuStack& AddMenuClass(const std::string& title, const std::string& description);
+	MenuStack& AddMenuClass(const std::string& title, const std::string& description = "");
 
 	/*
 	int CalculateRelativePosition(float *fValue)

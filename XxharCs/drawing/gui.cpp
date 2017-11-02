@@ -186,7 +186,9 @@ void cGui::DrawTitleBox(int x, int y, int w, int h, char* title)
 	//FillRGBA(x+5,y+6,5,5, 136, 131, 127, 200); // Box Filling
 	//blackBorder(x+5,y+6,5,5);			// Black Border
 
-	PrintWithFont(x + 18, y + 5, 255, 255, 255, title);// Window Title
+	// PrintWithFont(x + 18, y + 5, 255, 255, 255, title);// Window Title
+	gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
+	gEngfuncs.pfnDrawConsoleString(x + 18, y + 15, title);
 	
 	/*if(cvar.guifont)g_tableFont.drawString(true,x
 	//-2

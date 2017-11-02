@@ -6,6 +6,7 @@
 #include <fstream>
 #include <ctime>
 
+#include "./Engine/keydefs.h"
 #include "opengl.h"
 #include "gamehooking.h"
 #include "players.h"
@@ -28,6 +29,7 @@
 #include "./drawing/tablefont.h"
 #include "Aimbot.h"
 #include "swfx.h"
+#include "./drawing/gui.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -144,6 +146,9 @@ void InitHack()
 	// gEngfuncs.Con_Printf("gEngfuncs = 0x%X\n", (DWORD)g_pEngine);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pClient);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pStudio);
+
+	g_gui.InitFade();
+	g_menu.Init();
 
 	gEngfuncs.pfnAddCommand("nextinv", CmdFunc_NextWeapon);
 	gEngfuncs.pfnAddCommand("previnv", CmdFunc_PrevWeapon);
@@ -373,9 +378,12 @@ void HUD_Redraw ( float x, int y )
 	InitVisuals();
 
 	if (g_oglDraw.menu)
-		DrawMenu(50, 200);
+	{
+		// DrawMenu(50, 200);
+		g_menu.MenuDraw((int)Config::radar_y + (int)Config::radar_size + 50);
+	}
 
-	if (cvars.flashRemoval)
+	if (Config::glNoFlash)
 	{
 		screenfade_t sf;
 		gEngfuncs.pfnGetScreenFade(&sf);
@@ -387,7 +395,7 @@ void HUD_Redraw ( float x, int y )
 		}
 	}
 
-	if (cvars.radar)
+	if (Config::radar)
 	{
 		if(mapLoaded)
 			overview_redraw();
@@ -395,10 +403,10 @@ void HUD_Redraw ( float x, int y )
 			DrawRadar();
 	}
 
-	if (cvars.miniradar)
+	if (Config::miniRadar)
 		drawRadarFrame();
-	else
-		DrawCrosshair(3);
+	else if(Config::crosshair)
+		DrawCrosshair((int)Config::crosshair);
 
 	for (int i = 1; i <= 32; ++i)
 	{
@@ -429,7 +437,7 @@ void HUD_Redraw ( float x, int y )
 			b = 255;
 		}
 
-		if (cvars.boneesp)
+		if (Config::boneEsp)
 		{
 			g_playerList[i].drawBone(11, 18, r, g, b, a);
 			g_playerList[i].drawBone(10, 11, r, g, b, a);
@@ -473,21 +481,21 @@ void HUD_Redraw ( float x, int y )
 		}
 		*/
 
-		if (cvars.radar)
+		if (Config::radar)
 			drawRadarPoint(g_playerList[i].origin(), r, g, b, a, true, 4);
-		if(cvars.miniradar)
+		if(Config::miniRadar)
 			drawMiniRadarPoint(g_playerList[i].origin(), r, g, b, true, 4);
 
 		float screen[2];
 		bool inScreen = CalcScreen(g_playerList[i].origin(), screen);
 
-		if (cvars.openglbox)
+		if (Config::nameEsp)
 		{
 			if (info.name != nullptr && info.name[0] != '\0' && inScreen)
 				DrawConStringCenter((int)(screen[0] + 15), (int)(screen[1] + 10), r, g, b, info.name);
 		}
 
-		if (cvars.entityesp)
+		if (Config::weaponEsp)
 		{
 			model_s* weaponModel = g_Studio.GetModelByIndex(ent->curstate.weaponmodel);
 			if (weaponModel != nullptr && weaponModel->name != nullptr &&
@@ -513,7 +521,7 @@ void HUD_Redraw ( float x, int y )
 		}
 	}
 
-	if (cvars.entityesp)
+	if (Config::entityEsp)
 	{
 		cl_entity_s* ent = nullptr;
 		for (int i = 33; i < 1024; ++i)
@@ -538,32 +546,32 @@ void HUD_Redraw ( float x, int y )
 				if (entName == "thighpack")
 				{
 					// 给 CT 阵营的玩家显示拆弹钳
-					if (g_local.team == 2 && cvars.radar)
+					if (g_local.team == 2 && Config::radar)
 						drawRadarPoint(ent->origin, 128, 0, 255, 255, true, 2);
 
 					g_tableFont.drawString(true, screen[0], screen[1], 128, 0, 255, "thighpack");
 				}
 				else if (entName == "backpack")
 				{
-					if(cvars.radar)
+					if(Config::radar)
 						drawRadarPoint(ent->origin, 255, 0, 128, 255, true, 3);
-					if (cvars.miniradar)
+					if (Config::miniRadar)
 						drawMiniRadarPoint(ent->origin, 255, 0, 128, true, 3);
 					
 					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
 				}
 				else if (entName == "c4")
 				{
-					if (cvars.radar)
+					if (Config::radar)
 						drawRadarPoint(ent->origin, 255, 0, 255, 255, true, 3);
-					if (cvars.miniradar)
+					if (Config::miniRadar)
 						drawMiniRadarPoint(ent->origin, 255, 0, 255, true, 3);
 					
 					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
 				}
 				else
 				{
-					if (cvars.radar)
+					if (Config::radar)
 						drawRadarPoint(ent->origin, 255, 128, 128, 255, true, 4);
 					
 					g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
@@ -571,9 +579,9 @@ void HUD_Redraw ( float x, int y )
 			}
 			else if (entName.find("hostage") != std::string::npos)
 			{
-				if (cvars.radar)
+				if (Config::radar)
 					drawRadarPoint(ent->origin, 255, 128, 0, 255, true, 4);
-				if(cvars.miniradar)
+				if(Config::miniRadar)
 					drawMiniRadarPoint(ent->origin, 255, 128, 0, true, 4);
 				// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
 			}
@@ -581,6 +589,7 @@ void HUD_Redraw ( float x, int y )
 	}
 
 	// 滚轮快速切枪
+	if(0)
 	{
 		if (g_pWeaponSwitch->CanDraw())
 			g_pWeaponSwitch->Draw();
@@ -671,7 +680,7 @@ void HUD_PlayerMove ( struct playermove_s *ppmove, qboolean server )
 //////////////////////////////////////////////////////////////////////////
 void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 {
-	if (cvars.antiaim)
+	if (Config::antiAim)
 	{
 		// 防止被其他开自动瞄准的一枪解决
 		g_local.DoAntiAim2(cmd);
@@ -681,11 +690,11 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 		gClient.CL_CreateMove(frametime, cmd, active);
 
 	// ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
-	if (cvars.norecoil)
+	if (Config::noRecoil)
 		g_local.DoAntiRecoil(cmd, frametime);
 	
 	//nospread
-	if (cvars.nospread)
+	if (Config::noSpread)
 	{
 		/*
 		float offset[3];
@@ -697,46 +706,46 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 		g_local.DoAntiSpread(cmd);
 	}
 
-	if(cvars.bunnyhop) 
+	if(Config::bunnyHop) 
 	{
 		// 自动连跳
 		g_local.DoBunnyHop(cmd);
 	}
 
-	if (cvars.triggerbot)
+	if (Config::triggerBot)
 	{
 		// 自动开枪
 		g_local.DoTriggerBot(cmd);
 	}
 
-	if (cvars.rapidfire)
+	if (Config::rapidFire)
 	{
 		// 手枪连射
 		g_local.DoAutoPistol(cmd);
 	}
 
-	if (cvars.speedhack)
+	if (Config::speedHack > 0.0f)
 	{
 		// 加速
-		if(GetAsyncKeyState('E') & 0x8000)
-			g_local.AdjustSpeed(16.0);
+		if(cmd->buttons & IN_USE)
+			g_local.AdjustSpeed(Config::speedHack);
 		else
 			g_local.AdjustSpeed(1.0);
 	}
 
-	if (cvars.fastwalk)
+	if (Config::fastWalk)
 	{
 		// 快速静音走路
 		g_local.DoFastWalk();
 	}
 
-	if (cvars.fastrun)
+	if (Config::fastRun)
 	{
 		// 快速跑步
 		g_local.DoFastRun(cmd);
 	}
 	
-	if (cvars.autostrafe && g_local.alive)
+	if (Config::autoStrafe && g_local.alive)
 	{
 		if (!(g_local.pmFlags & (FL_ONGROUND | FL_INWATER)) && g_local.groundspeed != 0.0f)
 			g_local.DoAutoStrafe(cmd);
@@ -750,7 +759,7 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 extern SCREENINFO	screeninfo;
 void PreV_CalcRefdef ( struct ref_params_s *pparams )
 {
-	if(cvars.norecoil)
+	if(Config::noRecoil)
 	{
 		VectorCopy(pparams->punchangle, g_local.punchangle);
 		//only for visual NoRecoil:
@@ -774,8 +783,8 @@ void PreV_CalcRefdef ( struct ref_params_s *pparams )
 //==================================================================================
 void PostV_CalcRefdef ( struct ref_params_s *pparams )
 {
-	if (cvars.quake)
-		g_local.DoQuakeGuns(2);
+	if (Config::quakeGun)
+		g_local.DoQuakeGuns((int)Config::quakeGun);
 
 	VectorCopy(pparams->viewangles, mainViewAngles);
 	VectorCopy(pparams->vieworg, mainViewOrigin);
@@ -803,7 +812,7 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 		ent->curstate.renderfx = kRenderFxNone;		// and WC3 Mod
 		playerCalcExtraData(ent->index, ent);
 
-		if (cvars.barrel)
+		if (Config::barrel)
 		{
 			Vector begin, end, forward, right, up;
 			VectorCopy(ent->origin, begin);
@@ -843,8 +852,8 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 				b = 255;
 			}
 
-			gEngfuncs.pEfxAPI->R_BeamPoints(begin, end, laserbeam, 0.001f, 1.0f, 0.0f, 32.0f, 2.0f,
-				0, 0.0f, r / 255.0f, g / 255.0f, b / 255.0f);
+			gEngfuncs.pEfxAPI->R_BeamPoints(begin, end, laserbeam, 0.001f, Config::barrel,
+				0.0f, 32.0f, 2.0f, 0, 0.0f, r / 255.0f, g / 255.0f, b / 255.0f);
 		}
 	}
 	else
@@ -912,8 +921,14 @@ extern int KeyEventResult;
 int HUD_Key_Event ( int eventcode, int keynum, const char *pszCurrentBinding )
 {
 	//DoHLHAiming(eventcode);
-	
-	if(NOT_LTFX_SLOTS())
+	if (keynum == K_INS && eventcode)
+	{
+		g_menu.MenuActivated = !g_menu.MenuActivated;
+		KeyEventResult = 0;
+	}
+	else if (g_menu.MenuActivated && eventcode && !g_menu.MenuKey(keynum))
+		KeyEventResult = 0;
+	else if(NOT_LTFX_SLOTS())
 		KeyEventResult = gClient.HUD_Key_Event(eventcode, keynum, pszCurrentBinding);
 
 	return KeyEventResult;
@@ -1026,7 +1041,7 @@ void StudioEntityLight(struct alight_s *plight)
 		for (int i = 1; i <= 12; i++)
 		{
 			pHitbox = (mstudiobbox_t*)((byte*)pStudioHeader + pStudioHeader->hitboxindex);
-			if (cvars.usehitbox) // hitbox
+			if (Config::useHitbox) // hitbox
 			{
 				VectorTransform(pHitbox[i].bbmin, (*pBoneMatrix)[pHitbox[i].bone], vBBMin);
 				VectorTransform(pHitbox[i].bbmax, (*pBoneMatrix)[pHitbox[i].bone], vBBMax);

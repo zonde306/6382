@@ -368,25 +368,25 @@ void DrawMenu(int x, int y)
 void APIENTRY hooked_glBegin(GLenum mode)
 {
 	// entity g_oglDraw start
-	if (!bStartedDrawingEnts && bDrawnWorld && cvars.wallhack > 1) {
+	if (!bStartedDrawingEnts && bDrawnWorld && Config::glWallhack > 1.0f) {
 		if (mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN) {
 			bStartedDrawingEnts = true;
 			(*glClear_detour)(GL_DEPTH_BUFFER_BIT);
 		}
 	}
 
-	if (cvars.dmAimbot && (mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN) && found_An_Entity == FALSE)
+	if (Config::glAimbot && (mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN) && found_An_Entity == FALSE)
 	{
 		found_An_Entity = TRUE;
 	}
 
-	if (cvars.dmAimbot && (mode == GL_POLYGON || mode == GL_TRIANGLES || mode == GL_QUADS || mode == GL_QUAD_STRIP) && found_An_Entity == TRUE)
+	if (Config::glAimbot && (mode == GL_POLYGON || mode == GL_TRIANGLES || mode == GL_QUADS || mode == GL_QUAD_STRIP) && found_An_Entity == TRUE)
 	{
 		found_An_Entity = FALSE;
 	}
 
 
-	if (cvars.wallhack)
+	if (Config::glWallhack)
 	{
 		if (mode == GL_TRIANGLES || mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN)
 		{
@@ -398,7 +398,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.smokeRemoval)
+	if (Config::glNoSmoker)
 	{
 		if (mode == GL_QUADS)
 		{
@@ -416,7 +416,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.flashRemoval)
+	if (Config::glNoFlash)
 	{
 		if (mode == GL_QUADS)
 		{
@@ -435,7 +435,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.skyRemoval)
+	if (Config::glNoSky)
 	{
 		if (mode == GL_QUADS)
 		{
@@ -447,7 +447,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.transparentWalls)
+	if (Config::glTransparent)
 	{
 		if (mode == GL_TRIANGLES || mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN || mode == GL_QUADS)
 		{
@@ -467,7 +467,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.whiteWalls)
+	if (Config::glWhiteWalls)
 	{
 		if (mode == GL_POLYGON)
 		{
@@ -475,7 +475,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.wireframe)
+	if (Config::glWireframe)
 	{
 		if (mode == GL_POLYGON)
 		{
@@ -489,7 +489,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 		}
 	}
 
-	if (cvars.wireframeModels)
+	if (Config::glWireframeModels)
 	{
 		if (mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN)
 		{
@@ -509,7 +509,7 @@ void APIENTRY hooked_glBegin(GLenum mode)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glClear(GLbitfield mask)
 {
-	if (mask == GL_DEPTH_BUFFER_BIT && (cvars.wallhack || cvars.skyRemoval))
+	if (mask == GL_DEPTH_BUFFER_BIT && (Config::glWallhack || Config::glNoSky))
 	{
 		(*glClear_detour)(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -521,7 +521,7 @@ void APIENTRY hooked_glClear(GLbitfield mask)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glVertex3fv(const GLfloat *v)
 {
-	if (bSmoke || ((cvars.wallhack || cvars.skyRemoval) && bSky && v[2] > 3000.0f))
+	if (bSmoke || ((Config::glWallhack || Config::glNoSky) && bSky && v[2] > 3000.0f))
 		return;
 
 	(*glVertex3fv_detour)(v);
@@ -557,7 +557,7 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 	bStartedDrawingEnts = false;
 	g_iOglViewportCount = 0;
 
-	if (cvars.dmAimbot || cvars.openglbox)
+	if (Config::glAimbot || Config::glHeadBox)
 	{
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -620,7 +620,7 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 				g_playerList[i].updateClear();
 			*/
 
-			if (cvars.openglbox)
+			if (Config::glHeadBox)
 			{
 				float x = (float)g_playerDrawList[i].Head.x;
 				float y = (float)g_playerDrawList[i].Head.y;
@@ -696,7 +696,7 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 			}
 		}
 
-		if (cvars.dmAimbot && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+		if (Config::glAimbot && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
 		{
 			float fClosestPos = 999999.0f;
 			DWORD TargetX = 0;
@@ -717,7 +717,7 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 
 				float nDist = GetDistance(fTemp, ScrCenter);
 
-				if ((cvars.aimthrough || (!cvars.aimthrough && g_playerDrawList[i].Visible)))
+				if ((Config::glAimThrough || (!Config::glAimThrough && g_playerDrawList[i].Visible)))
 				{
 					if (nDist < fClosestPos)
 					{
@@ -815,14 +815,14 @@ void APIENTRY hooked_glVertex2f(GLfloat x, GLfloat y)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glVertex3f(GLfloat x, GLfloat y, GLfloat z)
 {
-	if (cvars.lambert)
+	if (Config::glLambert)
 	{
 		glColor3f(1.0f, 1.0f, 1.0f);
 	}
 
 	(*glVertex3f_detour)(x, y, z);
 
-	if (cvars.dmAimbot || cvars.openglbox)
+	if (Config::glAimbot || Config::glHeadBox)
 	{
 		vertexCount3f++;
 
@@ -920,7 +920,7 @@ void APIENTRY hooked_glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	bCrosshairDrawn = false;
 
-	if (cvars.dmAimbot || cvars.openglbox)
+	if (Config::glAimbot || Config::glHeadBox)
 	{
 		viewport[0] = x;
 		viewport[1] = y;
@@ -991,7 +991,7 @@ void APIENTRY hooked_glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 //////////////////////////////////////////////////////////////////////////
 void APIENTRY hooked_glBlendFunc(GLenum sfactor, GLenum dfactor)
 {
-	if (cvars.hud && dfactor == GL_ONE)
+	if (Config::glHudColored && dfactor == GL_ONE)
 	{
 		glColor3f(0.3f, 0.3f, 1.0f);
 	}
@@ -1016,7 +1016,7 @@ void APIENTRY hooked_glPopMatrix(void)
 	
 	(*glPopMatrix_detour)();
 
-	if (cvars.dmAimbot || cvars.openglbox)
+	if (Config::glAimbot || Config::glHeadBox)
 	{
 		matrixDepth--;
 
@@ -1128,7 +1128,7 @@ void APIENTRY hooked_glPopMatrix(void)
 
 void APIENTRY hooked_glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 {
-	if (cvars.dmAimbot || cvars.openglbox)
+	if (Config::glAimbot || Config::glHeadBox)
 	{
 		if (x != 0.0f && y != 0.0f && z != 0.0f)
 		{
@@ -1145,7 +1145,7 @@ void APIENTRY hooked_glPushMatrix(void)
 {
 	(*glPushMatrix_detour)();
 
-	if (cvars.dmAimbot || cvars.openglbox)
+	if (Config::glAimbot || Config::glHeadBox)
 	{
 		matrixDepth++;
 		vertexCount3f = 0;

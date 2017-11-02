@@ -39,8 +39,8 @@ static void calcRadarPoint(const float* origin, int& screenx, int& screeny)
 				x = -range*x / y, y = -range;
 		}
 	}
-	screenx = displayCenterX + int(x / range*float(cvars.miniradar_size));
-	screeny = displayCenterY + int(y / range*float(cvars.miniradar_size));
+	screenx = displayCenterX + int(x / range*float(Config::miniradar_size));
+	screeny = displayCenterY + int(y / range*float(Config::miniradar_size));
 	//screenx = displayCenterX+int(x/cvar.radar_range*float(cvar.radar_size));
 	//screeny = displayCenterY+int(y/cvar.radar_range*float(cvar.radar_size));
 }
@@ -77,7 +77,7 @@ void drawRadarFrame()
 {
 	int radar_x = displayCenterX;
 	int radar_y = displayCenterY;
-	int  size = cvars.miniradar_size;
+	int  size = Config::miniradar_size;
 	// ColorEntry* cDivider = colorList.get(0);
 	oglSubtractive = true;
 	gEngfuncs.pfnFillRGBA(radar_x, radar_y - size, 1, 2 * size, 255, 128, 0, 255);

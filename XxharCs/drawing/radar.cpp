@@ -17,7 +17,7 @@ bool mapLoaded = false;
 
 #define BOUND_VALUE(var,min,max) if((var)>(max)){(var)=(max);};if((var)<(min)){(var)=(min);}
 #define PI 3.14159265358979f
-#define CVARRADARY cvars.radar_y
+#define CVARRADARY Config::radar_y
 
 void overview_draw_me(float * origin, int radius, int r, int g, int b, int a);
 
@@ -424,6 +424,19 @@ void overview_loadcurrent()
 		strMapName = strMapName.substr(0, strMapName.rfind(".bsp"));
 
 	overview_load(strMapName);
+
+	if (mapLoaded)
+	{
+		Config::radar_x = 95;
+		Config::radar_y = 95;
+		Config::radar_size = 110;
+	}
+	else
+	{
+		Config::radar_x = 80;
+		Config::radar_y = 80;
+		Config::radar_size = 80;
+	}
 }
 bool initi = false;
 
@@ -483,12 +496,12 @@ void overview_redraw()
 		LoadOvRadar = true;
 		overview_loadcurrent();
 	}
-	int size = (int)cvars.radar_size;
+	int size = (int)Config::radar_size;
 
 	ov_radar_x = (screeninfo.iWidth / 2);
 	ov_radar_y = (screeninfo.iHeight / 2);
-	g_gui.window(cvars.radar_x - size, CVARRADARY - size, 2 * size + 2, 2 * size + 2, 1, "Radar");
-	glViewport(cvars.radar_x - size, clientopenglcalc(CVARRADARY + size), (size * 2), (size * 2));
+	g_gui.window(Config::radar_x - size, CVARRADARY - size, 2 * size + 2, 2 * size + 2, 1, "Radar");
+	glViewport(Config::radar_x - size, clientopenglcalc(CVARRADARY + size), (size * 2), (size * 2));
 
 	if (m_MapSprite)
 	{
@@ -569,7 +582,7 @@ void overview_redraw()
 	glViewport(0, 0, screeninfo.iWidth, screeninfo.iHeight);
 
 	oglSubtractive = true;
-	drawcross(cvars.radar_x, CVARRADARY, size / 8, size / 8, 255, 255, 255, 254);
+	drawcross(Config::radar_x, CVARRADARY, size / 8, size / 8, 255, 255, 255, 254);
 
 	oglSubtractive = false;
 }
@@ -601,8 +614,8 @@ void overview_calcRadarPoint(const float* origin, int * screenx, int * screeny)
 
 	VecRotateZ(aim, -mainViewAngles[1], newaim);
 
-	*screenx = (cvars.radar_x) - int(newaim[1] / ov_zoom * m_OverviewData.zoom * 0.3f * cvars.radar_size / 160);
-	*screeny = (CVARRADARY)-int(newaim[0] / ov_zoom * m_OverviewData.zoom * 0.4f * cvars.radar_size / 160);
+	*screenx = (Config::radar_x) - int(newaim[1] / ov_zoom * m_OverviewData.zoom * 0.3f * Config::radar_size / 160);
+	*screeny = (CVARRADARY)-int(newaim[0] / ov_zoom * m_OverviewData.zoom * 0.4f * Config::radar_size / 160);
 }
 
 void overview_draw_entity(const float* origin, int radius, int r, int g, int b, int a)
@@ -640,12 +653,12 @@ void overview_draw_me(float * origin, int radius, int r, int g, int b, int a)
 void DrawRadar()
 {
 	//int size = (int)80;
-	int size = (int)cvars.radar_size;
+	int size = (int)Config::radar_size;
 
-	g_gui.window(cvars.radar_x - size, CVARRADARY - size, 2 * size + 2, 2 * size + 2, 1, "Radar");
+	g_gui.window(Config::radar_x - size, CVARRADARY - size, 2 * size + 2, 2 * size + 2, 1, "Radar");
 
-	gEngfuncs.pfnFillRGBA(cvars.radar_x, CVARRADARY - size, 1, 2 * size, 255, 255, 255, 180);
-	gEngfuncs.pfnFillRGBA(cvars.radar_x - size, CVARRADARY, 2 * size, 1, 255, 255, 255, 180);
+	gEngfuncs.pfnFillRGBA(Config::radar_x, CVARRADARY - size, 1, 2 * size, 255, 255, 255, 180);
+	gEngfuncs.pfnFillRGBA(Config::radar_x - size, CVARRADARY, 2 * size, 1, 255, 255, 255, 180);
 }
 
 void drawRadarPoint(const float* origin, int r, int g, int b, int a, bool blink = false, int boxsize = 3)
@@ -657,11 +670,11 @@ void drawRadarPoint(const float* origin, int r, int g, int b, int a, bool blink 
 	{
 		overview_calcRadarPoint(origin, &screenx, &screeny);
 
-		if (screenx>(cvars.radar_x + cvars.radar_size - boxsize - 1)) screenx = cvars.radar_x + cvars.radar_size - boxsize - 1;
-		else if (screenx<(cvars.radar_x - cvars.radar_size - 1)) screenx = cvars.radar_x - cvars.radar_size - 1;
+		if (screenx>(Config::radar_x + Config::radar_size - boxsize - 1)) screenx = Config::radar_x + Config::radar_size - boxsize - 1;
+		else if (screenx<(Config::radar_x - Config::radar_size - 1)) screenx = Config::radar_x - Config::radar_size - 1;
 
-		if (screeny>(CVARRADARY + cvars.radar_size - boxsize - 1)) screeny = CVARRADARY + cvars.radar_size - boxsize - 1;
-		else if (screeny<(CVARRADARY - cvars.radar_size - 1)) screeny = CVARRADARY - cvars.radar_size - 1;
+		if (screeny>(CVARRADARY + Config::radar_size - boxsize - 1)) screeny = CVARRADARY + Config::radar_size - boxsize - 1;
+		else if (screeny<(CVARRADARY - Config::radar_size - 1)) screeny = CVARRADARY - Config::radar_size - 1;
 
 		//if(	!g_local.alive ) return;
 	}
@@ -705,8 +718,8 @@ void drawRadarPoint(const float* origin, int r, int g, int b, int a, bool blink 
 			}
 		}
 
-		screenx = cvars.radar_x + int(x / range*float(cvars.radar_size));
-		screeny = CVARRADARY + int(y / range*float(cvars.radar_size));
+		screenx = Config::radar_x + int(x / range*float(Config::radar_size));
+		screeny = CVARRADARY + int(y / range*float(Config::radar_size));
 	}
 	oglSubtractive = true;
 

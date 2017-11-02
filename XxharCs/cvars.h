@@ -43,6 +43,51 @@ public:
 	int miniradar_size = 70;
 };
 
+namespace Config
+{
+	extern float glAimbot;
+	extern float glAimThrough;
+	extern float noRecoil;
+	extern float noSpread;
+	extern float glWallhack;
+	extern float glNoSmoker;
+	extern float glNoFlash;
+	extern float glNoSky;
+	extern float glLambert;
+	extern float glTransparent;
+	extern float glWhiteWalls;
+	extern float glWireframe;
+	extern float glWireframeModels;
+	extern float glHudColored;
+	extern float bunnyHop;
+	extern float rapidFire;
+	extern float triggerBot;
+	extern float glHeadBox;
+	extern float antiAim;
+	extern float speedHack;
+	extern float fastRun;
+	extern float fastWalk;
+	extern float boneEsp;
+	extern float radar;
+	extern float miniRadar;
+	extern float quakeGun;
+	extern float barrel;
+	extern float entityEsp;
+	extern float autoStrafe;
+	extern float nameEsp;
+	extern float weaponEsp;
+	extern float crosshair;
+	extern float fastSwitch;
+	extern float useHitbox;
+
+	extern float radar_x;
+	extern float radar_y;
+	extern float radar_size;
+	extern float miniradar_size;
+	extern float antiaim_x;
+	extern float antiaim_y;
+};
+
 extern CCvars cvars;
 
 #endif

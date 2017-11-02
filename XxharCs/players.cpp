@@ -457,7 +457,7 @@ void sMe::DoTriggerBot(usercmd_s * usercmd)
 	// float finalAngle[3] = { 0.0f, 0.0f, 0.0f };
 	Vector finalAngle;
 
-	if (cvars.norecoil)
+	if (Config::noRecoil)
 	{
 		finalAngle[0] = usercmd->viewangles.x;
 		finalAngle[1] = usercmd->viewangles.y;
@@ -630,7 +630,7 @@ float GetNoRecoilValue(int weaponId)
 
 void sMe::DoAntiAim(usercmd_s * usercmd)
 {
-	if(cvars.antiaim)
+	if(Config::antiAim)
 	{
 		cl_entity_t *pLocal;
 		Vector viewforward, viewright, viewup, aimforward, aimright, aimup, vTemp;
@@ -647,10 +647,10 @@ void sMe::DoAntiAim(usercmd_s * usercmd)
 
 		if (pLocal->curstate.movetype == MOVETYPE_WALK)
 		{
-			if (cvars.antiaim_y)
+			if (Config::antiaim_y)
 			{
 				fTime = gEngfuncs.GetClientTime();
-				usercmd->viewangles.y = fmod(fTime * cvars.antiaim_y * 360.0f, 360.0f);
+				usercmd->viewangles.y = fmod(fTime * Config::antiaim_y * 360.0f, 360.0f);
 			}
 		}
 
@@ -670,12 +670,12 @@ void sMe::DoAntiAim(usercmd_s * usercmd)
 		static bool XJitter = true;
 		if (XJitter == true)
 		{
-			usercmd->viewangles.x = -cvars.antiaim_x;
+			usercmd->viewangles.x = -Config::antiaim_x;
 			XJitter = !XJitter;
 		}
 		else
 		{
-			usercmd->viewangles.x = cvars.antiaim_x;
+			usercmd->viewangles.x = Config::antiaim_x;
 			XJitter = !XJitter;
 		}
 	}
@@ -1088,74 +1088,74 @@ void sMe::DoAntiAim2(usercmd_s * usercmd)
 			gEngfuncs.pfnAngleVectors(usercmd->viewangles, viewforward, viewright, viewup);
 		}
 		fTime = gEngfuncs.GetClientTime();
-		if (cvars.antiaim_x == 1)
+		if (Config::antiaim_x == 1)
 		{
 			//Down
 			usercmd->viewangles.x = 88;
 		}
-		else if (cvars.antiaim_x == 2)
+		else if (Config::antiaim_x == 2)
 		{
 			//Up
 			usercmd->viewangles.x = -88;
 		}
-		else if (cvars.antiaim_x == 3)
+		else if (Config::antiaim_x == 3)
 		{
 			//FakeDown
 			usercmd->viewangles.x = 1620;
 		}
-		else if (cvars.antiaim_x == 4)
+		else if (Config::antiaim_x == 4)
 		{
 			//FakeUp
 			usercmd->viewangles.x = -1619;
 		}
-		else if (cvars.antiaim_x == 5)
+		else if (Config::antiaim_x == 5)
 		{
 			//Spin X
 			usercmd->viewangles.x = cos(fTime * 11 * 3.14159265358979323846) * 360.0f;
 			usercmd->viewangles.x = cos(fTime * 11 * 3.14159265358979323846) * 90.0f;
 		}
-		else if (cvars.antiaim_x == 6)
+		else if (Config::antiaim_x == 6)
 		{
 			//Static
 			usercmd->viewangles.x = 0;
 		}
 
-		if (cvars.antiaim_y == 1)
+		if (Config::antiaim_y == 1)
 		{
 			//Backwards
 			usercmd->viewangles.y = usercmd->viewangles.y + 180;
 		}
-		else if (cvars.antiaim_y == 2)
+		else if (Config::antiaim_y == 2)
 		{
 			//Static Left
 			usercmd->viewangles.y = 90;
 		}
-		else if (cvars.antiaim_y == 3)
+		else if (Config::antiaim_y == 3)
 		{
 			//Static Right
 			usercmd->viewangles.y = 270;
 		}
-		if (cvars.antiaim_y == 4)
+		if (Config::antiaim_y == 4)
 		{
 			//Left
 			usercmd->viewangles.y = usercmd->viewangles.y + 90;
 		}
-		else if (cvars.antiaim_y == 5)
+		else if (Config::antiaim_y == 5)
 		{
 			//Right
 			usercmd->viewangles.y = usercmd->viewangles.y + 270;
 		}
-		else if (cvars.antiaim_y == 6)
+		else if (Config::antiaim_y == 6)
 		{
 			//Spin Y
 			usercmd->viewangles.y = sin(fTime * 11 * 3.14159265358979323846) * 360.0f;
 		}
-		else if (cvars.antiaim_y == 7)
+		else if (Config::antiaim_y == 7)
 		{
 			//Static
 			usercmd->viewangles.y = 0;
 		}
-		else if (cvars.antiaim_y == 8)
+		else if (Config::antiaim_y == 8)
 		{
 			int random = rand() % 100;
 
@@ -1176,7 +1176,7 @@ void sMe::DoAntiAim2(usercmd_s * usercmd)
 			}
 
 		}
-		else if (cvars.antiaim_y == 9)
+		else if (Config::antiaim_y == 9)
 		{
 			//Jitter
 			int random = 1 + (rand() % (int)(100 - 1 + 1));
@@ -1224,7 +1224,7 @@ void sMe::DoAntiAim2(usercmd_s * usercmd)
 		newup = ((viewforward[0] * aimup[0] + viewforward[1] * aimup[1] + viewforward[2] * aimup[2]) +
 			(viewright[0] * aimup[0] + viewright[1] * aimup[1] + viewright[2] * aimup[2]) +
 			(viewup[0] * aimup[0] + viewup[1] * aimup[1] + viewup[2] * aimup[2]));
-		if (cvars.antiaim_x == 3 || cvars.antiaim_x == 4)
+		if (Config::antiaim_x == 3 || Config::antiaim_x == 4)
 		{
 			usercmd->forwardmove = -newforward;
 			usercmd->sidemove = newright;

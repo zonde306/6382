@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Aimbot.cpp" />
+    <ClCompile Include="cvars.cpp" />
     <ClCompile Include="detours\detourxs.cpp" />
     <ClCompile Include="drawing\drawing.cpp" />
     <ClCompile Include="drawing\gui.cpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="textures.cpp" />
     <ClCompile Include="util_vector.cpp" />
     <ClCompile Include="weaponlist.cpp" />
+    <ClCompile Include="xEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aimbot.h" />
@@ -159,6 +161,7 @@
     <ClInclude Include="swfx.h" />
     <ClInclude Include="textures.h" />
     <ClInclude Include="weaponlist.h" />
+    <ClInclude Include="xEngine.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="detours\hook.def" />

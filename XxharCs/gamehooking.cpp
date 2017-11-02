@@ -7,6 +7,7 @@
 #include "./Misc/xorstr.h"
 #include "./Misc/offsetscan.h"
 #include "swfx.h"
+#include "cvars.h"
 
 //////////////////////////////////////////////////////////////////////////
 _CLIENT_* pClient;
@@ -510,7 +511,7 @@ void(*g_pfnOldPrevWeapon)(void) = nullptr;
 void CmdFunc_NextWeapon(void)
 {
 	if (g_pWeaponSwitch == nullptr || !g_pWeaponSwitch->m_pFastSwitch->value ||
-		gEngfuncs.GetLocalPlayer()->curstate.iuser1)
+		gEngfuncs.GetLocalPlayer()->curstate.iuser1 || !Config::fastSwitch)
 	{
 		if(g_pfnOldNextWeapon != nullptr)
 			g_pfnOldNextWeapon();
@@ -523,7 +524,7 @@ void CmdFunc_NextWeapon(void)
 void CmdFunc_PrevWeapon(void)
 {
 	if (g_pWeaponSwitch == nullptr || !g_pWeaponSwitch->m_pFastSwitch->value ||
-		gEngfuncs.GetLocalPlayer()->curstate.iuser1)
+		gEngfuncs.GetLocalPlayer()->curstate.iuser1 || !Config::fastSwitch)
 	{
 		if(g_pfnOldPrevWeapon != nullptr)
 			g_pfnOldPrevWeapon();
