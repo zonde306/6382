@@ -439,11 +439,17 @@ int Menu::MenuKey(int keynum)
 				if (cursor > openEnd)
 				{
 					cursor -= openEnd - openBegin + 1;
-					opening = cursor;
+					if (cursor == opening)
+						opening = -1;
+					else
+						opening = cursor;
 				}
 				else
 				{
-					opening = cursor;
+					if (cursor == opening)
+						opening = -1;
+					else
+						opening = cursor;
 				}
 			}
 		}
@@ -509,19 +515,25 @@ int Menu::MenuKey(int keynum)
 				// 菜单类别操作(关闭)
 				if (cursor > openEnd)
 				{
-					cursor -= openEnd - openBegin;
-					opening = -1;
+					cursor -= openEnd - openBegin + 1;
+					if (cursor == opening)
+						opening = -1;
+					else
+						opening = cursor;
 				}
 				else
 				{
-					opening = -1;
+					if (cursor == opening)
+						opening = -1;
+					else
+						opening = cursor;
 				}
 			}
 		}
 		else
 		{
 			// 菜单类别操作(关闭)
-			opening = -1;
+			opening = cursor;
 		}
 		
 		/*
