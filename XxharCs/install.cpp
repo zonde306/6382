@@ -22,10 +22,10 @@ extern PDWORD g_pSpeedBooster;
 
 extern int	HookUserMsg(char *szMsgName, pfnUserMsgHook pfn);
 extern void StudioEntityLight(struct alight_s *plight);
-extern void PreS_DynamicSound(int entid, DWORD u, char *szSoundFile, float *fOrigin, DWORD dont, DWORD know, DWORD ja, DWORD ck);
+extern void PreS_DynamicSound(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
 extern PreS_DynamicSound_t g_oDynamicSound;
 extern decltype(g_pStudio->StudioEntityLight) g_oStudioEntityLight;
-DetourXS g_hookDynamicSound;
+DetourXS g_hookDynamicSound, g_hookFireBullets;
 
 //////////////////////////////////////////////////////////////////////////
 // global offsets
@@ -124,7 +124,7 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
-	// HideDll((HINSTANCE)params);
+	HideDll((HINSTANCE)params);
 
 	while (!g_offsetScanner.Initialize())
 		Sleep(100);
@@ -138,6 +138,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pSpeedBooster = (PDWORD)g_offsetScanner.SpeedHackPtr();
 	GetCrossHairTeam = (FnGetCrossHairTeam)g_offsetScanner.GetCurosrTeam();
 	g_pCrossHairTeam = (DWORD*)(g_offsetScanner.HwBase + 0x61B82C);
+	g_oFireBullets = (FnFireBullets)g_offsetScanner.FireBullets();
 	g_offsetScanner.GameInfo();
 
 	g_pEngine->Con_Printf(XorStr("clientBase = 0x%X\n"), (DWORD)clientBase);
@@ -148,6 +149,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->Con_Printf(XorStr("g_pSpeedBooster = 0x%X\n"), (DWORD)g_pSpeedBooster);
 	g_pEngine->Con_Printf(XorStr("g_pSlots = 0x%X\n"), (DWORD)g_pSlots);
 	g_pEngine->Con_Printf(XorStr("GetCrossHairTeam = 0x%X\n"), (DWORD)GetCrossHairTeam);
+	g_pEngine->Con_Printf(XorStr("g_pFireBullets = 0x%X\n"), (DWORD)g_oFireBullets);
 
 	if (g_pClient == nullptr || g_pEngine == nullptr || g_pStudio == nullptr)
 	{
@@ -170,6 +172,14 @@ DWORD WINAPI InstallCheat(LPVOID params)
 		g_hookDynamicSound.Create(g_pDynamicSound, PreS_DynamicSound);
 		g_oDynamicSound = (PreS_DynamicSound_t)g_hookDynamicSound.GetTrampoline();
 	}
+
+	/*
+	if (g_oFireBullets != nullptr)
+	{
+		g_hookFireBullets.Create(g_oFireBullets, Hooked_FireBullets);
+		g_oFireBullets = (FnFireBullets)g_hookFireBullets.GetTrampoline();
+	}
+	*/
 
 	if (g_pStudio->StudioEntityLight != nullptr)
 	{

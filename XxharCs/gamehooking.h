@@ -216,7 +216,7 @@ int DrawConsoleString ( int x, int y, char *string );
 void FillRGBA ( int x, int y, int width, int height, int r, int g, int b, int a );
 
 // user message HANDLERS
-int TeamInfo (const char *pszName, int iSize, void *pbuf);
+int TeamInfo(const char *pszName, int iSize, void *pbuf);
 int CurWeapon(const char *pszName, int iSize, void *pbuf );
 int ScoreAttrib(const char *pszName, int iSize, void *pbuf );
 int SetFOV(const char *pszName, int iSize, void *pbuf);
@@ -231,6 +231,7 @@ int Damage(const char *pszName, int iSize, void *pbuf );
 int AmmoX(const char *pszName, int iSize, void *pbuf );
 int WeaponList(const char *pszName, int iSize, void *pbuf );
 int Money(const char *pszName, int iSize, void *pbuf);
+int Radar(const char *pszName, int iSize, void *pbuf);
 
 int AddCommand(char *cmd_name, void(*function)(void));
 cvar_t* RegisterVariable(char *szName, char *szValue, int flags);
@@ -240,5 +241,9 @@ BOOL ActivateClient();
 BOOL ActivateEngine();
 
 extern bool oglSubtractive;
+
+typedef void(*FnFireBullets)(ULONG, Vector, Vector, Vector, float, int, int, int, entvars_t*);
+void Hooked_FireBullets(ULONG, Vector, Vector, Vector, float, int, int, int, entvars_t*);
+extern FnFireBullets g_oFireBullets;
 
 #endif

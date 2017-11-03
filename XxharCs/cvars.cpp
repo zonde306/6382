@@ -36,6 +36,7 @@ namespace Config
 	float crosshair = 3.0f;
 	float fastSwitch = 0.0f;
 	float useHitbox = 1.0f;
+	float knifeBot = 0.0f;
 
 	float radar_x = 80.0f;
 	float radar_y = 80.0f;
@@ -43,4 +44,7 @@ namespace Config
 	float miniradar_size = 80.0f;
 	float antiaim_x = 1.0f;
 	float antiaim_y = 1.0f;
+	float trigger_prospread = 1.0f;
+	float trigger_radius = 25.0f;
+	float trigger_draw = 1.0f;
 };

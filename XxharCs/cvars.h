@@ -79,6 +79,7 @@ namespace Config
 	extern float crosshair;
 	extern float fastSwitch;
 	extern float useHitbox;
+	extern float knifeBot;
 
 	extern float radar_x;
 	extern float radar_y;
@@ -86,6 +87,9 @@ namespace Config
 	extern float miniradar_size;
 	extern float antiaim_x;
 	extern float antiaim_y;
+	extern float trigger_prospread;
+	extern float trigger_radius;
+	extern float trigger_draw;
 };
 
 extern CCvars cvars;

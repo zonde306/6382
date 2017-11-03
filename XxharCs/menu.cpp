@@ -42,6 +42,12 @@ void Menu::Init()
 		menu.item.emplace_back(XorStr("Rapid Fire"), &Config::rapidFire, XorStr("手枪连射"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Trigger Bot"), &Config::triggerBot, XorStr("自动开枪"),
+			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Trigger Bot Spread"), &Config::trigger_prospread, XorStr("自动开枪预测后坐力"),
+			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Trigger Bot Draw"), &Config::trigger_draw, XorStr("自动开枪显示位置"),
+			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Knife Bot"), &Config::knifeBot, XorStr("自动刀砍人"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 	}
 

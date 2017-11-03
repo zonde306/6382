@@ -248,6 +248,72 @@ void VectorAngles(const Vector & forward, Vector & angles)
 	angles[2] = 0;
 }
 
+float VectorNormalize(Vector& v)
+{
+	int		i;
+	float	length;
+
+	length = 0;
+	for (i = 0; i< 3; i++)
+		length += v[i] * v[i];
+	length = sqrtf(length);
+
+	for (i = 0; i< 3; i++)
+		v[i] /= length;
+
+	return length;
+}
+
+void CrossProduct(const float* v1, const float* v2, float* cross)
+{
+	// Assert(s_bMathlibInitialized);
+	// Assert(v1 != cross);
+	// Assert(v2 != cross);
+	cross[0] = v1[1] * v2[2] - v1[2] * v2[1];
+	cross[1] = v1[2] * v2[0] - v1[0] * v2[2];
+	cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
+}
+
+void VectorAngles(const Vector & forward, const Vector & pseudoup, Vector & angles)
+{
+	Vector left;
+
+	CrossProduct(pseudoup, forward, left);
+	VectorNormalize(left);
+
+	float xyDist = sqrtf(forward[0] * forward[0] + forward[1] * forward[1]);
+
+	// enough here to get angles?
+	if (xyDist > 0.001f)
+	{
+		// (yaw)	y = ATAN( forward.y, forward.x );		-- in our space, forward is the X axis
+		angles[1] = RAD2DEG(atan2f(forward[1], forward[0]));
+
+		// The engine does pitch inverted from this, but we always end up negating it in the DLL
+		// UNDONE: Fix the engine to make it consistent
+		// (pitch)	x = ATAN( -forward.z, sqrt(forward.x*forward.x+forward.y*forward.y) );
+		angles[0] = RAD2DEG(atan2f(-forward[2], xyDist));
+
+		float up_z = (left[1] * forward[0]) - (left[0] * forward[1]);
+
+		// (roll)	z = ATAN( left.z, up.z );
+		angles[2] = RAD2DEG(atan2f(left[2], up_z));
+	}
+	else	// forward is mostly Z, gimbal lock-
+	{
+		// (yaw)	y = ATAN( -left.x, left.y );			-- forward is mostly z, so use right for yaw
+		angles[1] = RAD2DEG(atan2f(-left[0], left[1])); //This was originally copied from the "void MatrixAngles( const matrix3x4_t& matrix, float *angles )" code, and it's 180 degrees off, negated the values and it all works now (Dave Kircher)
+
+														// The engine does pitch inverted from this, but we always end up negating it in the DLL
+														// UNDONE: Fix the engine to make it consistent
+														// (pitch)	x = ATAN( -forward.z, sqrt(forward.x*forward.x+forward.y*forward.y) );
+		angles[0] = RAD2DEG(atan2f(-forward[2], xyDist));
+
+		// Assume no roll in this case as one degree of freedom has been lost (i.e. yaw == roll)
+		angles[2] = 0;
+	}
+}
+
 Vector & Vector::operator*=(float fl)
 {
 	x *= fl;
@@ -294,4 +360,220 @@ Vector & Vector::operator/=(const Vector & v)
 	y /= v.y;
 	z /= v.z;
 	return *this;
+}
+
+Vector ToEulerAngles(const Vector& src)
+{
+	float Pitch, Yaw, Length;
+
+	Length = src.Length2D();
+
+	if (Length > 0)
+	{
+		Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+
+		if (Pitch < 0)
+		{
+			Pitch += 360;
+		}
+
+		Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+
+		if (Yaw < 0)
+		{
+			Yaw += 360;
+		}
+	}
+	else
+	{
+		Pitch = (src.z > 0.0f) ? 270 : 90;
+		Yaw = 0;
+	}
+
+	return Vector(Pitch, Yaw, 0.0f);
+}
+
+Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
+{
+	Vector Left;
+
+	float Length, Yaw, Pitch, Roll;
+
+	Left = CrossProduct(*PseudoUp, src);
+
+	Left.Normalize();
+
+	Length = src.Length2D();
+
+	if (PseudoUp)
+	{
+		if (Length > 0.001)
+		{
+			Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+
+			if (Pitch < 0)
+			{
+				Pitch += 360;
+			}
+
+			Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+
+			if (Yaw < 0)
+			{
+				Yaw += 360;
+			}
+
+			float up_z = (Left[1] * src.x) - (Left[0] * src.y);
+
+			Roll = (atan2(Left[2], up_z) * 180 / M_PI);
+
+			if (Roll < 0)
+			{
+				Roll += 360;
+			}
+		}
+		else
+		{
+			Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+
+			if (Yaw < 0)
+			{
+				Yaw += 360;
+			}
+
+			Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+
+			if (Pitch < 0)
+			{
+				Pitch += 360;
+			}
+
+			Roll = 0;
+		}
+	}
+	else
+	{
+		if (Length > 0)
+		{
+			Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+
+			if (Pitch < 0)
+			{
+				Pitch += 360;
+			}
+
+			Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+
+			if (Yaw < 0)
+			{
+				Yaw += 360;
+			}
+		}
+		else
+		{
+			Pitch = (src.z > 0.0f) ? 270 : 90;
+			Yaw = 0;
+		}
+	}
+
+	return  Vector(Pitch, Yaw, Roll);
+}
+
+void AngleNormalize(float* angles)
+{
+	if (angles[0] > 89)
+	{
+		angles[0] = 89;
+	}
+	else if (-89 > angles[0])
+	{
+		angles[0] = -89;
+	}
+
+	if (angles[1] > 180)
+	{
+		angles[1] -= 360;
+	}
+	else if (-180 > angles[1])
+	{
+		angles[1] += 360;
+	}
+
+	angles[2] = 0;
+}
+
+void AngleVectors(const Vector & angles, Vector & forward)
+{
+	float	sp, sy, cp, cy;
+
+	SinCos(DEG2RAD(angles[1]), &sy, &cy);
+	SinCos(DEG2RAD(angles[0]), &sp, &cp);
+
+	forward.x = cp*cy;
+	forward.y = cp*sy;
+	forward.z = -sp;
+}
+
+void AngleVectors(const Vector & angles, Vector & forward, Vector & right, Vector & up)
+{
+	float sr, sp, sy, cr, cp, cy;
+
+#ifdef _X360
+	fltx4 radians, scale, sine, cosine;
+	radians = LoadUnaligned3SIMD(angles.Base());
+	scale = ReplicateX4(M_PI_F / 180.f);
+	radians = MulSIMD(radians, scale);
+	SinCos3SIMD(sine, cosine, radians);
+	sp = SubFloat(sine, 0);	sy = SubFloat(sine, 1);	sr = SubFloat(sine, 2);
+	cp = SubFloat(cosine, 0);	cy = SubFloat(cosine, 1);	cr = SubFloat(cosine, 2);
+#else
+	SinCos(DEG2RAD(angles[1]), &sy, &cy);
+	SinCos(DEG2RAD(angles[0]), &sp, &cp);
+	SinCos(DEG2RAD(angles[2]), &sr, &cr);
+#endif
+
+	if (forward)
+	{
+		forward.x = cp*cy;
+		forward.y = cp*sy;
+		forward.z = -sp;
+	}
+
+	if (right)
+	{
+		right.x = (-1 * sr*sp*cy + -1 * cr*-sy);
+		right.y = (-1 * sr*sp*sy + -1 * cr*cy);
+		right.z = -1 * sr*cp;
+	}
+
+	if (up)
+	{
+		up.x = (cr*sp*cy + -sr*-sy);
+		up.y = (cr*sp*sy + -sr*cy);
+		up.z = cr*cp;
+	}
+}
+
+void VectorVectors(const Vector & forward, Vector & right, Vector & up)
+{
+	Vector tmp;
+
+	if (forward[0] == 0 && forward[1] == 0)
+	{
+		// pitch 90 degrees up/down from identity
+		right[0] = 0;
+		right[1] = -1;
+		right[2] = 0;
+		up[0] = -forward[2];
+		up[1] = 0;
+		up[2] = 0;
+	}
+	else
+	{
+		tmp[0] = 0; tmp[1] = 0; tmp[2] = 1.0;
+		CrossProduct(forward, tmp, right);
+		VectorNormalize(right);
+		CrossProduct(right, forward, up);
+		VectorNormalize(up);
+	}
 }

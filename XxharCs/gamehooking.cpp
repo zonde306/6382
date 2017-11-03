@@ -8,12 +8,14 @@
 #include "./Misc/offsetscan.h"
 #include "swfx.h"
 #include "cvars.h"
+#include "players.h"
 
 //////////////////////////////////////////////////////////////////////////
 _CLIENT_* pClient;
 
 BOOL bClientActive = FALSE;
 BOOL bEngineActive = FALSE;
+FnFireBullets g_oFireBullets = nullptr;
 
 extern cl_enginefuncs_s* pEngfuncs;
 extern struct cl_enginefuncs_s gEngfuncs;
@@ -43,10 +45,10 @@ extern pfnUserMsgHook DamageOrg;
 extern pfnUserMsgHook AmmoXOrg;
 extern pfnUserMsgHook WeaponListOrg;
 extern pfnUserMsgHook MoneyOrg;
-
+extern pfnUserMsgHook RadarOrg;
 
 //////////////////////////////////////////////////////////////////////////
-int	HookUserMsg (char *szMsgName, pfnUserMsgHook pfn)
+int	HookUserMsg(char *szMsgName, pfnUserMsgHook pfn)
 {
 #define REDIRECT_MESSAGE(name) \
 		else if (!strcmpi(szMsgName,#name)) \
@@ -55,24 +57,24 @@ int	HookUserMsg (char *szMsgName, pfnUserMsgHook pfn)
 	return gEngfuncs.pfnHookUserMsg (szMsgName, ##name ); \
 }
 
-	int retval = gEngfuncs.pfnHookUserMsg (szMsgName, pfn);
-	
-	if(0){}
-	REDIRECT_MESSAGE( TeamInfo    )
-	REDIRECT_MESSAGE( CurWeapon   )
-	REDIRECT_MESSAGE( ScoreAttrib )
-	REDIRECT_MESSAGE( SetFOV      )
-	REDIRECT_MESSAGE( Health	  )
-	REDIRECT_MESSAGE( Battery     )
-	REDIRECT_MESSAGE( ScoreInfo	  )
-	REDIRECT_MESSAGE( DeathMsg    ) 
-	REDIRECT_MESSAGE( SayText     )
-	REDIRECT_MESSAGE( TextMsg     )
-	REDIRECT_MESSAGE( ResetHUD    )
-	REDIRECT_MESSAGE( Damage	  )
-	REDIRECT_MESSAGE( AmmoX		  )
-	REDIRECT_MESSAGE( Money		  )
-	else if (!strcmp(szMsgName,"WeaponList")) // Because the Class is called like the Msg
+	int retval = gEngfuncs.pfnHookUserMsg(szMsgName, pfn);
+
+	if (0) {}
+	REDIRECT_MESSAGE(TeamInfo)
+		REDIRECT_MESSAGE(CurWeapon)
+		REDIRECT_MESSAGE(ScoreAttrib)
+		REDIRECT_MESSAGE(SetFOV)
+		REDIRECT_MESSAGE(Health)
+		REDIRECT_MESSAGE(Battery)
+		REDIRECT_MESSAGE(ScoreInfo)
+		REDIRECT_MESSAGE(DeathMsg)
+		REDIRECT_MESSAGE(SayText)
+		REDIRECT_MESSAGE(TextMsg)
+		REDIRECT_MESSAGE(ResetHUD)
+		REDIRECT_MESSAGE(Damage)
+		REDIRECT_MESSAGE(AmmoX)
+		REDIRECT_MESSAGE(Money)
+	else if (!strcmp(szMsgName, "WeaponList")) // Because the Class is called like the Msg
 	{
 		WeaponListOrg = pfn;
 		retval = gEngfuncs.pfnHookUserMsg(szMsgName, WeaponList);
@@ -207,7 +209,7 @@ __declspec(naked)void Gateway1_HUD_Redraw(void)
 		mov esi, dword ptr ss : [esp + 0x10];
 		mov retaddress, esi;
 		push _Redraw
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0x10], esi;
 		pop esi;
 		ret;
@@ -232,7 +234,7 @@ __declspec(naked)void Gateway1_HUD_PostRunCmd(void)
 		mov esi, dword ptr ss : [esp + 0x38];
 		mov retaddress, esi;
 		push _PostRunCmd
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0x38], esi;
 		pop esi;
 		ret;
@@ -271,7 +273,7 @@ __declspec(naked)void Gateway1_HUD_PlayerMove(void)
 		mov esi, dword ptr ss : [esp + 0x10];
 		mov retaddress, esi;
 		push _PlayerMove
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0x10], esi;
 		pop esi;
 		ret;
@@ -295,7 +297,7 @@ __declspec(naked)void Gateway1_HUD_Init(void)
 		mov esi, dword ptr ss : [esp + 0x08];
 		mov retaddress, esi;
 		push _Init
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0x08], esi;
 		pop esi;
 		ret;
@@ -323,7 +325,7 @@ __declspec(naked)void Gateway1_HUD_AddEntity(void)
 		mov esi, dword ptr ss : [esp + 0x14];
 		mov retaddress, esi;
 		push _AddEnt
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0x14], esi;
 		pop esi;
 		ret;
@@ -342,7 +344,7 @@ __declspec(naked) void Gateway1_HUD_AddEntityDOD(void)
 		mov esi, dword ptr ss : [esp + 0xE0];
 		mov retaddress, esi;
 		push _AddEnt
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0xE0], esi;
 		pop esi;
 		ret;
@@ -371,7 +373,7 @@ __declspec(naked)void Gateway1_HUD_Key_Event(void)
 		mov esi, dword ptr ss : [esp + 0x14];
 		mov retaddress, esi;
 		push _KeyEvent
-		pop esi;
+			pop esi;
 		mov dword ptr ss : [esp + 0x14], esi;
 		pop esi;
 		ret;
@@ -384,7 +386,7 @@ __declspec(naked) void JumpGate_HUD_UpdateClientData() // Thank you Patrick for
 	_asm	mov[iUpdateResult], eax						 // Gateway for this Function
 	_asm	call HUD_UpdateClientData
 	_asm	mov eax, [iUpdateResult]
-	_asm	jmp[retaddress]
+		_asm	jmp[retaddress]
 }
 
 DWORD _UpdateClientData = (DWORD)&JumpGate_HUD_UpdateClientData;
@@ -392,9 +394,9 @@ __declspec(naked) void GateWay_HUD_UpdateClientData()
 {
 	_asm	push esi
 	_asm	mov esi, [esp + 0x10]
-	_asm	mov[retaddress], esi
+		_asm	mov[retaddress], esi
 	_asm	push[_UpdateClientData]
-	_asm	pop esi
+		_asm	pop esi
 	_asm	mov[esp + 0x10], esi
 	_asm	pop esi
 	_asm	retn
@@ -411,7 +413,7 @@ __declspec(naked) void Gateway1_HUD_Frame(void)
 {
 	__asm push esi
 	__asm mov esi, dword ptr ss : [esp + 0x0c]
-	__asm mov retaddress, esi
+		__asm mov retaddress, esi
 	__asm push _Frame
 	__asm pop esi
 	__asm mov dword ptr ss : [esp + 0x0c], esi
@@ -432,8 +434,8 @@ extern cl_clientslots_s* g_pSlots;
 BOOL ActivateClient()
 {
 	// Copy client  to local structure
-	memcpy( &gClient, (LPVOID)g_pClient, sizeof (CLIENT) );
-	
+	memcpy(&gClient, (LPVOID)g_pClient, sizeof(CLIENT));
+
 	g_Engine.Con_Printf(XorStr("Game Protocol %d\n"), g_offsetScanner.BuildInfo.Protocol);
 
 	DWORD failTick = 0;
@@ -513,7 +515,7 @@ void CmdFunc_NextWeapon(void)
 	if (g_pWeaponSwitch == nullptr || !g_pWeaponSwitch->m_pFastSwitch->value ||
 		gEngfuncs.GetLocalPlayer()->curstate.iuser1 || !Config::fastSwitch)
 	{
-		if(g_pfnOldNextWeapon != nullptr)
+		if (g_pfnOldNextWeapon != nullptr)
 			g_pfnOldNextWeapon();
 		return;
 	}
@@ -526,7 +528,7 @@ void CmdFunc_PrevWeapon(void)
 	if (g_pWeaponSwitch == nullptr || !g_pWeaponSwitch->m_pFastSwitch->value ||
 		gEngfuncs.GetLocalPlayer()->curstate.iuser1 || !Config::fastSwitch)
 	{
-		if(g_pfnOldPrevWeapon != nullptr)
+		if (g_pfnOldPrevWeapon != nullptr)
 			g_pfnOldPrevWeapon();
 		return;
 	}
@@ -564,22 +566,29 @@ cvar_t* RegisterVariable(char *szName, char *szValue, int flags)
 	return g_Engine.pfnRegisterVariable(szName, szValue, flags);
 }
 
+void Hooked_FireBullets(ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting, Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL)
+{
+	g_oFireBullets(cShots, vecSrc, vecDirShooting, vecSpread, flDistance, iBulletType, iTracerFreq, iDamage, pevAttacker);
+	g_local.vSpread = vecSpread;
+	g_local.vSource = vecSrc;
+}
+
 //==================================================================================
 // Copy enginefuncs_s struct to local gEngfuncs and setup engine hooks
 //==================================================================================
 BOOL ActivateEngine()
 {
-	if(IsBadReadPtr((LPCVOID)g_pEngine, sizeof DWORD))
+	if (IsBadReadPtr((LPCVOID)g_pEngine, sizeof DWORD))
 	{
 		return FALSE;
 	}
 
-	if(g_pEngine->pfnHookUserMsg && g_pEngine->pfnHookEvent )
+	if (g_pEngine->pfnHookUserMsg && g_pEngine->pfnHookEvent)
 	{
-		memcpy( &gEngfuncs, g_pEngine, sizeof( cl_enginefunc_t ) );
-		if( g_pStudio->GetModelByIndex )
+		memcpy(&gEngfuncs, g_pEngine, sizeof(cl_enginefunc_t));
+		if (g_pStudio->GetModelByIndex)
 		{
-			memcpy( &IEngineStudio, g_pStudio, sizeof( IEngineStudio ) );
+			memcpy(&IEngineStudio, g_pStudio, sizeof(IEngineStudio));
 		}
 		else
 		{
@@ -589,7 +598,7 @@ BOOL ActivateEngine()
 		bEngineActive = TRUE;
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 //==================================================================================

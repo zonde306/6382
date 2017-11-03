@@ -34,9 +34,9 @@ struct sMe
 	int iCrosshairId;
 
 	int iFOV;
-	float pmVelocity[3];
-	float punchangle[3];
-	float pmEyePos[3];
+	Vector pmVelocity;
+	Vector punchangle;
+	Vector pmEyePos;
 	int pmFlags;
 	float viewAngles[3];
 	float sin_yaw, minus_cos_yaw;
@@ -47,6 +47,9 @@ struct sMe
 	int entindex;
 	bool alive;
 	spread_info spread;
+	Vector vSpread;
+	Vector vSource;
+	Vector origin;
 
 	float maxspeed;
 	float groundspeed;
@@ -59,18 +62,23 @@ struct sMe
 	float aimTrigDiff;
 	std::string sServerName;
 
+	bool bInRad(float fScreen[2], float Fov, struct usercmd_s* cmd);
+
 	void DoAntiAim(struct usercmd_s *usercmd);
 	void DoAntiAim2(struct usercmd_s *usercmd);
 	void DoBunnyHop(struct usercmd_s *usercmd);
 	void DoAutoPistol(struct usercmd_s *usercmd);
 	void DoTriggerBot(struct usercmd_s *usercmd);
+	void DoTriggerBot2(struct usercmd_s *usercmd);
 	void AdjustSpeed(double speed);
 	void DoFastWalk();
 	void DoFastRun(struct usercmd_s *usercmd);
 	void DoAutoStrafe(struct usercmd_s *cmd);
 
+	bool DoKinfeBot(struct usercmd_s *cmd);
 	void DoAntiRecoil(struct usercmd_s* usercmd, float frametime);
 	void DoAntiSpread(struct usercmd_s* usercmd);
+	void DoNoSpread(struct usercmd_s* usercmd);
 	void DoSilentAngles(struct usercmd_s* usercmd, float* aimangles);
 	bool DoSmoothAngles(float* Source, float* Destination, float* NewDestination, float Factor);
 	void DoSilentAngles(float* aimangles, struct usercmd_s* usercmd);
@@ -137,6 +145,10 @@ public:
 	Vector SoundOrigin;
 	Vector eyePosition;
 	Vector eyeAngles;
+	int nearestBone;
+	float nearBoneDist;
+	int nearestHitbox;
+	float nearHitboxDist;
 
 	void setAlive() { alive = true;  }
 	void setDead() { alive = false;  }

@@ -644,6 +644,38 @@ void cNoSpread::HUD_PostRunCmd(struct local_state_s *from, struct local_state_s 
 	}
 }
 
+double cNoSpread::GetConstantRemainder(double * Spread)
+{
+	double ConstantRemainder = 0;
+
+	Vector Direction, Forward, Right, Up;
+
+	Vector SpreadAt90Pitch(Spread[1], -Spread[0], -1.0);
+
+	Vector OutputAngles;
+
+	Vector InputAngles(90, 0, 0);
+
+	// InputAngles.AngleVectors(&Forward, &Right, &Up);
+	gEngfuncs.pfnAngleVectors(InputAngles, Forward, Right, Up);
+
+	/*
+	Direction = Forward + ( Right * Spread[0] ) + ( Up * Spread[1] );
+
+	Direction.Normalize();
+	*/
+	SpreadAt90Pitch.Normalize();
+
+	// OutputAngles = SpreadAt90Pitch.ToEulerAngles(&Up);
+	OutputAngles = ToEulerAngles(Up);
+
+	OutputAngles.Normalize();
+
+	ConstantRemainder = OutputAngles[1] - OutputAngles[2];
+
+	return ConstantRemainder;
+}
+
 void cNoSpread::PrimaryAttack(void)
 {
 	int id;

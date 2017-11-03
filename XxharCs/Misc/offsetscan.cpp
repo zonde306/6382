@@ -192,6 +192,15 @@ finish:
 	Addres = (DWORD)Absolute(unsigned(Addres) + 23);
 
 	/*
+	int(*GetBuildNumber)(void) = (int(*)(void))FindPattern(HwBase, HwBase + HwSize, XorStr("A1 ? ? ? ? 83 EC 08 ? 33 ? 85 C0"));
+	if(GetBuildNumber == nullptr)
+		GetBuildNumber = (int(*)(void))FindPattern(HwBase, HwBase + HwSize, XorStr("55 8B EC 83 EC 08 A1 ? ? ? ? 56 33 F6 85 C0 0F 85 ? ? ? ? 53 33 DB 8B 04 9D"));
+	
+	if (GetBuildNumber != nullptr)
+		BuildInfo.Build = GetBuildNumber();
+	*/
+
+	/*
 	DWORD build = 0;
 
 	__asm

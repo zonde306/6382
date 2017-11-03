@@ -537,6 +537,81 @@ void sMe::DoTriggerBot(usercmd_s * usercmd)
 	}
 }
 
+//bInRad - return true if crosshair in trigger radius, also calculation prospread.
+bool sMe::bInRad(float fScreen[2], float Fov, struct usercmd_s* cmd)
+{
+	if (Config::trigger_prospread > 0.0f)
+	{
+		Vector spreadangles, forward, spread;
+		pmtrace_t tr;
+
+		VectorAdd(cmd->viewangles, this->punchangle, spreadangles);
+
+		gEngfuncs.pfnAngleVectors(spreadangles, forward, NULL, NULL);
+
+		gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+		gEngfuncs.pEventAPI->EV_PlayerTrace(this->pmEyePos, this->pmEyePos +
+			(forward * 3000.0f), PM_GLASS_IGNORE, -1, &tr);
+
+		CalcScreen(tr.endpos, spread);
+
+		spread.x = screeninfo.iWidth - spread.x;
+		spread.y = screeninfo.iHeight - spread.y;
+
+		float fScreenFinal[2] = {
+			(float)(abs(spread.x - fScreen[0])),
+			(float)(abs(spread.y - fScreen[1]))
+		};
+
+		return (fScreenFinal[0] <= Fov && fScreenFinal[1] <= Fov);
+	}
+	else
+	{
+		float ScreenOut[2] = {
+			(float)(abs((screeninfo.iWidth / 2) - fScreen[0])),
+			(float)(abs((screeninfo.iHeight / 2) - fScreen[1]))
+		};
+
+		return (ScreenOut[0] <= Fov && ScreenOut[1] <= Fov);
+	}
+}
+
+void sMe::DoTriggerBot2(usercmd_s * usercmd)
+{
+	if (this->iWeaponId == WEAPONLIST_KNIFE || this->iWeaponId == WEAPONLIST_C4 ||
+		this->iWeaponId == WEAPONLIST_FLASHBANG || this->iWeaponId == WEAPONLIST_SMOKEGRENADE ||
+		this->iWeaponId == WEAPONLIST_HEGRENADE || this->iWeaponId <= 0 || !this->alive ||
+		this->iClip <= 0 || this->bInReloading || this->fNextPrimAttack > (usercmd->msec / 1000))
+		return;
+
+	for (int i = 1; i <= 32; ++i)
+	{
+		if (i == this->entindex || g_playerList[i].getEnt() == nullptr ||
+			!g_playerList[i].isAlive() || !g_playerList[i].isUpdated() ||
+			g_playerList[i].nearestBone < 0 || g_playerList[i].nearestHitbox < 0 ||
+			g_playerList[i].nearestHitbox > 12 || g_playerList[i].nearestBone > 64)
+			continue;
+
+		float fScreenBone[2], fScreenHitbox[2];
+		if (CalcScreen(g_playerList[i].bone[g_playerList[i].nearestBone], fScreenBone) &&
+			CalcScreen(g_playerList[i].hitbox[g_playerList[i].nearestHitbox], fScreenHitbox))
+		{
+			float distance = VectorDistance(this->pmEyePos, g_playerList[i].origin());
+			float fRad = ((POW(Config::trigger_radius) * 10) / (distance * this->iFOV));
+			if (bInRad(fScreenBone, fRad, usercmd) || bInRad(fScreenHitbox, fRad, usercmd))
+			{
+				usercmd->buttons |= IN_ATTACK;
+			}
+
+			if (Config::trigger_draw)
+			{
+				gDrawBoxAtScreenXY(fScreenBone[0] - fRad, fScreenBone[1] - fRad, 255, 0, 0, 255, (fRad * 2));
+				gDrawBoxAtScreenXY(fScreenHitbox[0] - fRad, fScreenHitbox[1] - fRad, 255, 0, 0, 255, (fRad * 2));
+			}
+		}
+	}
+}
+
 void CalcAngle(Vector src, Vector end, Vector& out)
 {
 	Vector delta(src - end);
@@ -779,6 +854,64 @@ void sMe::DoAutoStrafe(usercmd_s * cmd)
 	m_switch = !m_switch;
 }
 
+bool sMe::DoKinfeBot(usercmd_s * cmd)
+{
+	cl_entity_s *ent;
+	float flDistance = 32;
+	int iEntity;
+	pmtrace_t gVis;
+	vec3_t vForward, vecEnd;
+
+	gEngfuncs.pfnAngleVectors(cmd->viewangles, vForward, NULL, NULL);
+
+	for (int iCount = 1; iCount <= 2; iCount++)
+	{
+		vecEnd[0] = this->pmEyePos[0] + vForward[0] * flDistance;
+		vecEnd[1] = this->pmEyePos[1] + vForward[1] * flDistance;
+		vecEnd[2] = this->pmEyePos[2] + vForward[2] * flDistance;
+
+		gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+		gEngfuncs.pEventAPI->EV_PlayerTrace(this->pmEyePos, vecEnd, PM_STUDIO_BOX, -1, &gVis);
+
+		iEntity = gEngfuncs.pEventAPI->EV_IndexFromTrace(&gVis);
+
+		ent = gEngfuncs.GetEntityByIndex(iEntity);
+
+		if (ent->player)
+		{
+			if (g_playerList[iEntity].team != this->team)
+			{
+				if (iCount == 1)
+				{
+					cmd->buttons |= IN_ATTACK2;
+
+					return true;
+				}
+				else if (iCount == 2)
+				{
+					cmd->buttons |= IN_ATTACK;
+
+					return true;
+				}
+			}
+			else
+			{
+				if (iCount == 2)
+					return false;
+			}
+		}
+		else
+		{
+			if (iCount == 2)
+				return false;
+		}
+
+		flDistance += 16.0f;
+	}
+
+	return false;
+}
+
 void sMe::DoAntiRecoil(usercmd_s * usercmd, float frametime)
 {
 	vec3_t viewforward, viewright, viewup, aimforward, aimright, aimup;
@@ -835,6 +968,13 @@ void sMe::DoAntiSpread(usercmd_s * usercmd)
 	gEngfuncs.pfnAngleVectors(usercmd->viewangles, viewforward, viewright, viewup);
 	float offset[3];
 	gNoSpread.GetSpreadOffset(g_local.spread.random_seed, 1, usercmd->viewangles, g_local.pmVelocity, offset);
+	
+	/*
+	float lenght = sqrt(1.0f - (offset[1] * offset[1]));
+	offset[0] = -(cmd->viewangles[0] + RAD2DEG(asin(Forward[2] / lenght) - atan(Spread[1])));
+	offset[1] = RAD2DEG(atan2(SpreadAtOriginAngles[1], sqrt(lenght * lenght - Forward[2] * Forward[2])));
+	*/
+
 	usercmd->viewangles[0] += offset[0];
 	usercmd->viewangles[1] += offset[1];
 	usercmd->viewangles[2] += offset[2];
@@ -859,6 +999,21 @@ void sMe::DoAntiSpread(usercmd_s * usercmd)
 	usercmd->forwardmove = newforward;
 	usercmd->sidemove = newright;
 	usercmd->upmove = newup;
+}
+
+void sMe::DoNoSpread(usercmd_s * usercmd)
+{
+	Vector Forward;
+	gEngfuncs.pfnAngleVectors(usercmd->viewangles, Forward, nullptr, nullptr);
+	
+	float LengthXZ = sqrt(1 - (this->vSource[1] * this->vSource[1]));
+
+	Vector QAdjusterAngles;
+	QAdjusterAngles[0] = -(usercmd->viewangles[0] + RAD2DEG(asin(Forward[2] / LengthXZ) - atan(this->vSpread[1])));
+	QAdjusterAngles[1] = RAD2DEG(atan2(this->vSource[1], sqrt(LengthXZ * LengthXZ - Forward[2] * Forward[2])));
+
+	usercmd->viewangles[0] += QAdjusterAngles[0];
+	usercmd->viewangles[1] += QAdjusterAngles[1];
 }
 
 void sMe::DoSilentAngles(usercmd_s * usercmd, float * aimangles)
@@ -1253,3 +1408,464 @@ void PlayerInfo::drawBone(int bone1, int bone2, byte r, byte g, byte b, byte a)
 			r, g, b, a);
 	}
 }
+
+float* NormalizeX(float* v)
+{
+	float dist = (float)sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	if (dist == 0) {
+		v[0] = 0;
+		v[1] = 0;
+		v[2] = 1;
+	}
+	else {
+		dist = 1 / dist;
+		v[0] = v[0] * dist;
+		v[1] = v[1] * dist;
+		v[2] = v[2] * dist;
+	}
+	return v;
+}
+
+float AngleBetween(Vector a, Vector b)
+{
+	float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0;
+	x1 = a.x;
+	y1 = a.y;
+	z1 = a.z;
+	x2 = b.x;
+	y2 = b.y;
+	z2 = b.z;
+	float dist = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
+	float dist2 = sqrt(pow(x1 - x2, 2) + pow(z1 - z2, 2));
+	return acos(dist2 / dist) * 180 / 3.1415926;
+}
+
+void GetSpreadOffset(struct usercmd_s* usercmd)
+{
+	double SpreadCone = g_local.spread.spreadvar;//GetSpread();
+	double CosineInput = 0, CosinePitch = 0, PitchBreakingPoint = 0, PitchInput = 0;
+	double InputRoll = 0;
+	//	double RadiansPitch=0;
+	double ReciprocalYaw_1 = 0, ReciprocalYaw_2 = 0, TrapGodConstant = 0, UpVal = 0, Yaw_1 = 0;
+
+
+	//	vec3_t my_QAngles;
+	float my_QAngles[3];
+	float my_QOldAngles[3];
+	float my_QAdjusterAngles[3];
+	float* my_QAdjusterAngles_ptr = 0;
+	float my_QInputAngles[3];
+	float* my_QInputAngles_ptr = 0;
+	float my_QNewAngles[3];
+	float* my_QNewAngles_ptr = 0;
+	float my_QTestAngles[3];
+	float* my_QTestAngles_ptr = 0;
+	//	float Difference[3];
+	//	float* Difference_ptr = 0;
+
+	float my_QInputRoll[3];
+	float* my_QInputRoll_ptr = 0;
+
+	Vector vecRandom;
+	Vector vecDir, vecForward, vecRight, vecUp;
+	Vector vecReciprocalVector, vecInputRight, vecInputRight2;
+
+	Vector vecServerForward;
+	Vector vecServerRight;
+	Vector vecServerUp;
+
+	///////////////////////
+
+	// Trap God Constant computation goes here
+
+	TrapGodConstant = 0;
+
+	///////////////////////
+
+	my_QAngles[0] = usercmd->viewangles[0];
+	my_QAngles[1] = 0;
+	my_QAngles[2] = 0;
+
+	//	VectorCopy ( usercmd->viewangles, my_QAngles );
+
+	//
+	my_QOldAngles[0] = my_QAngles[0];
+	my_QOldAngles[1] = my_QAngles[1];
+	my_QOldAngles[2] = my_QAngles[2];
+
+	//
+	gEngfuncs.pfnAngleVectors(my_QAngles, vecForward, vecRight, vecUp);
+
+	//
+	vecDir = vecForward + (-SpreadCone * vecRandom[0] * vecRight) + (-SpreadCone * vecRandom[1] * vecUp);
+	vecDir.Normalize();
+
+	//
+	PitchBreakingPoint = (atan2(vecDir[1], sqrt((1 - (vecDir[1] * vecDir[1])))) * 180 / M_PI);
+
+	if (PitchBreakingPoint < 0) {
+		PitchBreakingPoint += 360;
+	}
+
+	if (PitchBreakingPoint > 180) {
+		PitchBreakingPoint -= 360;
+	}
+	else if (PitchBreakingPoint < -180) {
+		PitchBreakingPoint += 360;
+	}
+
+	if (PitchBreakingPoint < 0) {
+		PitchBreakingPoint = 90 + PitchBreakingPoint;
+	}
+	else {
+		PitchBreakingPoint = 90 - PitchBreakingPoint;
+	}
+
+	//
+	VectorCopy(ToEulerAngles(vecDir), my_QAngles);
+
+	//
+	gEngfuncs.pfnAngleVectors(my_QAngles, vecForward, vecRight, vecUp);
+
+	//
+	UpVal = vecUp[2];
+
+	//
+
+	my_QAngles[0] = my_QOldAngles[0];
+	my_QAngles[1] = my_QOldAngles[1];
+	my_QAngles[2] = my_QOldAngles[2];
+
+	//
+	CosineInput = my_QAngles[0] * (M_PI * 2 / 360);
+	CosinePitch = cos(CosineInput);
+
+	if (CosinePitch != 0)
+	{
+		Yaw_1 = 1 / CosinePitch;
+	}
+	else {
+		Yaw_1 = 0;
+	}
+
+	Yaw_1 *= vecDir[1];
+
+	vecInputRight[1] = Yaw_1;
+
+	if (Yaw_1 >= 1 || Yaw_1 <= -1)
+	{
+		vecInputRight[0] = 0;
+	}
+	else {
+		vecInputRight[0] = sqrt((1 - (vecInputRight[1] * vecInputRight[1])));
+	}
+
+	vecInputRight[2] = 0;
+
+	//
+
+	my_QAdjusterAngles[0] = 0;
+	my_QAdjusterAngles[1] = 0;
+	my_QAdjusterAngles[2] = 0;
+
+	//
+
+	my_QAdjusterAngles[1] = (atan2(vecInputRight[1], vecInputRight[0]) * 180 / M_PI);
+
+	if (my_QAdjusterAngles[1] < 0)
+	{
+		my_QAdjusterAngles[1] += 360;
+	}
+
+	//
+
+	my_QAdjusterAngles_ptr = NormalizeX(my_QAdjusterAngles);
+
+	vecInputRight2[1] = vecDir[1];
+
+	if (vecDir[1] >= 1 || vecDir[1] <= -1)
+	{
+		vecInputRight[0] = 0;
+	}
+	else {
+		vecInputRight2[0] = sqrt((1 - (vecInputRight2[1] * vecInputRight2[1])));
+	}
+
+	vecInputRight2[2] = 0;
+
+	if (vecInputRight[0] != 0)
+	{
+		ReciprocalYaw_1 = vecInputRight[1] / vecInputRight[0];
+	}
+	else {
+		ReciprocalYaw_1 = 0;
+	}
+
+	if (vecInputRight2[0] != 0)
+	{
+		ReciprocalYaw_2 = vecInputRight2[1] / vecInputRight2[0];
+	}
+	else {
+		ReciprocalYaw_2 = 0;
+	}
+
+	vecReciprocalVector[0] = ReciprocalYaw_1;
+	vecReciprocalVector[1] = ReciprocalYaw_2;
+	vecReciprocalVector[2] = 0;
+
+	if (vecReciprocalVector[0] != 0)
+	{
+		PitchInput = 1 / vecReciprocalVector[0];
+	}
+	else
+	{
+		PitchInput = 0;
+	}
+
+	PitchInput *= vecReciprocalVector[1];
+
+	//
+
+	my_QInputAngles[0] = 0;
+	my_QInputAngles[1] = 0;
+	my_QInputAngles[2] = 0;
+
+	//
+
+	if (my_QAngles[0] < 0)
+	{
+		my_QInputAngles[0] = asin(-PitchInput) * 180 / M_PI;
+	}
+	else {
+		my_QInputAngles[0] = asin(PitchInput) * 180 / M_PI;
+	}
+
+	if (my_QInputAngles[0] < 0)
+	{
+		my_QInputAngles[0] += 360;
+	}
+
+	//
+	my_QInputAngles_ptr = NormalizeX(my_QInputAngles);
+
+	double TempPitch = my_QAngles[0];
+
+	if (TempPitch < 0)
+	{
+		TempPitch = -TempPitch;
+	}
+
+	if (my_QAngles[0] < 0)
+	{
+		my_QInputAngles[0] += (45 - TempPitch) * 2;
+	}
+	else
+	{
+		my_QInputAngles[0] -= (45 - TempPitch) * 2;
+	}
+
+	my_QInputAngles[1] = 0;
+	my_QInputAngles[2] = 0;
+
+	//
+	my_QInputAngles_ptr = NormalizeX(my_QInputAngles);
+
+
+	//
+	gEngfuncs.pfnAngleVectors(my_QInputAngles, vecForward, vecRight, vecUp);
+
+	//
+	vecDir[0] = vecForward[0] + (SpreadCone * vecRandom[0] * vecRight[0]) + (SpreadCone * vecRandom[1] * vecUp[0]);
+	vecDir[1] = 0;
+	vecDir[2] = vecForward[2] + (SpreadCone * vecRandom[0] * vecRight[2]) + (SpreadCone * vecRandom[1] * vecUp[2]);
+
+	vecDir.Normalize();
+
+	//
+	if (my_QAngles[0] < 0)
+	{
+		my_QAdjusterAngles[0] = (asin(vecDir[2]) * 180 / M_PI);
+	}
+	else
+	{
+		my_QAdjusterAngles[0] = (asin(-vecDir[2]) * 180 / M_PI);
+	}
+
+	if (my_QAdjusterAngles[0] < 0)
+	{
+		my_QAdjusterAngles[0] += 360;
+	}
+
+	//
+	my_QAdjusterAngles_ptr = NormalizeX(my_QAdjusterAngles);
+
+	//
+
+	my_QNewAngles[0] = 0;
+	my_QNewAngles[1] = 0;
+	my_QNewAngles[2] = 0;
+
+	//
+
+	my_QNewAngles[0] = my_QOldAngles[0];
+	my_QNewAngles[1] = my_QOldAngles[1];
+	my_QNewAngles[2] = my_QOldAngles[2];
+
+	//
+	if (my_QAngles[0] < 0)
+	{
+		my_QNewAngles[0] += my_QNewAngles[0] + my_QAdjusterAngles[0];
+	}
+	else
+	{
+		my_QNewAngles[0] += my_QNewAngles[0] - my_QAdjusterAngles[0];
+	}
+
+	my_QNewAngles[1] = my_QNewAngles[1] + my_QAdjusterAngles[1];
+	my_QNewAngles[2] = 0;
+
+	//
+	my_QNewAngles_ptr = NormalizeX(my_QNewAngles);
+
+
+	////////////////////////// update
+
+	gEngfuncs.pfnAngleVectors(my_QAngles, vecServerForward, vecServerRight, vecServerUp);
+
+	my_QTestAngles[0] = 0;
+	my_QTestAngles[1] = 0;
+	my_QTestAngles[2] = 0;
+	VectorCopy(ToEulerAngles(vecDir), my_QTestAngles);
+
+	my_QTestAngles_ptr = NormalizeX(my_QTestAngles);
+
+	my_QTestAngles[0] = 90 - AngleBetween(vecDir, vecServerUp);
+	my_QTestAngles[1] = 90 - AngleBetween(vecDir, vecServerRight);
+	my_QTestAngles_ptr = NormalizeX(my_QTestAngles);
+
+	my_QNewAngles[0] += my_QTestAngles[0];
+	my_QNewAngles[1] += my_QTestAngles[1];
+	my_QNewAngles[2] += my_QTestAngles[2];
+
+	my_QNewAngles_ptr = NormalizeX(my_QNewAngles);
+
+	if (my_QAngles[0] < -PitchBreakingPoint || my_QAngles[0] > PitchBreakingPoint)
+	{
+		gEngfuncs.pfnAngleVectors(my_QNewAngles, vecServerForward, vecServerRight, vecServerUp);
+
+		InputRoll = vecUp[1] / UpVal;
+
+		my_QInputRoll[0] = (asin(InputRoll) * 180 / M_PI);
+
+		if (my_QInputRoll[0] < 0)
+		{
+			my_QInputRoll[0] += 360;
+		}
+
+		//
+		my_QInputRoll_ptr = NormalizeX(my_QInputRoll);
+
+
+		my_QInputRoll[0] *= -1;
+
+		my_QNewAngles[0] = my_QOldAngles[0];
+		my_QNewAngles[1] = my_QOldAngles[1];
+		my_QNewAngles[2] = my_QOldAngles[2];
+
+		my_QNewAngles[2] = my_QInputRoll[0] + TrapGodConstant;
+
+		gEngfuncs.pfnAngleVectors(my_QNewAngles, vecForward, vecRight, vecUp);
+
+		vecDir = vecForward + (-SpreadCone * vecRandom[0] * vecRight) + (-SpreadCone * vecRandom[1] * vecUp);
+
+		vecDir.Normalize();
+
+		//	QNewAngles = vecDir.ToEulerAngles ( &vecUp );
+		VectorCopy(ToEulerAngles(&vecUp, vecDir), my_QNewAngles);
+
+		my_QNewAngles_ptr = NormalizeX(my_QNewAngles);
+
+		my_QNewAngles[2] += TrapGodConstant;
+
+		my_QNewAngles_ptr = NormalizeX(my_QNewAngles);
+
+	}
+
+	//////////////////////////
+
+	//
+	// this loop below is entirely optional
+	/*	for ( int Iterator = 0; Iterator < 20; ++Iterator ) // recover to 1.e-16 or so
+	{
+	gEngfuncs.pfnAngleVectors(my_QNewAngles, vecForward, vecRight, vecUp);
+
+	vecDir = vecForward + ( SpreadCone * vecRandom[0] * vecRight ) + ( SpreadCone * vecRandom[1] * vecUp );
+
+	vecDir.Normalize();
+
+	gEngfuncs.pfnAngleVectors(my_QAngles, vecServerForward, vecServerRight, vecServerUp);
+
+	my_QTestAngles[0]=0;
+	my_QTestAngles[1]=0;
+	my_QTestAngles[2]=0;
+	VectorCopy(ToEulerAngles(vecDir), my_QTestAngles);
+
+	//
+	my_QTestAngles_ptr = NormalizeX(my_QTestAngles);
+
+	//	QAngle Difference = QAngles - QTestAngles;
+	Difference[0] = my_QAngles[0] - my_QTestAngles[0];
+	Difference[1] = my_QAngles[1] - my_QTestAngles[1];
+	Difference[2] = my_QAngles[2] - my_QTestAngles[2];
+
+	//
+	Difference_ptr = NormalizeX(Difference);
+
+	//	QNewAngles += Difference;
+	my_QNewAngles[0] += Difference[0];
+	my_QNewAngles[1] += Difference[1];
+	my_QNewAngles[2] += Difference[2];
+
+	//
+	my_QNewAngles_ptr = NormalizeX(my_QNewAngles);
+	}*/
+
+	/*
+	//
+	// this code below would only apply in CSS/CSGO, or any Valve shooter where the roll angle is accessible.  Otherwise for 1.6 it is useless.
+	if ( QAngles[0] < -PitchBreakingPoint || QAngles[0] > PitchBreakingPoint )
+	{
+	QNewAngles.AngleVectors ( &vecForward, &vecRight, &vecUp );
+	InputRoll = vecUp[1] / UpVal;
+	QInputRoll[0] = ( asin ( InputRoll ) * 180 / M_PI );
+	QInputRoll.Normalize();
+	QInputRoll[0] *= -1;
+	QNewAngles = QOldAngles;
+	QNewAngles[2] = QInputRoll[0] + TrapGodConstant;
+	QNewAngles.AngleVectors ( &vecForward, &vecRight, &vecUp );
+	vecDir = vecForward + ( -SpreadCone * vecRandom[0] * vecRight ) + ( -SpreadCone * vecRandom[1] * vecUp );
+	vecDir.Normalize();
+	QNewAngles = vecDir.ToEulerAngles ( &vecUp );
+	QNewAngles.Normalize();
+	QNewAngles[2] += TrapGodConstant;
+	QNewAngles.Normalize();
+	}*/
+
+
+	//
+
+	/*	float outangles[3]={0};
+	outangles[0] = usercmd->viewangles[0] - my_QNewAngles[0];
+	outangles[1] = usercmd->viewangles[1] - my_QNewAngles[1];
+	outangles[2] = 0;
+
+	usercmd->viewangles[0] += outangles[0];
+	usercmd->viewangles[1] += outangles[1];
+	usercmd->viewangles[2] += outangles[2];
+
+	usercmd->viewangles[0] = my_QNewAngles[0];
+	usercmd->viewangles[1] = my_QNewAngles[1];
+	usercmd->viewangles[2] = my_QNewAngles[2];*/
+}
+
+

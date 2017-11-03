@@ -10,7 +10,7 @@ typedef struct _UserMgsList
 	FnUserMsgHook address;
 } UserMgsList, *PUserMgsList;
 
-typedef void(*PreS_DynamicSound_t)(int, DWORD, char *, float *, DWORD, DWORD, DWORD, DWORD);
+typedef void(*PreS_DynamicSound_t)(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
 DWORD WINAPI InstallCheat(LPVOID params);
 void UninstallCheat();
 

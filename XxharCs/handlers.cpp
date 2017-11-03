@@ -40,7 +40,7 @@ extern bool bAim;
 static bool bunnyhop = false;
 PColor24 Console_TextColor;
 
-cl_enginefuncs_s gEngfuncs		= { NULL };  
+cl_enginefuncs_s gEngfuncs = { NULL };
 cl_enginefuncs_s g_Engine;
 cl_enginefuncs_s* g_pEngine;
 cl_enginefuncs_s* pEngfuncs;
@@ -50,7 +50,7 @@ PDWORD g_pDynamicSound;
 PDWORD g_pSpeedBooster;
 
 double* globalTime;
-engine_studio_api_t IEngineStudio		= { NULL };
+engine_studio_api_t IEngineStudio = { NULL };
 extern CLIENT gClient;
 
 extern cl_clientfunc_t *g_pClient;
@@ -71,21 +71,22 @@ engine_studio_api_t g_Studio;
 
 SCREENINFO g_Screen;
 
-pfnUserMsgHook TeamInfoOrg=NULL;
-pfnUserMsgHook SetFOVOrg=NULL;
-pfnUserMsgHook CurWeaponOrg=NULL;
-pfnUserMsgHook ScoreAttribOrg=NULL;
-pfnUserMsgHook HealthOrg=NULL;
-pfnUserMsgHook BatteryOrg=NULL;
-pfnUserMsgHook ScoreInfoOrg=NULL;
-pfnUserMsgHook DeathMsgOrg=NULL;
-pfnUserMsgHook SayTextOrg=NULL;
-pfnUserMsgHook ResetHUDOrg=NULL;
-pfnUserMsgHook TextMsgOrg=NULL;
-pfnUserMsgHook DamageOrg=NULL;
-pfnUserMsgHook AmmoXOrg=NULL;
-pfnUserMsgHook WeaponListOrg=NULL;
-pfnUserMsgHook MoneyOrg=NULL;
+pfnUserMsgHook TeamInfoOrg = NULL;
+pfnUserMsgHook SetFOVOrg = NULL;
+pfnUserMsgHook CurWeaponOrg = NULL;
+pfnUserMsgHook ScoreAttribOrg = NULL;
+pfnUserMsgHook HealthOrg = NULL;
+pfnUserMsgHook BatteryOrg = NULL;
+pfnUserMsgHook ScoreInfoOrg = NULL;
+pfnUserMsgHook DeathMsgOrg = NULL;
+pfnUserMsgHook SayTextOrg = NULL;
+pfnUserMsgHook ResetHUDOrg = NULL;
+pfnUserMsgHook TextMsgOrg = NULL;
+pfnUserMsgHook DamageOrg = NULL;
+pfnUserMsgHook AmmoXOrg = NULL;
+pfnUserMsgHook WeaponListOrg = NULL;
+pfnUserMsgHook MoneyOrg = NULL;
+pfnUserMsgHook RadarOrg = NULL;
 
 extern float fCurrentFOV;
 extern int	displayCenterX;
@@ -93,6 +94,7 @@ extern int	displayCenterY;
 extern bool oglSubtractive;
 #define NOT_LTFX_SLOTS()		(g_offsetScanner.BuildInfo.Protocol >= 48 || g_pSlots == nullptr)
 
+void playerSound(int index, const float*const origin, const char*const sample);
 void ConsolePrintColor(char* fmt, BYTE R, BYTE G, BYTE B, char* csxx)
 {
 	TColor24 DefaultColor;
@@ -109,41 +111,42 @@ void ConsolePrintColor(char* fmt, BYTE R, BYTE G, BYTE B, char* csxx)
 //////////////////////////////////////////////////////////////////////////
 // HUD_Init Client Function
 //////////////////////////////////////////////////////////////////////////
-void HUD_Init ( void )
+void HUD_Init(void)
 {
 	gClient.HUD_Init();
 }
 
-int Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
+int Initialize(cl_enginefunc_t *pEnginefuncs, int iVersion)
 {
-	
+
 	return gClient.Initialize(pEnginefuncs, iVersion);
 }
 
-void HookEngine( void )
+void HookEngine(void)
 {
-	memcpy( &g_Engine, (LPVOID)g_pEngine, sizeof( cl_enginefunc_t ) );
+	memcpy(&g_Engine, (LPVOID)g_pEngine, sizeof(cl_enginefunc_t));
 	g_pEngine->pfnHookUserMsg = HookUserMsg;
 }
 
-void HookStudio( void )
+void HookStudio(void)
 {
-	memcpy( &g_Studio, (LPVOID)g_pStudio, sizeof( engine_studio_api_t ) );
+	memcpy(&g_Studio, (LPVOID)g_pStudio, sizeof(engine_studio_api_t));
 }
 
 static bool Init = false;
 
 void InitHack()
 {
-	g_Screen.iSize = sizeof( SCREENINFO );
-	gEngfuncs.pfnGetScreenInfo( &g_Screen );
+	g_Screen.iSize = sizeof(SCREENINFO);
+	gEngfuncs.pfnGetScreenInfo(&g_Screen);
 
 	if (g_pWeaponSwitch == nullptr)
 		g_pWeaponSwitch = new CSwitchWeaponEffect();
 
 	gEngfuncs.pfnConsolePrint(XorStr("\nXxharCs MultiHack has been loaded\nby XxharCs\n\nCS 1.6 Version:\n-------------------\n"));
+	gEngfuncs.Con_Printf(XorStr("Build = %d\n"), g_offsetScanner.BuildInfo.Build);
 	gEngfuncs.Con_Printf(XorStr("Protocol = %d\n"), g_offsetScanner.BuildInfo.Protocol);
-	
+
 	// gEngfuncs.Con_Printf("gEngfuncs = 0x%X\n", (DWORD)g_pEngine);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pClient);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pStudio);
@@ -161,20 +164,20 @@ void InitHack()
 	gEngfuncs.pfnClientCmd("toggleconsole");
 }
 
-void HUD_Frame( double time )
+void HUD_Frame(double time)
 {
-	if(!Init)
+	if (!Init)
 	{
 		InitHack();
 		g_offsetScanner.ConsoleColorInitalize();
 		Init = true;
 	}
 
-	if(NOT_LTFX_SLOTS())
-		gClient.HUD_Frame( time );
+	if (NOT_LTFX_SLOTS())
+		gClient.HUD_Frame(time);
 }
 
-int HUD_GetStudioModelInterface ( int version, struct r_studio_interface_s **ppinterface, struct engine_studio_api_s *pstudio )
+int HUD_GetStudioModelInterface(int version, struct r_studio_interface_s **ppinterface, struct engine_studio_api_s *pstudio)
 {
 	return gClient.HUD_GetStudioModelInterface(version, ppinterface, pstudio);
 }
@@ -212,13 +215,13 @@ void DrawBox(int x, int y, int r, int g, int b, int a, int iRadius, int iThickne
 	int iRad = iRadius / 2;
 	// top
 	g_pEngine->pfnFillRGBA(x - iRad, y - iRad, iRadius, iThickness, r, g, b, a);
- 
+
 	// bottom
 	g_pEngine->pfnFillRGBA(x - iRad, y + iRad, iRadius + (iThickness / 2), iThickness, r, g, b, a);
- 
+
 	// left
 	g_pEngine->pfnFillRGBA(x - iRad, y - iRad, iThickness, iRadius, r, g, b, a);
- 
+
 	// right
 	g_pEngine->pfnFillRGBA(x + iRad, y - iRad, iThickness, iRadius, r, g, b, a);
 }
@@ -227,45 +230,45 @@ void DoEspAim (void)
 {
 	cl_entity_t *pEnt = NULL, *pLocal = gEngfuncs.GetLocalPlayer();
 	hud_player_info_t pInfo;
-	
+
 	gEngfuncs.pfnGetPlayerInfo(pLocal-> index, &pInfo);
-	
-	int iOwnTeam = GetTeam(pInfo.model);  
+
+	int iOwnTeam = GetTeam(pInfo.model);
 
 	float fScreenPos[10];
 	float fDistFromCenter[3];
 	float fCenterDistance;
 
-	
+
 	int iScreenCenterX = gEngfuncs.GetWindowCenterX();
 	int iScreenCenterY = gEngfuncs.GetWindowCenterY();
 
-	
+
 	cl_entity_t *pNearestEnt = NULL;
 	float fNearest =-1.0f;
-	float fNearestAimTarget[3] = {0,0,0}; 
+	float fNearestAimTarget[3] = {0,0,0};
 
 	for (int i = 0; i <33; i++)
 	{
-		
+
 		if (pLocal->index == i) continue;
-		
-		
+
+
 		pEnt = gEngfuncs.GetEntityByIndex(i);
 		if (!isValidEnt(pEnt)) continue;
 
-		
+
 		gEngfuncs.pfnGetPlayerInfo(i, &pInfo);
-		int iTeam = GetTeam(pInfo.model); 
-		pEnt->origin.z -= -20; 
+		int iTeam = GetTeam(pInfo.model);
+		pEnt->origin.z -= -20;
 		if (CalcScreen(pEnt->origin, fScreenPos))
-        {
-			
+		{
+
 			fDistFromCenter[0] = iScreenCenterX - fScreenPos[0];
 			fDistFromCenter[1] = iScreenCenterY - fScreenPos[1];
- 
-			
-			fCenterDistance = Square(fDistFromCenter[0], 2) + Square(fDistFromCenter[1], 2); 
+
+
+			fCenterDistance = Square(fDistFromCenter[0], 2) + Square(fDistFromCenter[1], 2);
 			if (iTeam == 1) // Team = Terror = Red
 			{
 				DrawBox(fScreenPos[0], fScreenPos[1], 255, 10, 10, 255, 25, 2);
@@ -274,46 +277,46 @@ void DoEspAim (void)
 			{
 				DrawBox(fScreenPos[0], fScreenPos[1], 10, 10, 255, 255, 25, 2);
 			}
-			else 
+			else
 			{
 				continue;
-			} 
-			if (iTeam == iOwnTeam) continue; 
+			}
+			if (iTeam == iOwnTeam) continue;
 
 			if (fNearest <0.0f || fCenterDistance < fNearest)
 			{
-				
+
 				pNearestEnt = pEnt;
-				
+
 				fNearest = fCenterDistance;
-				
+
 				fNearestAimTarget[0] = fScreenPos[0];
 				fNearestAimTarget[1] = fScreenPos[1];
 			}
 		}
-	} 
+	}
 	if (pNearestEnt != NULL && fNearestAimTarget[0] > 0 && fNearestAimTarget[1] > 0)
 	{
-		
+
 		#define AIM_SMOOTH 3
 
 		if (GetAsyncKeyState (VK_LBUTTON))
 		{
-			
+
 			float x = fNearestAimTarget [0] - iScreenCenterX;
 			float y = fNearestAimTarget [1] - iScreenCenterY;
 
 			x /= AIM_SMOOTH;
 			y /= AIM_SMOOTH;
-			
+
 			fNearestAimTarget [0] = iScreenCenterX + x;
 			fNearestAimTarget [1] = iScreenCenterY + y;
 
-			
+
 			SetCursorPos((int)fNearestAimTarget[0], (int)fNearestAimTarget[1]);
-			
+
 		}
-	} 
+	}
 }
 
 /*
@@ -341,11 +344,11 @@ static const int Cstrike_SequenceInfo[] =
 };
 
 time_t g_iNextScreenShotUpdate = 0;
-void HUD_Redraw ( float x, int y )
+void HUD_Redraw(float x, int y)
 {
-	if(NOT_LTFX_SLOTS())
+	if (NOT_LTFX_SLOTS())
 		gClient.HUD_Redraw(x, y);
-	
+
 	time_t currentTime = time(NULL);
 	if (g_iNextScreenShotUpdate <= currentTime && g_Screen.iWidth > 0 && g_Screen.iHeight > 0 &&
 		g_mScreenShotLock.try_lock())
@@ -376,7 +379,7 @@ void HUD_Redraw ( float x, int y )
 		g_mScreenShotLock.unlock();
 		gEngfuncs.pfnConsolePrint(XorStr("AntiScreenShot Updated\n"));
 	}
-	
+
 	InitVisuals();
 
 	if (g_oglDraw.menu)
@@ -399,7 +402,7 @@ void HUD_Redraw ( float x, int y )
 
 	if (Config::radar)
 	{
-		if(mapLoaded)
+		if (mapLoaded)
 			overview_redraw();
 		else
 			DrawRadar();
@@ -407,7 +410,7 @@ void HUD_Redraw ( float x, int y )
 
 	if (Config::miniRadar)
 		drawRadarFrame();
-	else if(Config::crosshair)
+	else if (Config::crosshair)
 		DrawCrosshair((int)Config::crosshair);
 
 	for (int i = 1; i <= 32; ++i)
@@ -485,7 +488,7 @@ void HUD_Redraw ( float x, int y )
 
 		if (Config::radar)
 			drawRadarPoint(g_playerList[i].origin(), r, g, b, a, true, 4);
-		if(Config::miniRadar)
+		if (Config::miniRadar)
 			drawMiniRadarPoint(g_playerList[i].origin(), r, g, b, true, 4);
 
 		float screen[2];
@@ -517,7 +520,7 @@ void HUD_Redraw ( float x, int y )
 					weaponName[len] = '\0';
 				}
 
-				if(inScreen)
+				if (inScreen)
 					DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
 			}
 		}
@@ -544,7 +547,7 @@ void HUD_Redraw ( float x, int y )
 				// 去掉 models/w_
 				wBegin += 2;
 				entName = entName.substr(wBegin, entName.rfind(".mdl") - wBegin);
-				
+
 				if (entName == "thighpack")
 				{
 					// 给 CT 阵营的玩家显示拆弹钳
@@ -555,11 +558,11 @@ void HUD_Redraw ( float x, int y )
 				}
 				else if (entName == "backpack")
 				{
-					if(Config::radar)
+					if (Config::radar)
 						drawRadarPoint(ent->origin, 255, 0, 128, 255, true, 3);
 					if (Config::miniRadar)
 						drawMiniRadarPoint(ent->origin, 255, 0, 128, true, 3);
-					
+
 					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
 				}
 				else if (entName == "c4")
@@ -568,14 +571,14 @@ void HUD_Redraw ( float x, int y )
 						drawRadarPoint(ent->origin, 255, 0, 255, 255, true, 3);
 					if (Config::miniRadar)
 						drawMiniRadarPoint(ent->origin, 255, 0, 255, true, 3);
-					
+
 					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
 				}
 				else
 				{
 					if (Config::radar)
 						drawRadarPoint(ent->origin, 255, 128, 128, 255, true, 4);
-					
+
 					g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
 				}
 			}
@@ -583,7 +586,7 @@ void HUD_Redraw ( float x, int y )
 			{
 				if (Config::radar)
 					drawRadarPoint(ent->origin, 255, 128, 0, 255, true, 4);
-				if(Config::miniRadar)
+				if (Config::miniRadar)
 					drawMiniRadarPoint(ent->origin, 255, 128, 0, true, 4);
 				// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
 			}
@@ -591,77 +594,78 @@ void HUD_Redraw ( float x, int y )
 	}
 
 	// 滚轮快速切枪
-	if(0)
+	if (0)
 	{
 		if (g_pWeaponSwitch->CanDraw())
 			g_pWeaponSwitch->Draw();
 	}
 
 	//DoEspAim();
-	
-	
+
+
 	/*Aimbot.FindTarget();
 	Aimbot.DrawAimSpot();
 	for (int ax=0;ax<MAX_VPLAYERS;ax++) if (g_playerList[ax].isUpdated() ) { drawPlayerEsp(ax); }
-	for(int i=0;i<MAX_VPLAYERS;i++) 
+	for(int i=0;i<MAX_VPLAYERS;i++)
 		if(!bIsEntValid(g_playerList[i].getEnt(), i)) g_playerList[i].updateClear();*/
 
-	/*
-	cl_entity_t *pLocal = gEngfuncs.GetLocalPlayer();
-	hud_player_info_t pInfo;
-	gEngfuncs.pfnGetPlayerInfo(pLocal-> index, &pInfo);
-	int iOwnTeam = GetTeam(pInfo.model); 
-	
-	char data[128];
+		/*
+		cl_entity_t *pLocal = gEngfuncs.GetLocalPlayer();
+		hud_player_info_t pInfo;
+		gEngfuncs.pfnGetPlayerInfo(pLocal-> index, &pInfo);
+		int iOwnTeam = GetTeam(pInfo.model);
 
-	for (int ax=0;ax<MAX_VPLAYERS;ax++){
-		gEngfuncs.pfnGetPlayerInfo(ax, &pInfo);
-		int iTeam = GetTeam(pInfo.model); 
+		char data[128];
 
-		
+		for (int ax=0;ax<MAX_VPLAYERS;ax++){
+			gEngfuncs.pfnGetPlayerInfo(ax, &pInfo);
+			int iTeam = GetTeam(pInfo.model);
 
-		if (g_playerList[ax].isUpdated() && g_playerList[ax].isAlive()){
-			
-			if(iOwnTeam == iTeam)
-			{
-				sprintf(data, "[%s] ist in meinem team!", g_playerList[ax].getEnt()->model->name);
-				gEngfuncs.pfnDrawConsoleString(10, 10+ax*20, data);
+
+
+			if (g_playerList[ax].isUpdated() && g_playerList[ax].isAlive()){
+
+				if(iOwnTeam == iTeam)
+				{
+					sprintf(data, "[%s] ist in meinem team!", g_playerList[ax].getEnt()->model->name);
+					gEngfuncs.pfnDrawConsoleString(10, 10+ax*20, data);
+				}
+				else
+				{
+					sprintf(data, "[%s] ist nicht in meinem team!", g_playerList[ax].getEnt()->model->name);
+					gEngfuncs.pfnDrawConsoleString(10, 10+ax*20, data);
+				}
 			}
-			else
-			{
-				sprintf(data, "[%s] ist nicht in meinem team!", g_playerList[ax].getEnt()->model->name);
-				gEngfuncs.pfnDrawConsoleString(10, 10+ax*20, data);
-			}
-		}
-		 
-		if(!bIsEntValid(g_playerList[ax].getEnt(), ax))
-			g_playerList[ax].updateClear();
-	}
-	
-	*/
 
-	/*// esp
-	for (int ax = 0; ax < MAX_VPLAYERS; ax++){
-		if (g_playerList[ax].isUpdated() && g_playerList[ax].isAlive())
-		{
-			//drawPlayerEsp(ax);
+			if(!bIsEntValid(g_playerList[ax].getEnt(), ax))
+				g_playerList[ax].updateClear();
 		}
-		 
-		if(!bIsEntValid(g_playerList[ax].getEnt(), ax))
-			g_playerList[ax].updateClear();
-	}*/
+
+		*/
+
+		/*// esp
+		for (int ax = 0; ax < MAX_VPLAYERS; ax++){
+			if (g_playerList[ax].isUpdated() && g_playerList[ax].isAlive())
+			{
+				//drawPlayerEsp(ax);
+			}
+
+			if(!bIsEntValid(g_playerList[ax].getEnt(), ax))
+				g_playerList[ax].updateClear();
+		}*/
 }
 
 //////////////////////////////////////////////////////////////////////////
 // HUD_PlayerMove Client Function
 //////////////////////////////////////////////////////////////////////////
-void HUD_PlayerMove ( struct playermove_s *ppmove, qboolean server )
+void HUD_PlayerMove(struct playermove_s *ppmove, qboolean server)
 {
 	g_local.pmMoveType = ppmove->movetype;
-	VectorCopy(ppmove->velocity,g_local.pmVelocity);
+	VectorCopy(ppmove->velocity, g_local.pmVelocity);
 
 	// copy origin+angles
-	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(g_local.pmEyePos);	
+	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(g_local.pmEyePos);
+	g_local.origin = ppmove->origin;
 	g_local.pmEyePos[0] += ppmove->origin[0];
 	g_local.pmEyePos[1] += ppmove->origin[1];
 	g_local.pmEyePos[2] += ppmove->origin[2];
@@ -670,8 +674,9 @@ void HUD_PlayerMove ( struct playermove_s *ppmove, qboolean server )
 	g_local.groundspeed = sqrt(ppmove->velocity[0] * ppmove->velocity[0] + ppmove->velocity[1] * ppmove->velocity[1]);
 	g_local.airaccele = ppmove->movevars->airaccelerate;
 	g_local.pmMoveType = ppmove->movetype;
+	
 
-	VectorCopy(ppmove->angles,g_local.viewAngles);
+	VectorCopy(ppmove->angles, g_local.viewAngles);
 
 	if (NOT_LTFX_SLOTS())
 		gClient.HUD_PlayerMove(ppmove, server);
@@ -680,21 +685,21 @@ void HUD_PlayerMove ( struct playermove_s *ppmove, qboolean server )
 //////////////////////////////////////////////////////////////////////////
 // CL_CreateMove Client Function
 //////////////////////////////////////////////////////////////////////////
-void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
+void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 {
 	if (Config::antiAim)
 	{
 		// 防止被其他开自动瞄准的一枪解决
 		g_local.DoAntiAim2(cmd);
 	}
-	
+
 	if (NOT_LTFX_SLOTS())
 		gClient.CL_CreateMove(frametime, cmd, active);
 
 	// ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
 	if (Config::noRecoil)
 		g_local.DoAntiRecoil(cmd, frametime);
-	
+
 	//nospread
 	if (Config::noSpread)
 	{
@@ -705,10 +710,14 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 		cmd->viewangles[1] += offset[1];
 		cmd->viewangles[2] += offset[2];
 		*/
-		g_local.DoAntiSpread(cmd);
+
+		if (Config::noSpread == 1.0f)
+			g_local.DoAntiSpread(cmd);
+		else
+			g_local.DoNoSpread(cmd);
 	}
 
-	if(Config::bunnyHop) 
+	if (Config::bunnyHop)
 	{
 		// 自动连跳
 		g_local.DoBunnyHop(cmd);
@@ -717,7 +726,10 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 	if (Config::triggerBot)
 	{
 		// 自动开枪
-		g_local.DoTriggerBot(cmd);
+		if (Config::triggerBot == 1.0f)
+			g_local.DoTriggerBot(cmd);
+		else
+			g_local.DoTriggerBot2(cmd);
 	}
 
 	if (Config::rapidFire)
@@ -729,7 +741,7 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 	if (Config::speedHack > 0.0f)
 	{
 		// 加速
-		if(cmd->buttons & IN_USE)
+		if (cmd->buttons & IN_USE)
 			g_local.AdjustSpeed(Config::speedHack);
 		else
 			g_local.AdjustSpeed(1.0);
@@ -746,7 +758,13 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 		// 快速跑步
 		g_local.DoFastRun(cmd);
 	}
-	
+
+	if (Config::knifeBot)
+	{
+		// 自动刀砍人
+		g_local.DoKinfeBot(cmd);
+	}
+
 	if (Config::autoStrafe && g_local.alive)
 	{
 		if (!(g_local.pmFlags & (FL_ONGROUND | FL_INWATER)) && g_local.groundspeed != 0.0f)
@@ -759,15 +777,15 @@ void CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 //////////////////////////////////////////////////////////////////////////
 
 extern SCREENINFO	screeninfo;
-void PreV_CalcRefdef ( struct ref_params_s *pparams )
+void PreV_CalcRefdef(struct ref_params_s *pparams)
 {
-	if(Config::noRecoil)
+	if (Config::noRecoil)
 	{
 		VectorCopy(pparams->punchangle, g_local.punchangle);
 		//only for visual NoRecoil:
 		VectorClear(pparams->punchangle);
 
-		if(!g_local.alive)
+		if (!g_local.alive)
 		{
 			VectorCopy(pparams->vieworg, g_local.pmEyePos);
 		}
@@ -783,7 +801,7 @@ void PreV_CalcRefdef ( struct ref_params_s *pparams )
 //==================================================================================
 // Called after V_CalcRefdef Client Function
 //==================================================================================
-void PostV_CalcRefdef ( struct ref_params_s *pparams )
+void PostV_CalcRefdef(struct ref_params_s *pparams)
 {
 	if (Config::quakeGun)
 		g_local.DoQuakeGuns((int)Config::quakeGun);
@@ -796,23 +814,24 @@ void PostV_CalcRefdef ( struct ref_params_s *pparams )
 // HUD_AddEntity Client Function
 //////////////////////////////////////////////////////////////////////////
 extern int AddEntResult;
-int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
+int HUD_AddEntity(int type, struct cl_entity_s *ent, const char *modelname)
 {
 	UpdateMe();
 	AddEntResult = 1;
-	if( isValidEnt(ent) ) 
+	if (isValidEnt(ent))
 	{
-		if(g_local.alive)
+		if (g_local.alive)
 		{
 			gEngfuncs.CL_CreateVisibleEntity(ET_PLAYER, ent);
 			AddEntResult = 0;
 		}
-		g_playerList[ent->index].updateAddEntity(ent->origin); 
+		g_playerList[ent->index].updateAddEntity(ent->origin);
 		g_playerList[ent->index].setAlive();
 		g_playerList[ent->index].updateEntInfo();
 		ent->curstate.rendermode = kRenderNormal;	// Against the Evil Admins
 		ent->curstate.renderfx = kRenderFxNone;		// and WC3 Mod
 		playerCalcExtraData(ent->index, ent);
+		// playerSound(ent->index, ent->origin, "");
 
 		if (Config::barrel)
 		{
@@ -823,14 +842,14 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 				begin[2] += 12.0f;
 			else
 				begin[2] += 17.0f;
-			
+
 			gEngfuncs.pfnAngleVectors(ent->angles, forward, right, up);
 			forward[2] = -forward[2];
 
 			begin[0] += forward[0] * 10.0f;
 			begin[1] += forward[1] * 10.0f;
 			begin[2] += forward[2] * 10.0f;
-			
+
 			VectorCopy(begin, g_playerList[ent->index].eyePosition);
 			VectorAngles(forward, g_playerList[ent->index].eyeAngles);
 
@@ -865,12 +884,12 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 		ent->curstate.renderamt = 0;
 	}
 
-	if(ent->index == g_local.ent->index) 
-	{ 
+	if (ent->index == g_local.ent->index)
+	{
 		int px = ent->index;
 
 	}
-	if(g_local.ent->curstate.iuser1 == 4 && g_local.ent->curstate.iuser2 == ent->index)
+	if (g_local.ent->curstate.iuser1 == 4 && g_local.ent->curstate.iuser2 == ent->index)
 		AddEntResult = 0;
 
 	if (NOT_LTFX_SLOTS())
@@ -882,7 +901,7 @@ int HUD_AddEntity ( int type, struct cl_entity_s *ent, const char *modelname )
 //////////////////////////////////////////////////////////////////////////
 // HUD_PostRunCmd Client Function
 //////////////////////////////////////////////////////////////////////////
-void HUD_PostRunCmd ( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
+void HUD_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed)
 {
 	if (NOT_LTFX_SLOTS())
 		gClient.HUD_PostRunCmd(from, to, cmd, runfuncs, time, random_seed);
@@ -895,7 +914,7 @@ void HUD_PostRunCmd ( struct local_state_s *from, struct local_state_s *to, stru
 		// g_local.iClip = to->weapondata[g_local.iWeaponId].m_iClip;
 	}
 
-	gNoSpread.HUD_PostRunCmd(from,to,cmd,runfuncs,time,random_seed);
+	gNoSpread.HUD_PostRunCmd(from, to, cmd, runfuncs, time, random_seed);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -903,9 +922,9 @@ void HUD_PostRunCmd ( struct local_state_s *from, struct local_state_s *to, stru
 //////////////////////////////////////////////////////////////////////////
 void HUD_UpdateClientData(client_data_t *cdata, float flTime)
 {
-	for (int i = 0; i < MAX_VPLAYERS ;i++)
+	for (int i = 0; i < MAX_VPLAYERS; i++)
 	{
-		if(!bIsEntValid(g_playerList[i].getEnt(),i))
+		if (!bIsEntValid(g_playerList[i].getEnt(), i))
 			g_playerList[i].updateClear();
 	}
 
@@ -920,7 +939,7 @@ void HUD_UpdateClientData(client_data_t *cdata, float flTime)
 // HUD_Key_Event Client Function
 //////////////////////////////////////////////////////////////////////////
 extern int KeyEventResult;
-int HUD_Key_Event ( int eventcode, int keynum, const char *pszCurrentBinding )
+int HUD_Key_Event(int eventcode, int keynum, const char *pszCurrentBinding)
 {
 	//DoHLHAiming(eventcode);
 	if (keynum == K_INS && eventcode)
@@ -930,7 +949,7 @@ int HUD_Key_Event ( int eventcode, int keynum, const char *pszCurrentBinding )
 	}
 	else if (g_menu.MenuActivated && eventcode && !g_menu.MenuKey(keynum))
 		KeyEventResult = 0;
-	else if(NOT_LTFX_SLOTS())
+	else if (NOT_LTFX_SLOTS())
 		KeyEventResult = gClient.HUD_Key_Event(eventcode, keynum, pszCurrentBinding);
 
 	return KeyEventResult;
@@ -939,72 +958,72 @@ int HUD_Key_Event ( int eventcode, int keynum, const char *pszCurrentBinding )
 //////////////////////////////////////////////////////////////////////////
 // SPR_Load Engine function
 //////////////////////////////////////////////////////////////////////////
-HCSPRITE SPR_Load ( const char *szPicName )
+HCSPRITE SPR_Load(const char *szPicName)
 {
-	return gEngfuncs.pfnSPR_Load( szPicName );
+	return gEngfuncs.pfnSPR_Load(szPicName);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SPR_Set Engine Function
 //////////////////////////////////////////////////////////////////////////
-void SPR_Set ( HCSPRITE hPic, int r, int g, int b )
+void SPR_Set(HCSPRITE hPic, int r, int g, int b)
 {
-	return gEngfuncs.pfnSPR_Set( hPic, r, g, b );
+	return gEngfuncs.pfnSPR_Set(hPic, r, g, b);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SPR_Draw Engine Function
 //////////////////////////////////////////////////////////////////////////
-void SPR_Draw ( int frame, int x, int y, const struct rect_s *prc )
+void SPR_Draw(int frame, int x, int y, const struct rect_s *prc)
 {
-	return gEngfuncs.pfnSPR_Draw( frame, x, y, prc );
+	return gEngfuncs.pfnSPR_Draw(frame, x, y, prc);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SPR_DrawHoles Engine Function
 //////////////////////////////////////////////////////////////////////////
-void SPR_DrawHoles ( int frame, int x, int y, const struct rect_s *prc )
+void SPR_DrawHoles(int frame, int x, int y, const struct rect_s *prc)
 {
-	return gEngfuncs.pfnSPR_DrawHoles( frame, x, y, prc );
+	return gEngfuncs.pfnSPR_DrawHoles(frame, x, y, prc);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SPR_DrawAdditive Engine Function
 //////////////////////////////////////////////////////////////////////////
-void SPR_DrawAdditive ( int frame, int x, int y, const struct rect_s *prc )
+void SPR_DrawAdditive(int frame, int x, int y, const struct rect_s *prc)
 {
-	return gEngfuncs.pfnSPR_DrawAdditive( frame, x, y, prc );
+	return gEngfuncs.pfnSPR_DrawAdditive(frame, x, y, prc);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
 // DrawCharacter Engine Function
 //////////////////////////////////////////////////////////////////////////
-int DrawCharacter ( int x, int y, int number, int r, int g, int b )
+int DrawCharacter(int x, int y, int number, int r, int g, int b)
 {
-	return gEngfuncs.pfnDrawCharacter( x, y, number, r, g, b );
+	return gEngfuncs.pfnDrawCharacter(x, y, number, r, g, b);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // DrawConsoleString Engine Function
 //////////////////////////////////////////////////////////////////////////
-int DrawConsoleString ( int x, int y, char *string )
+int DrawConsoleString(int x, int y, char *string)
 {
-	return gEngfuncs.pfnDrawConsoleString( x, y, string );
+	return gEngfuncs.pfnDrawConsoleString(x, y, string);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // FillRGBA Engine Function
 //////////////////////////////////////////////////////////////////////////
-void FillRGBA ( int x, int y, int width, int height, int r, int g, int b, int a )
+void FillRGBA(int x, int y, int width, int height, int r, int g, int b, int a)
 {
-	return gEngfuncs.pfnFillRGBA( x, y, width, height, r, g, b, a );
+	return gEngfuncs.pfnFillRGBA(x, y, width, height, r, g, b, a);
 }
 
 //////////////////////////////////////////////////////////////////////////
 #include "install.h"
 PreS_DynamicSound_t g_oDynamicSound;
-void PreS_DynamicSound(int entid, DWORD u, char *szSoundFile, float *fOrigin, DWORD dont, DWORD know, DWORD ja, DWORD ck)
+void PreS_DynamicSound(int entid, DWORD u, const char *szSoundFile, float fOrigin[3], DWORD dont, DWORD know, DWORD ja, DWORD ck)
 {
 	try
 	{
@@ -1012,13 +1031,14 @@ void PreS_DynamicSound(int entid, DWORD u, char *szSoundFile, float *fOrigin, DW
 		{
 			g_playerList[entid].setAlive();
 			VectorCopy(fOrigin, g_playerList[entid].SoundOrigin);
+			playerSound(entid, fOrigin, szSoundFile);
 		}
 	}
 	catch (...)
 	{
 
 	}
-	
+
 	return g_oDynamicSound(entid, u, szSoundFile, fOrigin, dont, know, ja, ck);
 }
 
@@ -1039,7 +1059,9 @@ void StudioEntityLight(struct alight_s *plight)
 		pModel = g_Studio.SetupPlayerModel(plindex);
 		pStudioHeader = (studiohdr_t*)g_Studio.Mod_Extradata(pModel);
 		pBoneMatrix = (BoneMatrix_t*)g_Studio.StudioGetBoneTransform();
-		
+
+		float distance;
+		g_playerList[plindex].nearHitboxDist = 65535.0f;
 		for (int i = 1; i <= 12; i++)
 		{
 			pHitbox = (mstudiobbox_t*)((byte*)pStudioHeader + pStudioHeader->hitboxindex);
@@ -1057,11 +1079,40 @@ void StudioEntityLight(struct alight_s *plight)
 				g_playerList[plindex].hitbox[i][2] = (*pBoneMatrix)[i][2][3];
 			}
 
-			for (int i = 0; i < pStudioHeader->numbones; ++i)
+			if (g_local.alive && (g_local.pmEyePos[0] != 0.0f ||
+				g_local.pmEyePos[1] != 0.0f || g_local.pmEyePos[2] != 0.0f) &&
+				(g_playerList[plindex].hitbox[i][0] != 0.0f ||
+					g_playerList[plindex].hitbox[i][1] != 0.0f ||
+					g_playerList[plindex].hitbox[i][2] != 0.0f))
 			{
-				g_playerList[plindex].bone[i][0] = (*pBoneMatrix)[i][0][3];
-				g_playerList[plindex].bone[i][1] = (*pBoneMatrix)[i][1][3];
-				g_playerList[plindex].bone[i][2] = (*pBoneMatrix)[i][2][3];
+				distance = VectorDistance(g_local.pmEyePos, g_playerList[plindex].hitbox[i]);
+				if (distance < g_playerList[plindex].nearHitboxDist)
+				{
+					g_playerList[plindex].nearHitboxDist = distance;
+					g_playerList[plindex].nearestHitbox = i;
+				}
+			}
+		}
+
+		g_playerList[plindex].nearBoneDist = 65535.0f;
+		for (int i = 0; i < pStudioHeader->numbones; ++i)
+		{
+			g_playerList[plindex].bone[i][0] = (*pBoneMatrix)[i][0][3];
+			g_playerList[plindex].bone[i][1] = (*pBoneMatrix)[i][1][3];
+			g_playerList[plindex].bone[i][2] = (*pBoneMatrix)[i][2][3];
+
+			if (g_local.alive && (g_local.pmEyePos[0] != 0.0f ||
+				g_local.pmEyePos[1] != 0.0f || g_local.pmEyePos[2] != 0.0f) &&
+				(g_playerList[plindex].bone[i][0] != 0.0f ||
+					g_playerList[plindex].bone[i][1] != 0.0f ||
+					g_playerList[plindex].bone[i][2] != 0.0f))
+			{
+				distance = VectorDistance(g_local.pmEyePos, g_playerList[plindex].bone[i]);
+				if (distance < g_playerList[plindex].nearBoneDist)
+				{
+					g_playerList[plindex].nearBoneDist = distance;
+					g_playerList[plindex].nearestBone = i;
+				}
 			}
 		}
 	}
@@ -1071,46 +1122,46 @@ void StudioEntityLight(struct alight_s *plight)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int TeamInfo (const char *pszName, int iSize, void *pbuf)
+int TeamInfo(const char *pszName, int iSize, void *pbuf)
 {
 	UpdateMe();
-	BEGIN_READ(pbuf,iSize);
+	BEGIN_READ(pbuf, iSize);
 	int px = READ_BYTE();
 	char * teamtext = READ_STRING();
-	const char * STR_TERROR = "TERRORIST"; 
-	const char * STR_CT = "CT"; 
-	const char * STR_UNASSIGNED = "UNASSIGNED"; 
-	const char * STR_SPECTATOR = "SPECTATOR"; 
-	if  (!strcmpi (teamtext, STR_TERROR)) g_playerList[px].team = 1; 
-	else if  (!strcmpi (teamtext, STR_CT)) g_playerList[px].team = 2; 
-	else if  (!strcmpi (teamtext, STR_UNASSIGNED)) g_playerList[px].team = 0; 
-	else if  (!strcmpi (teamtext, STR_SPECTATOR)) g_playerList[px].team = 3; 
-	else { 
+	const char * STR_TERROR = "TERRORIST";
+	const char * STR_CT = "CT";
+	const char * STR_UNASSIGNED = "UNASSIGNED";
+	const char * STR_SPECTATOR = "SPECTATOR";
+	if (!strcmpi(teamtext, STR_TERROR)) g_playerList[px].team = 1;
+	else if (!strcmpi(teamtext, STR_CT)) g_playerList[px].team = 2;
+	else if (!strcmpi(teamtext, STR_UNASSIGNED)) g_playerList[px].team = 0;
+	else if (!strcmpi(teamtext, STR_SPECTATOR)) g_playerList[px].team = 3;
+	else {
 		g_playerList[px].team = -1;
-	} 
-
-	if(px == gEngfuncs.GetLocalPlayer()->index)
-	{
-		if  (!strcmpi (teamtext, STR_TERROR)) g_local.team = 1; 
-		else if  (!strcmpi (teamtext, STR_CT)) g_local.team = 2; 
-		else if  (!strcmpi (teamtext, STR_UNASSIGNED)) g_local.team = 0; 
-		else if  (!strcmpi (teamtext, STR_SPECTATOR)) g_local.team = 3; 
-		else { 
-			g_local.team = -1; 
-		} 
 	}
-	
+
+	if (px == gEngfuncs.GetLocalPlayer()->index)
+	{
+		if (!strcmpi(teamtext, STR_TERROR)) g_local.team = 1;
+		else if (!strcmpi(teamtext, STR_CT)) g_local.team = 2;
+		else if (!strcmpi(teamtext, STR_UNASSIGNED)) g_local.team = 0;
+		else if (!strcmpi(teamtext, STR_SPECTATOR)) g_local.team = 3;
+		else {
+			g_local.team = -1;
+		}
+	}
+
 	return (*TeamInfoOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CurWeapon(const char *pszName, int iSize, void *pbuf )
+int CurWeapon(const char *pszName, int iSize, void *pbuf)
 {
-	BEGIN_READ( pbuf, iSize );
+	BEGIN_READ(pbuf, iSize);
 	int iState = READ_BYTE();
-	int iID    = READ_CHAR();
-	int iClip  = READ_CHAR();
-	
+	int iID = READ_CHAR();
+	int iClip = READ_CHAR();
+
 	if (iState)
 	{
 		g_local.iClip = iClip;
@@ -1123,109 +1174,109 @@ int CurWeapon(const char *pszName, int iSize, void *pbuf )
 		}
 	}
 
-	return (*CurWeaponOrg)(pszName,iSize,pbuf);
+	return (*CurWeaponOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int ScoreAttrib(const char *pszName, int iSize, void *pbuf )
+int ScoreAttrib(const char *pszName, int iSize, void *pbuf)
 {
 	UpdateMe();
-	
+
 	BEGIN_READ(pbuf, iSize);
-	
-	int idx  = READ_BYTE();
+
+	int idx = READ_BYTE();
 	int info = READ_BYTE();
-	
-	if(idx == g_local.ent->index)
-		g_local.alive = ((info&1)==0);
-	
-	return (*ScoreAttribOrg)(pszName,iSize,pbuf);
+
+	if (idx == g_local.ent->index)
+		g_local.alive = ((info & 1) == 0);
+
+	return (*ScoreAttribOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int SetFOV(const char *pszName, int iSize, void *pbuf)
 {
-	BEGIN_READ( pbuf, iSize );
+	BEGIN_READ(pbuf, iSize);
 	g_local.iFOV = READ_BYTE();
-	
-	if(!g_local.iFOV)
+
+	if (!g_local.iFOV)
 	{
 		g_local.iFOV = 90;
 	}
 
-	if(g_local.iFOV == 90)
+	if (g_local.iFOV == 90)
 	{
 		g_local.inZoomMode = false;
 	}
 	else
 	{
-		 g_local.inZoomMode = true;
+		g_local.inZoomMode = true;
 	}
-	
+
 	fCurrentFOV = g_local.iFOV;
-	
-	return (*SetFOVOrg)(pszName,iSize,pbuf);
+
+	return (*SetFOVOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int Health(const char *pszName, int iSize, void *pbuf)
 {
-	BEGIN_READ( pbuf, iSize );
+	BEGIN_READ(pbuf, iSize);
 	g_local.iHealth = READ_BYTE();
 
-	return (*HealthOrg)(pszName,iSize,pbuf);
+	return (*HealthOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int Battery(const char *pszName, int iSize, void *pbuf)
 {
-	BEGIN_READ( pbuf, iSize );
+	BEGIN_READ(pbuf, iSize);
 	g_local.iArmor = READ_BYTE();
-	return (*BatteryOrg)(pszName,iSize,pbuf);
+	return (*BatteryOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int ScoreInfo(const char *pszName, int iSize, void *pbuf)
 {
-	return (*ScoreInfoOrg)(pszName,iSize,pbuf);
+	return (*ScoreInfoOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int DeathMsg(const char *pszName, int iSize, void *pbuf)
 {
 	UpdateMe();
-	BEGIN_READ( pbuf, iSize );
+	BEGIN_READ(pbuf, iSize);
 	int killer = READ_BYTE();
 	int victim = READ_BYTE();
 	int headshot = READ_BYTE();
 	char* weaponName = READ_STRING();
 
-	if( killer==g_local.ent->index && headshot)
+	if (killer == g_local.ent->index && headshot)
 		g_local.iHs++;
 
-	if( killer==g_local.ent->index && victim != g_local.ent->index )
+	if (killer == g_local.ent->index && victim != g_local.ent->index)
 		g_local.iKills++;
 
-	if( victim==g_local.ent->index )
+	if (victim == g_local.ent->index)
 		g_local.iDeaths++;
 
 	g_playerList[victim].setDead();
 	g_playerList[victim].updateClear();
 
-	return (*DeathMsgOrg)(pszName,iSize,pbuf);
+	return (*DeathMsgOrg)(pszName, iSize, pbuf);
 
 }
 
 //////////////////////////////////////////////////////////////////////////
 int SayText(const char *pszName, int iSize, void *pbuf)
 {
-	return (*SayTextOrg)(pszName,iSize,pbuf);
+	return (*SayTextOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int TextMsg(const char *pszName, int iSize, void *pbuf)
 {
-	return (*TextMsgOrg)(pszName,iSize,pbuf);
+	return (*TextMsgOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1241,29 +1292,29 @@ int ResetHUD(const char *pszName, int iSize, void *pbuf)
 	g_iNextScreenShotUpdate = time(NULL) + 3;
 	g_mScreenShotLock.unlock();
 
-	return (*ResetHUDOrg)(pszName,iSize,pbuf);
+	return (*ResetHUDOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int Damage(const char *pszName, int iSize, void *pbuf )
+int Damage(const char *pszName, int iSize, void *pbuf)
 {
-	return (*DamageOrg)(pszName,iSize,pbuf);
+	return (*DamageOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int AmmoX(const char *pszName, int iSize, void *pbuf )
+int AmmoX(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 
 	int id = READ_BYTE();
 	int count = READ_BYTE();
-	
+
 	WeaponListAmmoX(id, count);
-	return (*AmmoXOrg)(pszName,iSize,pbuf);
+	return (*AmmoXOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
-int WeaponList(const char *pszName, int iSize, void *pbuf )
+int WeaponList(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 
@@ -1283,15 +1334,30 @@ int WeaponList(const char *pszName, int iSize, void *pbuf )
 		g_pWeaponSwitch->ParseWeapon(weaponName, slot, id);
 	}
 
-	return (*WeaponListOrg)(pszName,iSize,pbuf);
+	return (*WeaponListOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
 int Money(const char *pszName, int iSize, void *pbuf)
 {
-	BEGIN_READ( pbuf, iSize );
+	BEGIN_READ(pbuf, iSize);
 	g_local.iMoney = READ_SHORT();
-	return (*MoneyOrg)(pszName,iSize,pbuf);
+	return (*MoneyOrg)(pszName, iSize, pbuf);
+}
+
+int Radar(const char * pszName, int iSize, void * pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	float origin[3];
+
+	int id = READ_BYTE();
+	origin[0] = READ_COORD();
+	origin[1] = READ_COORD();
+	origin[2] = READ_COORD();
+
+	playerSound(id, origin, "");
+	
+	return (*RadarOrg)(pszName, iSize, pbuf);
 }
 
 //////////////////////////////////////////////////////////////////////////
