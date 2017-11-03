@@ -104,6 +104,7 @@
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="gamehooking.cpp" />
     <ClCompile Include="handlers.cpp" />
+    <ClCompile Include="imeinput.cpp" />
     <ClCompile Include="install.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="menu.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="NoRecoil.cpp" />
     <ClCompile Include="NoSpread.cpp" />
     <ClCompile Include="opengl.cpp" />
+    <ClCompile Include="peb.cpp" />
     <ClCompile Include="perfectwall.cpp" />
     <ClCompile Include="playeritems.cpp" />
     <ClCompile Include="players.cpp" />
@@ -140,6 +142,7 @@
     <ClInclude Include="drawing\tablefont.h" />
     <ClInclude Include="eventhook.h" />
     <ClInclude Include="gamehooking.h" />
+    <ClInclude Include="imeinput.h" />
     <ClInclude Include="install.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="Misc\engine.h" />
@@ -154,6 +157,7 @@
     <ClInclude Include="NoRecoil.h" />
     <ClInclude Include="NoSpread.h" />
     <ClInclude Include="opengl.h" />
+    <ClInclude Include="peb.h" />
     <ClInclude Include="perfectwall.h" />
     <ClInclude Include="playeritems.h" />
     <ClInclude Include="players.h" />

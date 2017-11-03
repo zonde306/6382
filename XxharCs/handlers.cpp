@@ -30,6 +30,7 @@
 #include "Aimbot.h"
 #include "swfx.h"
 #include "./drawing/gui.h"
+#include "imeinput.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -147,6 +148,7 @@ void InitHack()
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pClient);
 	// gEngfuncs.Con_Printf("gClient = 0x%X\n", (DWORD)g_pStudio);
 
+	IME_InstallHook();
 	g_gui.InitFade();
 	g_menu.Init();
 
