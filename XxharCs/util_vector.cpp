@@ -62,7 +62,7 @@ Vector2D operator*(float fl, const Vector2D& v)
 	return v * fl;
 }
 
-Vector::Vector(void)
+Vector::Vector(void) : x(0.0f), y(0.0f), z(0.0f)
 {
 
 }
@@ -182,6 +182,42 @@ Vector2D Vector::Make2D(void) const
 float Vector::Length2D(void) const
 {
 	return (float)sqrt(x*x + y*y);
+}
+
+bool Vector::IsZero(float tolerance) const
+{
+	return (x > -tolerance && x < tolerance && y > -tolerance && y < tolerance && z > -tolerance && z < tolerance);
+}
+
+bool Vector::WithinAABB(const Vector & boxmin, const Vector & boxmax) const
+{
+	return ((x >= boxmin.x) && (x <= boxmax.x) && (y >= boxmin.y) && (y <= boxmax.y) && (z >= boxmin.z) && (z <= boxmax.z));
+}
+
+Vector Vector::Min(const Vector & vOther) const
+{
+	return Vector(x < vOther.x ? x : vOther.x, y < vOther.y ? y : vOther.y, z < vOther.z ? z : vOther.z);
+}
+
+Vector Vector::Max(const Vector & vOther) const
+{
+	return Vector(x > vOther.x ? x : vOther.x, y > vOther.y ? y : vOther.y, z > vOther.z ? z : vOther.z);
+}
+
+int Vector::Compare(const Vector & other) const
+{
+	float diff = GetDifference(other);
+	if (diff > 0.0f)
+		return 1;
+	else if (diff < 0.0f)
+		return -1;
+
+	return 0;
+}
+
+float Vector::GetDifference(const Vector & other) const
+{
+	return (*this - other).Length();
 }
 
 Vector operator*(float fl, const Vector& v)

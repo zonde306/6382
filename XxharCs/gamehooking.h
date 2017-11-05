@@ -242,6 +242,7 @@ BOOL ActivateEngine();
 
 extern bool oglSubtractive;
 
+typedef Vector(*FnFireBullets3)(Vector, Vector, float, float, int, int, int, float, entvars_t*, bool, int);
 typedef void(*FnFireBullets)(ULONG, Vector, Vector, Vector, float, int, int, int, entvars_t*);
 void Hooked_FireBullets(ULONG, Vector, Vector, Vector, float, int, int, int, entvars_t*);
 extern FnFireBullets g_oFireBullets;

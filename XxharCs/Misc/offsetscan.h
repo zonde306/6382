@@ -25,6 +25,7 @@ public:
 	void* GetCurosrTeam();
 	void* Slots();
 	void* FireBullets();
+	void* FireBullets3();
 	DWORD EngineStudio(void);
 	void GameInfo(void);
 	void *Sound(void);

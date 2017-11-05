@@ -8,6 +8,7 @@
 #include "./Misc/offsetscan.h"
 #include "./Misc/xorstr.h"
 #include "./detours/detourxs.h"
+#include "detours.h"
 #include "clientdll.h"
 #include "xEngine.h"
 #include "peb.h"
@@ -173,13 +174,16 @@ DWORD WINAPI InstallCheat(LPVOID params)
 		g_oDynamicSound = (PreS_DynamicSound_t)g_hookDynamicSound.GetTrampoline();
 	}
 
-	/*
 	if (g_oFireBullets != nullptr)
 	{
+		/*
+		// FIXME: 修复 call 地址
 		g_hookFireBullets.Create(g_oFireBullets, Hooked_FireBullets);
 		g_oFireBullets = (FnFireBullets)g_hookFireBullets.GetTrampoline();
+		*/
+
+		// g_oFireBullets = (FnFireBullets)DetourFunction((PBYTE)g_oFireBullets, (PBYTE)Hooked_FireBullets);
 	}
-	*/
 
 	if (g_pStudio->StudioEntityLight != nullptr)
 	{

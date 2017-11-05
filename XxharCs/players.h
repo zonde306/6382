@@ -150,6 +150,10 @@ public:
 	int nearestHitbox;
 	float nearHitboxDist;
 
+	bool killed;
+	Vector deathPosition;
+	int deathTotal;
+
 	void setAlive() { alive = true;  }
 	void setDead() { alive = false;  }
 	bool isAlive () { return alive!=false; }

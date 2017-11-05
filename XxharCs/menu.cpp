@@ -38,7 +38,7 @@ void Menu::Init()
 		menu.item.emplace_back(XorStr("No Recoil"), &Config::noRecoil, XorStr("无后坐力"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("No Spread"), &Config::noSpread, XorStr("子弹不会扩散"),
-			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Rapid Fire"), &Config::rapidFire, XorStr("手枪连射"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Trigger Bot"), &Config::triggerBot, XorStr("自动开枪"),

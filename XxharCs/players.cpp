@@ -302,6 +302,9 @@ void AtRoundStart()
 		g_playerList[i].updateClear();
 		g_playerList[i].bGotHead = false;
 		g_playerList[i].setAlive();
+		g_playerList[i].killed = false;
+		g_playerList[i].deathTotal = 0;
+		g_playerList[i].deathPosition = Vector();
 	}
 
 }

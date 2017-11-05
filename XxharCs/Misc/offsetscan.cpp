@@ -273,6 +273,14 @@ void * COffsets::FireBullets()
 	return (PVOID)FireBullets;
 }
 
+void * COffsets::FireBullets3()
+{
+	PCHAR FireString = "weapons/ric_metal-1.wav";
+	DWORD FireBullets = (DWORD)FindMemoryClone(ClBase, ClEnd, FireString, strlen(FireString));
+	FireBullets = (DWORD)FindReference(ClBase, ClEnd, FireBullets);
+	return (PVOID)FireBullets;
+}
+
 void *COffsets::ClientFuncs(void)
 {
 	PCHAR String = "ScreenFade";

@@ -29,6 +29,11 @@ typedef int	func_t;					//
 typedef int	string_t;				// from engine's pr_comp.h;
 typedef float vec_t;				// needed before including progdefs.h
 
+#define CHECK_VALID(_v)		Assert((_v).IsValid())
+#define FLOAT32_NAN_BITS	(unsigned long)0x7FC00000
+#define FLOAT32_NAN			BitsToFloat( FLOAT32_NAN_BITS )
+#define VEC_T_NAN			FLOAT32_NAN
+
 //=========================================================
 // 2DVector - used for many pathfinding and many other 
 // operations that are treated as planar rather than 3d.
@@ -93,8 +98,14 @@ public:
 	operator const float *() const; // Vectors will now automatically convert to float * when needed
 	Vector Normalize(void) const;
 
-	Vector2D Make2D ( void ) const;
+	Vector2D Make2D (void) const;
 	float Length2D(void) const;
+	bool IsZero(float tolerance = 1e-6f) const;
+	bool WithinAABB(const Vector& boxmin, const Vector& boxmax) const;
+	Vector Min(const Vector & vOther) const;
+	Vector Max(const Vector & vOther) const;
+	int Compare(const Vector& other) const;
+	float GetDifference(const Vector& other) const;
 
 	// Members
 	vec_t x, y, z;

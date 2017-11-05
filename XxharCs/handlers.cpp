@@ -421,6 +421,15 @@ void HUD_Redraw(float x, int y)
 			continue;
 		}
 
+		if (g_playerList[i].killed)
+		{
+			if (g_playerList[i].deathTotal >= 50)
+				continue;
+			
+			if (fabs(g_playerList[i].origin().GetDifference(g_playerList[i].deathPosition)) < 1.0f)
+				++(g_playerList[i].deathTotal);
+		}
+
 		hud_player_info_t info;
 		gEngfuncs.pfnGetPlayerInfo(i, &info);
 		cl_entity_s* ent = g_playerList[i].getEnt();
@@ -674,7 +683,6 @@ void HUD_PlayerMove(struct playermove_s *ppmove, qboolean server)
 	g_local.groundspeed = sqrt(ppmove->velocity[0] * ppmove->velocity[0] + ppmove->velocity[1] * ppmove->velocity[1]);
 	g_local.airaccele = ppmove->movevars->airaccelerate;
 	g_local.pmMoveType = ppmove->movetype;
-	
 
 	VectorCopy(ppmove->angles, g_local.viewAngles);
 
@@ -1262,6 +1270,9 @@ int DeathMsg(const char *pszName, int iSize, void *pbuf)
 
 	g_playerList[victim].setDead();
 	g_playerList[victim].updateClear();
+	g_playerList[victim].killed = true;
+	g_playerList[victim].deathPosition = g_playerList[victim].origin();
+	g_playerList[victim].deathTotal = 0;
 
 	return (*DeathMsgOrg)(pszName, iSize, pbuf);
 
