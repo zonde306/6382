@@ -428,6 +428,8 @@ void HUD_Redraw(float x, int y)
 			
 			if (fabs(g_playerList[i].origin().GetDifference(g_playerList[i].deathPosition)) < 1.0f)
 				++(g_playerList[i].deathTotal);
+			else
+				g_playerList[i].deathTotal = 0;
 		}
 
 		hud_player_info_t info;
