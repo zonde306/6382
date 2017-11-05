@@ -106,6 +106,7 @@ public:
 	Vector Max(const Vector & vOther) const;
 	int Compare(const Vector& other) const;
 	float GetDifference(const Vector& other) const;
+	float DistanceTo(const Vector& other) const;
 
 	// Members
 	vec_t x, y, z;

@@ -42,6 +42,8 @@ struct sMe
 	float sin_yaw, minus_cos_yaw;
 	bool inZoomMode;
 	int pmMoveType;
+	float moveXYspeed;
+	float fallSpeed;
 	int team;
 	struct cl_entity_s * ent;
 	int entindex;
@@ -63,6 +65,7 @@ struct sMe
 	std::string sServerName;
 
 	bool bInRad(float fScreen[2], float Fov, struct usercmd_s* cmd);
+	void CorrectMovement(const Vector& vOldAngles, struct usercmd_s *pCmd, float fOldForward, float fOldSidemove);
 
 	void DoAntiAim(struct usercmd_s *usercmd);
 	void DoAntiAim2(struct usercmd_s *usercmd);
@@ -140,6 +143,7 @@ public:
 	bool fixHbAim;
 	int canAim;
 	bool bDrawn;
+	bool ducking;
 	Vector hitbox[13];
 	Vector bone[MAXSTUDIOBONES];
 	Vector SoundOrigin;

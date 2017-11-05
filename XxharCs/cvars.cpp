@@ -37,6 +37,8 @@ namespace Config
 	float fastSwitch = 0.0f;
 	float useHitbox = 1.0f;
 	float knifeBot = 0.0f;
+	float glowShell = 0.0f;
+	float chaseCam = 0.0f;
 
 	float radar_x = 80.0f;
 	float radar_y = 80.0f;

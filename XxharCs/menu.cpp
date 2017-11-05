@@ -123,18 +123,26 @@ void Menu::Init()
 			true, 0.0f, true, 3.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Entity ESP"), &Config::entityEsp, XorStr("显示实体"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
-		menu.item.emplace_back(XorStr("Quake Gun"), &Config::quakeGun, XorStr("更改持枪姿势"),
-			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Name ESP"), &Config::nameEsp, XorStr("显示玩家名字"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Weapon ESP"), &Config::weaponEsp, XorStr("显示玩家武器"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Bone ESP"), &Config::boneEsp, XorStr("显示玩家骨骼"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Glow Shell"), &Config::glowShell, XorStr("玩家发光"),
+			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+	}
+
+	{
+		MenuStack& menu = AddMenuClass(XorStr("::Misc"));
+		menu.item.emplace_back(XorStr("Quake Gun"), &Config::quakeGun, XorStr("更改持枪姿势"),
+			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("CrossHair"), &Config::crosshair, XorStr("准星"),
 			true, 0.0f, true, 10.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("GunSwitchFx"), &Config::fastSwitch, XorStr("快速切枪"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Chase Cam"), &Config::chaseCam, XorStr("快速切枪"),
+			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
 	}
 }
 

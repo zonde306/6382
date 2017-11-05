@@ -579,6 +579,32 @@ bool sMe::bInRad(float fScreen[2], float Fov, struct usercmd_s* cmd)
 	}
 }
 
+void sMe::CorrectMovement(const Vector & vOldAngles, usercmd_s * pCmd, float fOldForward, float fOldSidemove)
+{
+	float deltaView = pCmd->viewangles[1] - vOldAngles[1];
+	float f1;
+	float f2;
+
+	if (vOldAngles[1] < 0.f)
+		f1 = 360.0f + vOldAngles[1];
+	else
+		f1 = vOldAngles[1];
+
+	if (pCmd->viewangles[1] < 0.0f)
+		f2 = 360.0f + pCmd->viewangles[1];
+	else
+		f2 = pCmd->viewangles[1];
+
+	if (f2 < f1)
+		deltaView = abs(f2 - f1);
+	else
+		deltaView = 360.0f - abs(f1 - f2);
+	deltaView = 360.0f - deltaView;
+
+	pCmd->forwardmove = cos(DEG2RAD(deltaView)) * fOldForward + cos(DEG2RAD(deltaView + 90.f)) * fOldSidemove;
+	pCmd->sidemove = sin(DEG2RAD(deltaView)) * fOldForward + sin(DEG2RAD(deltaView + 90.f)) * fOldSidemove;
+}
+
 void sMe::DoTriggerBot2(usercmd_s * usercmd)
 {
 	if (this->iWeaponId == WEAPONLIST_KNIFE || this->iWeaponId == WEAPONLIST_C4 ||
@@ -776,12 +802,31 @@ void sMe::AdjustSpeed(double speed)
 
 void sMe::DoFastWalk()
 {
+	if (this->moveXYspeed == 0.0f || this->fallSpeed != 0.0f)
+		return;
+	
 	static int ForwardSpeed, BackSpeed, SideSpeed = 0;
+
+	static cvar_s* cl_movespeedkey = gEngfuncs.pfnGetCvarPointer(XorStr("cl_movespeedkey"));
+	if (cl_movespeedkey == nullptr)
+		cl_movespeedkey = gEngfuncs.pfnGetCvarPointer(XorStr("cl_movespeedkey"));
+
+	static cvar_s* cl_forwardspeed = gEngfuncs.pfnGetCvarPointer(XorStr("cl_forwardspeed"));
+	static cvar_s* cl_backspeed = gEngfuncs.pfnGetCvarPointer(XorStr("cl_backspeed"));
+	static cvar_s* cl_sidespeed = gEngfuncs.pfnGetCvarPointer(XorStr("cl_sidespeed"));
+
+	if(cl_forwardspeed == nullptr)
+		cl_forwardspeed = gEngfuncs.pfnGetCvarPointer(XorStr("cl_forwardspeed"));
+	if(cl_backspeed == nullptr)
+		cl_backspeed = gEngfuncs.pfnGetCvarPointer(XorStr("cl_backspeed"));
+	if(cl_sidespeed == nullptr)
+		cl_sidespeed = gEngfuncs.pfnGetCvarPointer(XorStr("cl_sidespeed"));
 
 	if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
 	{
 		double WalkSpeed = 149 / this->maxspeed;
-		gEngfuncs.pfnGetCvarPointer("cl_movespeedkey")->value = WalkSpeed;
+
+		cl_movespeedkey->value = WalkSpeed;
 
 		if (this->pmFlags & FL_ONGROUND)
 		{
@@ -797,22 +842,25 @@ void sMe::DoFastWalk()
 			if (BackSpeed < 1)    BackSpeed = 1;
 			if (SideSpeed < 1)    SideSpeed = 1;
 
-			gEngfuncs.pfnGetCvarPointer("cl_forwardspeed")->value = ForwardSpeed;
-			gEngfuncs.pfnGetCvarPointer("cl_backspeed")->value = BackSpeed;
-			gEngfuncs.pfnGetCvarPointer("cl_sidespeed")->value = SideSpeed;
+			cl_forwardspeed->value = ForwardSpeed;
+			cl_backspeed->value = BackSpeed;
+			cl_sidespeed->value = SideSpeed;
 		}
 	}
 	else
 	{
-		ForwardSpeed = 400; gEngfuncs.pfnGetCvarPointer("cl_forwardspeed")->value = ForwardSpeed;
-		BackSpeed = 400; gEngfuncs.pfnGetCvarPointer("cl_backspeed")->value = BackSpeed;
-		SideSpeed = 400; gEngfuncs.pfnGetCvarPointer("cl_sidespeed")->value = SideSpeed;
-		gEngfuncs.pfnGetCvarPointer("cl_movespeedkey")->value = 0.52;
+		ForwardSpeed = 400; cl_forwardspeed->value = ForwardSpeed;
+		BackSpeed = 400; cl_backspeed->value = BackSpeed;
+		SideSpeed = 400; cl_sidespeed->value = SideSpeed;
+		cl_movespeedkey->value = 0.52;
 	}
 }
 
 void sMe::DoFastRun(usercmd_s * usercmd)
 {
+	if (this->moveXYspeed == 0.0f || this->fallSpeed != 0.0f || !(this->pmFlags & FL_ONGROUND))
+		return;
+	
 	static bool _FastRun = false;
 	if ((usercmd->buttons&IN_FORWARD && usercmd->buttons&IN_MOVELEFT) ||
 		(usercmd->buttons&IN_BACK && usercmd->buttons&IN_MOVERIGHT))

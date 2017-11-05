@@ -611,6 +611,24 @@ void HUD_Redraw(float x, int y)
 			g_pWeaponSwitch->Draw();
 	}
 
+	static cvar_s* chase_active = gEngfuncs.pfnGetCvarPointer(XorStr("chase_active"));
+	static cvar_s* r_drawviewmodel = gEngfuncs.pfnGetCvarPointer(XorStr("r_drawviewmodel"));
+	if(chase_active == nullptr)
+		chase_active = gEngfuncs.pfnGetCvarPointer(XorStr("chase_active"));
+	if(r_drawviewmodel == nullptr)
+		r_drawviewmodel = gEngfuncs.pfnGetCvarPointer(XorStr("r_drawviewmodel"));
+
+	if (Config::chaseCam && g_local.alive)
+	{
+		chase_active->value = 1;
+		r_drawviewmodel->value = 0;
+	}
+	else
+	{
+		chase_active->value = 0;
+		r_drawviewmodel->value = 1;
+	}
+
 	//DoEspAim();
 
 
@@ -685,6 +703,9 @@ void HUD_PlayerMove(struct playermove_s *ppmove, qboolean server)
 	g_local.groundspeed = sqrt(ppmove->velocity[0] * ppmove->velocity[0] + ppmove->velocity[1] * ppmove->velocity[1]);
 	g_local.airaccele = ppmove->movevars->airaccelerate;
 	g_local.pmMoveType = ppmove->movetype;
+	g_local.moveXYspeed = sqrt(POW(ppmove->velocity[0]) + POW(ppmove->velocity[1]));
+	g_local.pmVelocity = ppmove->velocity;
+	g_local.fallSpeed = ppmove->flFallVelocity;
 
 	VectorCopy(ppmove->angles, g_local.viewAngles);
 
@@ -705,6 +726,9 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 
 	if (NOT_LTFX_SLOTS())
 		gClient.CL_CreateMove(frametime, cmd, active);
+
+	Vector viewAngles;
+	gEngfuncs.GetViewAngles(viewAngles);
 
 	// ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
 	if (Config::noRecoil)
@@ -780,6 +804,8 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 		if (!(g_local.pmFlags & (FL_ONGROUND | FL_INWATER)) && g_local.groundspeed != 0.0f)
 			g_local.DoAutoStrafe(cmd);
 	}
+
+	g_local.CorrectMovement(viewAngles, cmd, cmd->forwardmove, cmd->sidemove);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -823,6 +849,15 @@ void PostV_CalcRefdef(struct ref_params_s *pparams)
 //////////////////////////////////////////////////////////////////////////
 // HUD_AddEntity Client Function
 //////////////////////////////////////////////////////////////////////////
+bool bPathFree(float *pflFrom, float *pflTo)
+{
+	if (!pflFrom || !pflTo) { return false; }
+	pmtrace_t pTrace;
+	g_Engine.pEventAPI->EV_SetTraceHull(2);
+	g_Engine.pEventAPI->EV_PlayerTrace(pflFrom, pflTo, PM_GLASS_IGNORE | PM_STUDIO_BOX, g_local.entindex, &pTrace);
+	return (pTrace.fraction == 1.0f);
+}
+
 extern int AddEntResult;
 int HUD_AddEntity(int type, struct cl_entity_s *ent, const char *modelname)
 {
@@ -834,14 +869,48 @@ int HUD_AddEntity(int type, struct cl_entity_s *ent, const char *modelname)
 		{
 			gEngfuncs.CL_CreateVisibleEntity(ET_PLAYER, ent);
 			AddEntResult = 0;
+
+			if (Config::chaseCam && ent->index == g_local.entindex)
+			{
+				if (Config::chaseCam == 2)
+				{
+					ent->curstate.rendermode = kRenderTransTexture;
+					ent->curstate.renderfx = kRenderFxNone;
+					ent->curstate.renderamt = 60;
+					ent->curstate.rendermode = kRenderTransAdd;
+				}
+				else
+					ent->curstate.renderfx = kRenderFxDeadPlayer;
+			}
 		}
+
 		g_playerList[ent->index].updateAddEntity(ent->origin);
-		g_playerList[ent->index].setAlive();
+
+		if(!(ent->curstate.effects & EF_NODRAW) && ent->curstate.movetype != 6 && ent->curstate.movetype != 0)
+			g_playerList[ent->index].setAlive();
+
+		g_playerList[ent->index].visible = bPathFree(g_local.pmEyePos, ent->origin);
+		g_playerList[ent->index].ducking = ent->curstate.maxs[2] - ent->curstate.mins[2]<54;
+		g_playerList[ent->index].distance = g_local.origin.GetDifference(ent->origin);
 		g_playerList[ent->index].updateEntInfo();
 		ent->curstate.rendermode = kRenderNormal;	// Against the Evil Admins
 		ent->curstate.renderfx = kRenderFxNone;		// and WC3 Mod
 		playerCalcExtraData(ent->index, ent);
 		// playerSound(ent->index, ent->origin, "");
+
+		byte r = 255, g = 255, b = 255;
+		if (g_playerList[ent->index].team == 1)
+		{
+			r = 255;
+			g = 0;
+			b = 0;
+		}
+		else if (g_playerList[ent->index].team == 2)
+		{
+			r = 0;
+			g = 0;
+			b = 255;
+		}
 
 		if (Config::barrel)
 		{
@@ -869,22 +938,15 @@ int HUD_AddEntity(int type, struct cl_entity_s *ent, const char *modelname)
 			if (laserbeam == 0)
 				laserbeam = gEngfuncs.pEventAPI->EV_FindModelIndex(XorStr("sprites/laserbeam.spr"));
 
-			byte r = 255, g = 255, b = 255;
-			if (g_playerList[ent->index].team == 1)
-			{
-				r = 255;
-				g = 0;
-				b = 0;
-			}
-			else if (g_playerList[ent->index].team == 2)
-			{
-				r = 0;
-				g = 0;
-				b = 255;
-			}
-
 			gEngfuncs.pEfxAPI->R_BeamPoints(begin, end, laserbeam, 0.001f, Config::barrel,
 				0.0f, 32.0f, 2.0f, 0, 0.0f, r / 255.0f, g / 255.0f, b / 255.0f);
+		}
+
+		if (Config::glowShell && ent->index != g_local.entindex)
+		{
+			ent->curstate.renderamt = 1;
+			ent->curstate.renderfx |= kRenderFxGlowShell;
+			ent->curstate.rendercolor = {r, g, b};
 		}
 	}
 	else
@@ -1199,6 +1261,13 @@ int ScoreAttrib(const char *pszName, int iSize, void *pbuf)
 
 	if (idx == g_local.ent->index)
 		g_local.alive = ((info & 1) == 0);
+	else if (idx > 0 && idx < 33)
+	{
+		if ((info & 1) == 0)
+			g_playerList[idx].setAlive();
+		else
+			g_playerList[idx].killed = true;
+	}
 
 	return (*ScoreAttribOrg)(pszName, iSize, pbuf);
 }

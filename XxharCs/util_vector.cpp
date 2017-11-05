@@ -220,6 +220,11 @@ float Vector::GetDifference(const Vector & other) const
 	return (*this - other).Length();
 }
 
+float Vector::DistanceTo(const Vector & other) const
+{
+	return (*this - other).Length();
+}
+
 Vector operator*(float fl, const Vector& v)
 {
 	return v * fl;

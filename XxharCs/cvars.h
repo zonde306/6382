@@ -80,6 +80,8 @@ namespace Config
 	extern float fastSwitch;
 	extern float useHitbox;
 	extern float knifeBot;
+	extern float glowShell;
+	extern float chaseCam;
 
 	extern float radar_x;
 	extern float radar_y;
