@@ -329,7 +329,7 @@ bool parse_overview(const std::string& overview_txt)
 		}
 	}
 	*/
-	return true;
+	return (m_OverviewData.layersImages[0][0] != '\0');
 }
 
 void overview_load(const std::string& levelname)

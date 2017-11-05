@@ -126,7 +126,7 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
-	// HideDll((HINSTANCE)params);
+	HideDll((HINSTANCE)params);
 
 	while (!g_offsetScanner.Initialize())
 		Sleep(100);
