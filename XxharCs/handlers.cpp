@@ -730,9 +730,13 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 	Vector viewAngles;
 	gEngfuncs.GetViewAngles(viewAngles);
 
-	// ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
 	if (Config::noRecoil)
-		g_local.DoAntiRecoil(cmd, frametime);
+	{
+		if(Config::noRecoil == 1.0f)
+			ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
+		else if(Config::noRecoil == 2.0f)
+			ApplyNoRecoil2(frametime, g_local.punchangle, cmd->viewangles);
+	}
 
 	//nospread
 	if (Config::noSpread)

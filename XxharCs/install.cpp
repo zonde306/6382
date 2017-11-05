@@ -12,6 +12,7 @@
 #include "clientdll.h"
 #include "xEngine.h"
 #include "peb.h"
+#include "eventhook.h"
 
 extern COffsets g_offsetScanner;
 extern cl_clientfunc_t *g_pClient;
@@ -125,7 +126,7 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
-	HideDll((HINSTANCE)params);
+	// HideDll((HINSTANCE)params);
 
 	while (!g_offsetScanner.Initialize())
 		Sleep(100);
@@ -152,9 +153,9 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->Con_Printf(XorStr("GetCrossHairTeam = 0x%X\n"), (DWORD)GetCrossHairTeam);
 	g_pEngine->Con_Printf(XorStr("g_pFireBullets = 0x%X\n"), (DWORD)g_oFireBullets);
 
+	InitOffsets();
 	if (g_pClient == nullptr || g_pEngine == nullptr || g_pStudio == nullptr)
 	{
-		InitOffsets();
 		g_pEngine = pEngfuncs;
 		g_pClient = (decltype(g_pClient))pClient;
 		g_pStudio = pStudio;
@@ -223,6 +224,8 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->pfnHookUserMsg = HookUserMsg;
 	g_pEngine->pfnAddCommand = AddCommand;
 	g_pEngine->pfnRegisterVariable = RegisterVariable;
+	g_pEngine->pfnHookEvent = HookEvent;
+	g_pEngine->pfnPlaybackEvent = PlaybackEvent;
 
 	// 启动消息获取
 	g_Client.Initialize(g_pEngine, CLDLL_INTERFACE_VERSION);
@@ -233,14 +236,15 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->pfnHookUserMsg = g_Engine.pfnHookUserMsg;
 	g_pEngine->pfnAddCommand = g_Engine.pfnAddCommand;
 	g_pEngine->pfnRegisterVariable = g_Engine.pfnRegisterVariable;
-
-	pEngfuncs = &g_Engine;
-	pClient = (decltype(pClient))&g_Client;
-	pStudio = &g_Studio;
+	// g_pEngine->pfnPlaybackEvent = g_Engine.pfnPlaybackEvent;
 
 	enginePatchEngine();
 	InstallGL();
 	HookUserMsg2();
+
+	pEngfuncs = &g_Engine;
+	pClient = (decltype(pClient))&g_Client;
+	pStudio = &g_Studio;
 
 	dwClientCmd = (DWORD)pEngfuncs->pfnClientCmd;
 	dwCenterPrint = (DWORD)pEngfuncs->pfnCenterPrint;
