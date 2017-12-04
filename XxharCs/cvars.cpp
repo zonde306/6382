@@ -5,6 +5,7 @@ namespace Config
 	float glAimbot = 0.0f;
 	float glAimThrough = 0.0f;
 	float noRecoil = 3.0f;
+	float noVisibleRecoil = 0.0f;
 	float noSpread = 1.0f;
 	float glWallhack = 0.0f;
 	float glNoSmoker = 0.0f;

@@ -138,6 +138,8 @@ void *COffsets::GameConsole(void)
 			return (void*)*(DWORD *)(Addres + 1);
 		}
 	}
+
+	return nullptr;
 }
 
 void COffsets::ConsoleColorInitalize()
@@ -279,6 +281,66 @@ void * COffsets::FireBullets3()
 	DWORD FireBullets = (DWORD)FindMemoryClone(ClBase, ClEnd, FireString, strlen(FireString));
 	FireBullets = (DWORD)FindReference(ClBase, ClEnd, FireBullets);
 	return (PVOID)FireBullets;
+}
+
+void * COffsets::InitPoint()
+{
+	DWORD initPoint = FindPattern(ClBase, ClEnd, "83 F8 1D 0F 87 ? ? ? ? FF 24 85 ? ? ? ? B8");
+	if (initPoint != 0)
+		return (PVOID)(*(DWORD*)(initPoint + 0x11));
+
+	return nullptr;
+}
+
+void * COffsets::SendPacket()
+{
+	DWORD sendPacket = FindPattern(HwBase, HwEnd, "56 57 33 FF 3B C7 0F 84 ? ? ? ? 83");
+	if (sendPacket == 0)
+		return nullptr;
+
+	sendPacket = FindPattern(sendPacket - 0x12, HwEnd, "C3 90");
+	if (sendPacket != 0)
+		return (PVOID)(*(PDWORD)(sendPacket + 0x03));
+
+	return nullptr;
+}
+
+void * COffsets::VGuiPaint()
+{
+	// 90 E8 ? ? ? ? 85 C0 74 ? E8 + 0x01
+	DWORD vguiPaint = FindPattern(HwBase, HwEnd, "E8 ? ? ? ? 85 C0 74 ? E8 ? ? ? ? F7 D8");
+	if (vguiPaint != 0)
+		return (PVOID)vguiPaint;
+
+	return nullptr;
+}
+
+void * COffsets::GetWeaponByID()
+{
+	// 8B 44 24 04 48 83 F8 1D 0F 87 ? ? ? ?
+	DWORD dwGetWeaponByID = FindPattern(ClBase, ClEnd, "8B 44 ? ? 48 83 F8 ? 0F 87 ? ? ? ? FF 24 ? ? ? ? ? B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8");
+	if (dwGetWeaponByID != 0)
+		return (PVOID)dwGetWeaponByID;
+
+	return nullptr;
+}
+
+void * COffsets::GlobalVars()
+{
+	DWORD dwGlobals = FindPattern(ClBase, ClEnd, "A1 ? ? ? ? 8D 48 34 8D 50 40 D9 5C 24 1C");
+	if (dwGlobals != 0)
+		return (PVOID)(*(PDWORD)(dwGlobals + 1));
+
+	return nullptr;
+}
+
+void * COffsets::ExportPointer()
+{
+	DWORD dwExportPointer = FindPattern(HwBase, HwEnd, "68 ? ? ? ? E8 ? ? ? ? 83 C4 0C E8 ? ? ? ? E8 ? ? ? ?");
+	if (dwExportPointer != 0)
+		return (PVOID)(*(PDWORD)(dwExportPointer + 0x01));
+
+	return nullptr;
 }
 
 void *COffsets::ClientFuncs(void)

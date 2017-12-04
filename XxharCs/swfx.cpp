@@ -26,7 +26,7 @@ CSwitchWeaponEffect::CSwitchWeaponEffect(void)
 	m_fDisplayY = sScreenInfo.iHeight * 0.5f;
 	m_fDisplayY= (m_fDisplayY <= sScreenInfo.iHeight - 260.0f ? m_fDisplayY : sScreenInfo.iHeight - 260.0f);
 
-	m_fDisplayX = sScreenInfo.iWidth - 135 - 40;
+	m_fDisplayX = sScreenInfo.iWidth - 135.f - 40.f;
 
 
 	m_pFastSwitch = gEngfuncs.pfnRegisterVariable("cl_swfx_enable", "1", FCVAR_ARCHIVE);
@@ -38,8 +38,8 @@ void CSwitchWeaponEffect::Draw()
 	static float fDelta ,fPercent,fDelta2;
 	fDelta = m_fTime - gEngfuncs.GetClientTime();
 	fPercent = fDelta / m_pDisplayTime->value;
-	fDelta = 40.0 * fPercent;
-	fDelta2 = 20.0 * fPercent;
+	fDelta = 40.0f * fPercent;
+	fDelta2 = 20.0f * fPercent;
 	if(m_iBits & ( 1<< 31))
 	{
 		for(int i=1;i<31;i++)
@@ -96,6 +96,8 @@ int CSwitchWeaponEffect::GetWpnSlot(int iWpn)
 	if(WPN_BIT_3 & (1<<iWpn)) return 3;
 	if(WPN_BIT_4 & (1<<iWpn)) return 4;
 	if(WPN_BIT_5 & (1<<iWpn)) return 5;
+
+	return 0;
 }
 int CSwitchWeaponEffect::GetPrevWpn(void)
 {

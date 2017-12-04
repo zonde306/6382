@@ -274,12 +274,12 @@ void VectorAngles(const Vector & forward, Vector & angles)
 	}
 	else
 	{
-		yaw = (atan2(forward[1], forward[0]) * 180 / M_PI);
+		yaw = (atan2(forward[1], forward[0]) * 180 / M_PI_F);
 		if (yaw < 0)
 			yaw += 360;
 
 		tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
-		pitch = (atan2(-forward[2], tmp) * 180 / M_PI);
+		pitch = (atan2(-forward[2], tmp) * 180 / M_PI_F);
 		if (pitch < 0)
 			pitch += 360;
 	}
@@ -411,14 +411,14 @@ Vector ToEulerAngles(const Vector& src)
 
 	if (Length > 0)
 	{
-		Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+		Pitch = (atan2(-src.z, Length) * 180 / M_PI_F);
 
 		if (Pitch < 0)
 		{
 			Pitch += 360;
 		}
 
-		Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+		Yaw = (atan2(src.y, src.x) * 180 / M_PI_F);
 
 		if (Yaw < 0)
 		{
@@ -450,14 +450,14 @@ Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
 	{
 		if (Length > 0.001)
 		{
-			Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+			Pitch = (atan2(-src.z, Length) * 180 / M_PI_F);
 
 			if (Pitch < 0)
 			{
 				Pitch += 360;
 			}
 
-			Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+			Yaw = (atan2(src.y, src.x) * 180 / M_PI_F);
 
 			if (Yaw < 0)
 			{
@@ -466,7 +466,7 @@ Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
 
 			float up_z = (Left[1] * src.x) - (Left[0] * src.y);
 
-			Roll = (atan2(Left[2], up_z) * 180 / M_PI);
+			Roll = (atan2(Left[2], up_z) * 180 / M_PI_F);
 
 			if (Roll < 0)
 			{
@@ -475,14 +475,14 @@ Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
 		}
 		else
 		{
-			Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+			Yaw = (atan2(src.y, src.x) * 180 / M_PI_F);
 
 			if (Yaw < 0)
 			{
 				Yaw += 360;
 			}
 
-			Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+			Pitch = (atan2(-src.z, Length) * 180 / M_PI_F);
 
 			if (Pitch < 0)
 			{
@@ -496,14 +496,14 @@ Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
 	{
 		if (Length > 0)
 		{
-			Pitch = (atan2(-src.z, Length) * 180 / M_PI);
+			Pitch = (atan2(-src.z, Length) * 180 / M_PI_F);
 
 			if (Pitch < 0)
 			{
 				Pitch += 360;
 			}
 
-			Yaw = (atan2(src.y, src.x) * 180 / M_PI);
+			Yaw = (atan2(src.y, src.x) * 180 / M_PI_F);
 
 			if (Yaw < 0)
 			{
@@ -512,7 +512,7 @@ Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
 		}
 		else
 		{
-			Pitch = (src.z > 0.0f) ? 270 : 90;
+			Pitch = (src.z > 0.0f) ? 270.0f : 90.0f;
 			Yaw = 0;
 		}
 	}
@@ -522,25 +522,25 @@ Vector ToEulerAngles(Vector* PseudoUp, const Vector& src)
 
 void AngleNormalize(float* angles)
 {
-	if (angles[0] > 89)
+	if (angles[0] > 89.f)
 	{
-		angles[0] = 89;
+		angles[0] = 89.f;
 	}
-	else if (-89 > angles[0])
+	else if (-89.f > angles[0])
 	{
-		angles[0] = -89;
-	}
-
-	if (angles[1] > 180)
-	{
-		angles[1] -= 360;
-	}
-	else if (-180 > angles[1])
-	{
-		angles[1] += 360;
+		angles[0] = -89.f;
 	}
 
-	angles[2] = 0;
+	if (angles[1] > 180.f)
+	{
+		angles[1] -= 360.f;
+	}
+	else if (-180.f > angles[1])
+	{
+		angles[1] += 360.f;
+	}
+
+	angles[2] = 0.f;
 }
 
 void AngleVectors(const Vector & angles, Vector & forward)

@@ -683,7 +683,7 @@ void drawRadarPoint(const float* origin, int r, int g, int b, int a, bool blink 
 		float dx = origin[0] - g_local.pmEyePos[0];
 		float dy = origin[1] - g_local.pmEyePos[1];
 
-		float yaw = mainViewAngles[1] * (3.1415 / 180.0);
+		float yaw = mainViewAngles[1] * (M_PI_F / 180.0f);
 		g_local.sin_yaw = sin(yaw);
 		g_local.minus_cos_yaw = -cos(yaw);
 

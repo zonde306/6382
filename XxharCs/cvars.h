@@ -48,6 +48,7 @@ namespace Config
 	extern float glAimbot;
 	extern float glAimThrough;
 	extern float noRecoil;
+	extern float noVisibleRecoil;
 	extern float noSpread;
 	extern float glWallhack;
 	extern float glNoSmoker;

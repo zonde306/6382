@@ -26,6 +26,12 @@ public:
 	void* Slots();
 	void* FireBullets();
 	void* FireBullets3();
+	void* InitPoint();
+	void* SendPacket();
+	void* VGuiPaint();
+	void* GetWeaponByID();
+	void* GlobalVars();
+	void* ExportPointer();
 	DWORD EngineStudio(void);
 	void GameInfo(void);
 	void *Sound(void);

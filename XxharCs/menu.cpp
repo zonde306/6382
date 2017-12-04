@@ -37,8 +37,10 @@ void Menu::Init()
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("No Recoil"), &Config::noRecoil, XorStr("无后坐力"),
 			true, 0.0f, true, 3.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("No Visible Recoil"), &Config::noVisibleRecoil, XorStr("无后屏幕坐力"),
+			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("No Spread"), &Config::noSpread, XorStr("子弹不会扩散"),
-			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
+			true, 0.0f, true, 3.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Rapid Fire"), &Config::rapidFire, XorStr("手枪连射"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Trigger Bot"), &Config::triggerBot, XorStr("自动开枪"),
@@ -53,7 +55,7 @@ void Menu::Init()
 
 	{
 		MenuStack& menu = AddMenuClass(XorStr("::HvH"));
-		menu.item.emplace_back(XorStr("Anti Aim"), &Config::antiAim, XorStr("让别人更能瞄准你"),
+		menu.item.emplace_back(XorStr("Anti Aim"), &Config::antiAim, XorStr("让别人更难瞄准你"),
 			true, 0.0f, true, 2.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Anti Aim X"), &Config::antiaim_x, "",
 			true, 1.0f, true, 6.0f, 1.0f, 1.0f, true);

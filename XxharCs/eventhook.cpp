@@ -58,11 +58,11 @@ void Event_usp(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275 * (0.3 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275f * (0.3f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.92)
+			if (g_local.spread.spreadvar > 0.92f)
 				g_local.spread.spreadvar = 0.92f;
-			else if (g_local.spread.spreadvar < 0.6)
+			else if (g_local.spread.spreadvar < 0.6f)
 				g_local.spread.spreadvar = 0.6f;
 		}
 
@@ -80,9 +80,9 @@ void Event_mp5n(struct event_args_s *args)
 	{
 		g_local.spread.recoil++;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * 0.004543389368468878 + 0.45;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * 0.004543389368468878f + 0.45f;
 
-		if (g_local.spread.spreadvar > 0.75)
+		if (g_local.spread.spreadvar > 0.75f)
 			g_local.spread.spreadvar = 0.75f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -100,9 +100,9 @@ void Event_ak47(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 200 + 0.35;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 200 + 0.35f;
 
-		if (g_local.spread.spreadvar > 1.25)
+		if (g_local.spread.spreadvar > 1.25f)
 			g_local.spread.spreadvar = 1.25f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -119,9 +119,9 @@ void Event_aug(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 215 + 0.3;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 215 + 0.3f;
 
-		if (g_local.spread.spreadvar > 1.0)
+		if (g_local.spread.spreadvar > 1.0f)
 			g_local.spread.spreadvar = 1.0f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -137,11 +137,11 @@ void Event_deagle(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.35 * (0.4 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.35f * (0.4f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.9)
+			if (g_local.spread.spreadvar > 0.9f)
 				g_local.spread.spreadvar = 0.9f;
-			else if (g_local.spread.spreadvar < 0.55)
+			else if (g_local.spread.spreadvar < 0.55f)
 				g_local.spread.spreadvar = 0.55f;
 		}
 
@@ -159,9 +159,9 @@ void Event_g3sg1(struct event_args_s *args)
 	{
 		if (g_local.spread.brokentime)
 		{
-			g_local.spread.spreadvar = 0.55 + (0.3 * (g_local.spread.gtime - g_local.spread.brokentime));
+			g_local.spread.spreadvar = 0.55f + (0.3f * (g_local.spread.gtime - g_local.spread.brokentime));
 
-			if (g_local.spread.spreadvar > 0.98)
+			if (g_local.spread.spreadvar > 0.98f)
 				g_local.spread.spreadvar = 0.98f;
 		}
 
@@ -180,9 +180,9 @@ void Event_sg550(struct event_args_s *args)
 	{
 		if (g_local.spread.brokentime)
 		{
-			g_local.spread.spreadvar = 0.65 + (0.35 * (g_local.spread.gtime - g_local.spread.brokentime));
+			g_local.spread.spreadvar = 0.65f + (0.35f * (g_local.spread.gtime - g_local.spread.brokentime));
 
-			if (g_local.spread.spreadvar > 0.98)
+			if (g_local.spread.spreadvar > 0.98f)
 				g_local.spread.spreadvar = 0.98f;
 		}
 
@@ -201,11 +201,11 @@ void Event_glock18(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275 * (0.325 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275f * (0.325f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.9)
+			if (g_local.spread.spreadvar > 0.9f)
 				g_local.spread.spreadvar = 0.9f;
-			else if (g_local.spread.spreadvar < 0.6)
+			else if (g_local.spread.spreadvar < 0.6f)
 				g_local.spread.spreadvar = 0.6f;
 		}
 
@@ -224,9 +224,9 @@ void Event_m249(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 175 + 0.4;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 175 + 0.4f;
 
-		if (g_local.spread.spreadvar > 0.9)
+		if (g_local.spread.spreadvar > 0.9f)
 			g_local.spread.spreadvar = 0.9f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -260,9 +260,9 @@ void Event_m4a1(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 220 + 0.3;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 220 + 0.3f;
 
-		if (g_local.spread.spreadvar > 1)
+		if (g_local.spread.spreadvar > 1.0f)
 			g_local.spread.spreadvar = 1.0f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -279,9 +279,9 @@ void Event_mac10(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 200 + 0.6;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 200 + 0.6f;
 
-		if (g_local.spread.spreadvar > 1.65)
+		if (g_local.spread.spreadvar > 1.65f)
 			g_local.spread.spreadvar = 1.65f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -298,9 +298,9 @@ void Event_p90(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil / 175 + 0.45;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil / 175 + 0.45f;
 
-		if (g_local.spread.spreadvar > 1)
+		if (g_local.spread.spreadvar > 1.0f)
 			g_local.spread.spreadvar = 1.0f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -316,11 +316,11 @@ void Event_p228(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.3 * (0.325 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.3f * (0.325f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.9)
+			if (g_local.spread.spreadvar > 0.9f)
 				g_local.spread.spreadvar = 0.9f;
-			else if (g_local.spread.spreadvar < 0.6)
+			else if (g_local.spread.spreadvar < 0.6f)
 				g_local.spread.spreadvar = 0.6f;
 		}
 
@@ -365,9 +365,9 @@ void Event_sg552(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 220 + 0.3;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 220 + 0.3f;
 
-		if (g_local.spread.spreadvar > 1)
+		if (g_local.spread.spreadvar > 1.0f)
 			g_local.spread.spreadvar = 1.0f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -384,9 +384,9 @@ void Event_tmp(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 200 + 0.55;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil * g_local.spread.recoil / 200 + 0.55f;
 
-		if (g_local.spread.spreadvar > 1.4)
+		if (g_local.spread.spreadvar > 1.4f)
 			g_local.spread.spreadvar = 1.4f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -402,11 +402,11 @@ void Event_fiveseven(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.25 * (0.275 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.25f * (0.275f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.92)
+			if (g_local.spread.spreadvar > 0.92f)
 				g_local.spread.spreadvar = 0.92f;
-			else if (g_local.spread.spreadvar < 0.725)
+			else if (g_local.spread.spreadvar < 0.725f)
 				g_local.spread.spreadvar = 0.725f;
 		}
 
@@ -425,9 +425,9 @@ void Event_ump45(struct event_args_s *args)
 		g_local.spread.recoil++;
 		g_local.spread.firing = true;
 
-		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil / 210 + 0.5;
+		g_local.spread.spreadvar = g_local.spread.recoil * g_local.spread.recoil / 210 + 0.5f;
 
-		if (g_local.spread.spreadvar > 1.0)
+		if (g_local.spread.spreadvar > 1.0f)
 			g_local.spread.spreadvar = 1.0f;
 
 		g_local.spread.prevtime = g_local.spread.gtime;
@@ -456,11 +456,11 @@ void Event_elite_left(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275 * (0.325 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275f * (0.325f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.88)
+			if (g_local.spread.spreadvar > 0.88f)
 				g_local.spread.spreadvar = 0.88f;
-			else if (g_local.spread.spreadvar < 0.55)
+			else if (g_local.spread.spreadvar < 0.55f)
 				g_local.spread.spreadvar = 0.55f;
 		}
 
@@ -478,11 +478,11 @@ void Event_elite_right(struct event_args_s *args)
 	{
 		if (g_local.spread.prevtime)
 		{
-			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275 * (0.325 - (g_local.spread.gtime - g_local.spread.prevtime)));
+			g_local.spread.spreadvar = g_local.spread.spreadvar - (0.275f * (0.325f - (g_local.spread.gtime - g_local.spread.prevtime)));
 
-			if (g_local.spread.spreadvar > 0.88)
+			if (g_local.spread.spreadvar > 0.88f)
 				g_local.spread.spreadvar = 0.88f;
-			else if (g_local.spread.spreadvar < 0.55)
+			else if (g_local.spread.spreadvar < 0.55f)
 				g_local.spread.spreadvar = 0.55f;
 		}
 

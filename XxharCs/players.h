@@ -32,6 +32,7 @@ struct sMe
 	int iHs;
 	int iMoney;
 	int iCrosshairId;
+	int iRandomSeed;
 
 	int iFOV;
 	Vector pmVelocity;
@@ -52,6 +53,7 @@ struct sMe
 	Vector vSpread;
 	Vector vSource;
 	Vector origin;
+	Vector clViewAngles;
 
 	float maxspeed;
 	float groundspeed;
@@ -66,6 +68,7 @@ struct sMe
 
 	bool bInRad(float fScreen[2], float Fov, struct usercmd_s* cmd);
 	void CorrectMovement(const Vector& vOldAngles, struct usercmd_s *pCmd, float fOldForward, float fOldSidemove);
+	void FixMovement(struct usercmd_s *pCmd, const Vector& Out);
 
 	void DoAntiAim(struct usercmd_s *usercmd);
 	void DoAntiAim2(struct usercmd_s *usercmd);

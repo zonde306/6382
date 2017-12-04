@@ -1,5 +1,6 @@
 #ifndef __INSTALL_H__
 #define __INSTALL_H__
+#include "weaponlist.h"
 
 typedef int(*FnUserMsgHook)(const char* pszName, int iSize, void* pbuf);
 typedef struct _UserMgsList
@@ -10,6 +11,9 @@ typedef struct _UserMgsList
 	FnUserMsgHook address;
 } UserMgsList, *PUserMgsList;
 
+typedef void(__cdecl* FnSendPacket)();
+typedef int(__cdecl *FnVGuiPaint)();
+typedef weapon_t*(__cdecl* FnGetWeaponByID)(int weaponId);
 typedef void(*PreS_DynamicSound_t)(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
 DWORD WINAPI InstallCheat(LPVOID params);
 void UninstallCheat();

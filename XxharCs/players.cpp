@@ -98,10 +98,10 @@ void drawPlayerEsp(int ax)
 	// distance and boxradius also needed for esp offset
 	float distance = g_playerList[ax].distance/22.0f;
 	extern float fCurrentFOV;
-	int   boxradius = (300.0*90.0) / (distance*fCurrentFOV);	 
+	int   boxradius = (int)((300.0f * 90.0f) / (distance * fCurrentFOV));	 
 	BOUND_VALUE(boxradius,1,200);
 
-	gDrawBoxAtScreenXY(vecScreen[0],vecScreen[1],0,255,0,150,boxradius);
+	gDrawBoxAtScreenXY((int)vecScreen[0],(int)vecScreen[1],0,255,0,150,boxradius);
 	
 }
 
@@ -269,7 +269,7 @@ static inline float GetDistanceFrom(const float* pos)
 	register double a = pos[0] - g_local.pmEyePos[0];
 	register double b = pos[1] - g_local.pmEyePos[1];
 	register double c = pos[2] - g_local.pmEyePos[2];
-	return sqrt(a*a + b*b + c*c);
+	return sqrtf((float)(a * a + b * b + c * c));
 }
 
 
@@ -402,11 +402,11 @@ void _fastcall VectorAngles(const float *forward, float *angles)
 	}
 	else
 	{
-		yaw = (atan2(forward[1], forward[0]) * 180 / M_PI);
+		yaw = (atan2(forward[1], forward[0]) * 180 / M_PI_F);
 		if (yaw < 0)
 			yaw += 360;
 		tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
-		pitch = (atan2(-forward[2], tmp) * 180 / M_PI);
+		pitch = (atan2(-forward[2], tmp) * 180 / M_PI_F);
 		if (pitch < 0)
 			pitch += 360;
 	}
@@ -419,8 +419,10 @@ void _fastcall VectorAngles(const float *forward, float *angles)
 	while (angles[1]>180) { angles[1] -= 360; }
 }
 
+#ifndef M_PI
 #define M_PI			3.14159265358979323846
 #define M_PI_F			(float)M_PI
+#endif
 
 void sMe::DoTriggerBot(usercmd_s * usercmd)
 {
@@ -605,6 +607,38 @@ void sMe::CorrectMovement(const Vector & vOldAngles, usercmd_s * pCmd, float fOl
 	pCmd->sidemove = sin(DEG2RAD(deltaView)) * fOldForward + sin(DEG2RAD(deltaView + 90.f)) * fOldSidemove;
 }
 
+void sMe::FixMovement(usercmd_s * pCmd, const Vector & Out)
+{
+	Vector vecViewForward, vecViewRight, vecViewUp;
+	AngleVectors(Out, vecViewForward, vecViewRight, vecViewUp);
+
+	Vector vecModForward, vecModRight, vecModUp;
+	AngleVectors(pCmd->viewangles, vecModForward, vecModRight, vecModUp);
+
+	vecViewForward.Normalize();
+	vecViewRight.Normalize();
+	vecViewUp.Normalize();
+
+	Vector vecMoveFix[3] =
+	{
+		Vector(pCmd->forwardmove * vecViewForward),
+		Vector(pCmd->sidemove * vecViewRight),
+		Vector(pCmd->upmove * vecViewUp),
+	};
+	pCmd->forwardmove =
+		DotProduct(vecMoveFix[0], vecModForward) +
+		DotProduct(vecMoveFix[1], vecModForward) +
+		DotProduct(vecMoveFix[2], vecModForward);
+	pCmd->sidemove =
+		DotProduct(vecMoveFix[0], vecModRight) +
+		DotProduct(vecMoveFix[1], vecModRight) +
+		DotProduct(vecMoveFix[2], vecModRight);
+	pCmd->upmove =
+		DotProduct(vecMoveFix[0], vecModUp) +
+		DotProduct(vecMoveFix[1], vecModUp) +
+		DotProduct(vecMoveFix[2], vecModUp);
+}
+
 void sMe::DoTriggerBot2(usercmd_s * usercmd)
 {
 	if (this->iWeaponId == WEAPONLIST_KNIFE || this->iWeaponId == WEAPONLIST_C4 ||
@@ -675,58 +709,107 @@ float GetAntiAimAngles()
 	return vecAngles.y - 180; // we substract the angle to them with 180 to be faced backwards
 }
 
+extern PDWORD g_pInitPoint;
 float GetNoRecoilValue(int weaponId)
 {
 	switch (weaponId)
 	{
-	case WEAPONLIST_DEAGLE:
-		return 2.0f;
-	case WEAPONLIST_GLOCK18:
-		return 0.05f;
-	case WEAPONLIST_USP:
-		return 1.5f;
-	case WEAPONLIST_P228:
-		return 0.5f;
-	case WEAPONLIST_FIVESEVEN:
-		return 0.5f;
-	case WEAPONLIST_ELITE:
-		return 1.8f;
-	case WEAPONLIST_M3:
-		return 1.5f;
-	case WEAPONLIST_XM1014:
-		return 1.5f;
-	case WEAPONLIST_MP5:
-		return 1.3f;
-	case WEAPONLIST_TMP:
-		return 1.6f;
-	case WEAPONLIST_P90:
-		return 1.6f;
-	case WEAPONLIST_MAC10:
-		return 1.6f;
-	case WEAPONLIST_UMP45:
-		return 1.3f;
-	case WEAPONLIST_AK47:
-		return 1.83f;
-	case WEAPONLIST_M4A1:
-		return 1.73f;
-	case WEAPONLIST_AUG:
-		return 1.8f;
-	case WEAPONLIST_SG552:
-		return 1.7f;
-	case WEAPONLIST_GALIL:
-		return 2.0f;
-	case WEAPONLIST_FAMAS:
-		return 2.3f;
-	case WEAPONLIST_SCOUT:
-		return 0.1f;
-	case WEAPONLIST_AWP:
-		return 1.0f;
-	case WEAPONLIST_SG550:
-		return 1.73f;
-	case WEAPONLIST_G3SG1:
-		return 1.73f;
-	case WEAPONLIST_M249:
-		return 1.85f;
+		case WEAPONLIST_DEAGLE:
+		{
+			return 2.0f;
+		}
+		case WEAPONLIST_GLOCK18:
+		{
+			return 0.05f;
+		}
+		case WEAPONLIST_USP:
+		{
+			return 1.5f;
+		}
+		case WEAPONLIST_P228:
+		{
+			return 0.5f;
+		}
+		case WEAPONLIST_FIVESEVEN:
+		{
+			return 0.5f;
+		}
+		case WEAPONLIST_ELITE:
+		{
+			return 1.8f;
+		}
+		case WEAPONLIST_M3:
+		{
+			return 1.5f;
+		}
+		case WEAPONLIST_XM1014:
+		{
+			return 1.5f;
+		}
+		case WEAPONLIST_MP5:
+		{
+			return 1.3f;
+		}
+		case WEAPONLIST_TMP:
+		{
+			return 1.6f;
+		}
+		case WEAPONLIST_P90:
+		{
+			return 1.6f;
+		}
+		case WEAPONLIST_MAC10:
+		{
+			return 1.6f;
+		}
+		case WEAPONLIST_UMP45:
+		{
+			return 1.3f;
+		}
+		case WEAPONLIST_AK47:
+		{
+			return 1.83f;
+		}
+		case WEAPONLIST_M4A1:
+		{
+			return 1.73f;
+		}
+		case WEAPONLIST_AUG:
+		{
+			return 1.8f;
+		}
+		case WEAPONLIST_SG552:
+		{
+			return 1.7f;
+		}
+		case WEAPONLIST_GALIL:
+		{
+			return 2.0f;
+		}
+		case WEAPONLIST_FAMAS:
+		{
+			return 2.3f;
+		}
+		case WEAPONLIST_SCOUT:
+		{
+			return 0.1f;
+		}
+		case WEAPONLIST_AWP:
+		{
+			return 1.0f;
+		}
+		case WEAPONLIST_SG550:
+		{
+			return 1.73f;
+		}
+		case WEAPONLIST_G3SG1:
+		{
+			return 1.73f;
+		}
+		case WEAPONLIST_M249:
+		{
+			return 1.85f;
+		}
 	}
 
 	return 0.0f;
@@ -852,7 +935,7 @@ void sMe::DoFastWalk()
 		ForwardSpeed = 400; cl_forwardspeed->value = ForwardSpeed;
 		BackSpeed = 400; cl_backspeed->value = BackSpeed;
 		SideSpeed = 400; cl_sidespeed->value = SideSpeed;
-		cl_movespeedkey->value = 0.52;
+		cl_movespeedkey->value = 0.52f;
 	}
 }
 
@@ -865,24 +948,24 @@ void sMe::DoFastRun(usercmd_s * usercmd)
 	if ((usercmd->buttons&IN_FORWARD && usercmd->buttons&IN_MOVELEFT) ||
 		(usercmd->buttons&IN_BACK && usercmd->buttons&IN_MOVERIGHT))
 	{
-		if (_FastRun) { _FastRun = false; usercmd->sidemove -= 89.6; usercmd->forwardmove -= 89.6; }
-		else { _FastRun = true;  usercmd->sidemove += 89.6; usercmd->forwardmove += 89.6; }
+		if (_FastRun) { _FastRun = false; usercmd->sidemove -= 89.6f; usercmd->forwardmove -= 89.6f; }
+		else { _FastRun = true;  usercmd->sidemove += 89.6f; usercmd->forwardmove += 89.6f; }
 	}
 	else if ((usercmd->buttons&IN_FORWARD && usercmd->buttons&IN_MOVERIGHT) ||
 		(usercmd->buttons&IN_BACK && usercmd->buttons&IN_MOVELEFT))
 	{
-		if (_FastRun) { _FastRun = false; usercmd->sidemove -= 89.6; usercmd->forwardmove += 89.6; }
-		else { _FastRun = true;  usercmd->sidemove += 89.6; usercmd->forwardmove -= 89.6; }
+		if (_FastRun) { _FastRun = false; usercmd->sidemove -= 89.6f; usercmd->forwardmove += 89.6f; }
+		else { _FastRun = true;  usercmd->sidemove += 89.6f; usercmd->forwardmove -= 89.6f; }
 	}
 	else if (usercmd->buttons&IN_FORWARD || usercmd->buttons&IN_BACK)
 	{
-		if (_FastRun) { _FastRun = false; usercmd->sidemove -= 126.6; }
-		else { _FastRun = true;  usercmd->sidemove += 126.6; }
+		if (_FastRun) { _FastRun = false; usercmd->sidemove -= 126.6f; }
+		else { _FastRun = true;  usercmd->sidemove += 126.6f; }
 	}
 	else if (usercmd->buttons&IN_MOVELEFT || usercmd->buttons&IN_MOVERIGHT)
 	{
-		if (_FastRun) { _FastRun = false; usercmd->forwardmove -= 126.6; }
-		else { _FastRun = true;  usercmd->forwardmove += 126.6; }
+		if (_FastRun) { _FastRun = false; usercmd->forwardmove -= 126.6f; }
+		else { _FastRun = true;  usercmd->forwardmove += 126.6f; }
 	}
 }
 
@@ -1102,7 +1185,6 @@ void sMe::DoSilentAngles(usercmd_s * usercmd, float * aimangles)
 	usercmd->upmove = newup;
 }
 
-#define MIN_SMOOTH 0.000001f
 #define MIN_SMOOTH 2.0f
 #define MAX_SMOOTH 10.0f
 
@@ -1372,12 +1454,12 @@ void sMe::DoAntiAim2(usercmd_s * usercmd)
 			// Jitter
 			if (random < 15)
 			{
-				float change = -70 + (rand() % (int)(140 + 1));
+				float change = -70.f + (rand() % (int)(140 + 1));
 				usercmd->viewangles.y += change;
 			}
 			if (random == 69)
 			{
-				float change = -90 + (rand() % (int)(180 + 1));
+				float change = -90.f + (rand() % (int)(180 + 1));
 				usercmd->viewangles.y += change;
 			}
 
@@ -1388,7 +1470,7 @@ void sMe::DoAntiAim2(usercmd_s * usercmd)
 			int random = 1 + (rand() % (int)(100 - 1 + 1));
 			if (random < 10)
 			{
-				usercmd->viewangles.y += 180;
+				usercmd->viewangles.y += 180.f;
 			}
 			if (random > 90)
 			{
@@ -1488,7 +1570,7 @@ float AngleBetween(Vector a, Vector b)
 	z2 = b.z;
 	float dist = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
 	float dist2 = sqrt(pow(x1 - x2, 2) + pow(z1 - z2, 2));
-	return acos(dist2 / dist) * 180 / 3.1415926;
+	return acos(dist2 / dist) * 180 / M_PI_F;
 }
 
 void GetSpreadOffset(struct usercmd_s* usercmd)

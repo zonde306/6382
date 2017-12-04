@@ -13,6 +13,7 @@
 #include "xEngine.h"
 #include "peb.h"
 #include "eventhook.h"
+#include "Engine/exporttable.h"
 
 extern COffsets g_offsetScanner;
 extern cl_clientfunc_t *g_pClient;
@@ -21,13 +22,20 @@ extern engine_studio_api_t *g_pStudio;
 extern cl_clientslots_s* g_pSlots;
 extern PDWORD g_pDynamicSound;
 extern PDWORD g_pSpeedBooster;
+extern PDWORD g_pInitPoint;
+extern FnVGuiPaint g_pfnVGuiPaint;
+extern bool* g_pSendPacket;
+extern FnGetWeaponByID g_pfnGetWeaponByID;
+extern PSPLICE_ENTRY g_pSplicVGuiPaint;
 
 extern int	HookUserMsg(char *szMsgName, pfnUserMsgHook pfn);
 extern void StudioEntityLight(struct alight_s *plight);
 extern void PreS_DynamicSound(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
+extern void __cdecl Hooked_SendPacket();
+extern int __cdecl Hooked_VGuiPaint();
 extern PreS_DynamicSound_t g_oDynamicSound;
 extern decltype(g_pStudio->StudioEntityLight) g_oStudioEntityLight;
-DetourXS g_hookDynamicSound, g_hookFireBullets;
+DetourXS g_hookDynamicSound, g_hookFireBullets, g_hookSendPacket;
 
 //////////////////////////////////////////////////////////////////////////
 // global offsets
@@ -35,6 +43,8 @@ extern cl_enginefuncs_s* pEngfuncs;
 extern engine_studio_api_s* pStudio;
 extern _CLIENT_* pClient;
 extern double* globalTime;
+extern globalvars_t* g_pGlobals;
+extern export_t* g_pExport;
 
 extern cl_enginefunc_t g_Engine;
 extern cl_clientfunc_t g_Client;
@@ -126,7 +136,7 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
-	HideDll((HINSTANCE)params);
+	// HideDll((HINSTANCE)params);
 
 	while (!g_offsetScanner.Initialize())
 		Sleep(100);
@@ -141,6 +151,12 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	GetCrossHairTeam = (FnGetCrossHairTeam)g_offsetScanner.GetCurosrTeam();
 	g_pCrossHairTeam = (DWORD*)(g_offsetScanner.HwBase + 0x61B82C);
 	g_oFireBullets = (FnFireBullets)g_offsetScanner.FireBullets();
+	g_pInitPoint = (PDWORD)g_offsetScanner.InitPoint();
+	g_pSendPacket = (bool*)g_offsetScanner.SendPacket();
+	g_pfnVGuiPaint = (FnVGuiPaint)g_offsetScanner.VGuiPaint();
+	g_pfnGetWeaponByID = (FnGetWeaponByID)g_offsetScanner.GetWeaponByID();
+	g_pGlobals = (globalvars_t*)g_offsetScanner.GlobalVars();
+	g_pExport = (export_t*)g_offsetScanner.ExportPointer();
 	g_offsetScanner.GameInfo();
 
 	g_pEngine->Con_Printf(XorStr("clientBase = 0x%X\n"), (DWORD)clientBase);
@@ -152,6 +168,12 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->Con_Printf(XorStr("g_pSlots = 0x%X\n"), (DWORD)g_pSlots);
 	g_pEngine->Con_Printf(XorStr("GetCrossHairTeam = 0x%X\n"), (DWORD)GetCrossHairTeam);
 	g_pEngine->Con_Printf(XorStr("g_pFireBullets = 0x%X\n"), (DWORD)g_oFireBullets);
+	g_pEngine->Con_Printf(XorStr("g_pInitPoint = 0x%X\n"), (DWORD)g_pInitPoint);
+	g_pEngine->Con_Printf(XorStr("g_pSendPacket = 0x%X\n"), (DWORD)g_pSendPacket);
+	g_pEngine->Con_Printf(XorStr("g_pfnVGuiPaint = 0x%X\n"), (DWORD)g_pfnVGuiPaint);
+	g_pEngine->Con_Printf(XorStr("g_pfnGetWeaponByID = 0x%X\n"), (DWORD)g_pfnGetWeaponByID);
+	g_pEngine->Con_Printf(XorStr("g_pGlobals = 0x%X\n"), (DWORD)g_pGlobals);
+	g_pEngine->Con_Printf(XorStr("g_pExport = 0x%X\n"), (DWORD)g_pExport);
 
 	InitOffsets();
 	if (g_pClient == nullptr || g_pEngine == nullptr || g_pStudio == nullptr)
@@ -185,7 +207,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 
 		// g_oFireBullets = (FnFireBullets)DetourFunction((PBYTE)g_oFireBullets, (PBYTE)Hooked_FireBullets);
 	}
-
+	
 	if (g_pStudio->StudioEntityLight != nullptr)
 	{
 		// 检查 Hitbox 或 Bone 用的 Hook
@@ -214,6 +236,25 @@ DWORD WINAPI InstallCheat(LPVOID params)
 
 		g_pEngine->Con_Printf(XorStr("UserMsgHook Total: %d\n"), iterIndex);
 	}
+
+	/*
+	if (g_pfnSendPacket != nullptr)
+	{
+		g_hookSendPacket.Create(g_pfnSendPacket, Hooked_SendPacket);
+		g_pfnSendPacket = (FnSendPacket)g_hookSendPacket.GetTrampoline();
+	}
+	*/
+
+	/*
+	if (g_pfnVGuiPaint != nullptr)
+	{
+		// g_hookVGuiPaint.Create(g_pfnVGuiPaint, Hooked_VGuiPaint);
+		// g_pfnVGuiPaint = (FnVGuiPaint)g_hookVGuiPaint.GetTrampoline();
+		// g_pfnVGuiPaint = (FnVGuiPaint)DetourFunction((PBYTE)g_pfnVGuiPaint, (PBYTE)Hooked_VGuiPaint);
+		g_pSplicVGuiPaint = SpliceHookFunction(g_pfnVGuiPaint, Hooked_VGuiPaint);
+		g_pfnVGuiPaint = (FnVGuiPaint)g_pSplicVGuiPaint->trampoline;
+	}
+	*/
 
 	if(ActivateClient())
 		g_pEngine->Con_Printf(XorStr("Client Active\n"));
@@ -260,6 +301,8 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	dwDrawCharacter = (DWORD)pEngfuncs->pfnDrawCharacter;
 	dwGetScreenInfo = (DWORD)pEngfuncs->pfnGetScreenInfo;
 	dwDrawConsoleStringLen = (DWORD)pEngfuncs->pfnDrawConsoleStringLen;
+
+	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////

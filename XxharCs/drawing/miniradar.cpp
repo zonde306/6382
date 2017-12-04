@@ -15,7 +15,7 @@ static void calcRadarPoint(const float* origin, int& screenx, int& screeny)
 	float dy = origin[1] - g_local.pmEyePos[1];
 
 	// rotate
-	float yaw = mainViewAngles[1] * (M_PI / 180.0);
+	float yaw = mainViewAngles[1] * (M_PI_F / 180.0f);
 	g_local.sin_yaw = sin(yaw);
 	g_local.minus_cos_yaw = -cos(yaw);
 	float x = dy*g_local.minus_cos_yaw + dx*g_local.sin_yaw;

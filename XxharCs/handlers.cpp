@@ -31,6 +31,9 @@
 #include "swfx.h"
 #include "./drawing/gui.h"
 #include "imeinput.h"
+#include "Engine/exporttable.h"
+#include "install.h"
+#include "Misc/splice.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -48,6 +51,10 @@ engine_studio_api_s* pStudio;
 COffsets g_offsetScanner;
 PDWORD g_pDynamicSound;
 PDWORD g_pSpeedBooster;
+PDWORD g_pInitPoint;
+FnVGuiPaint g_pfnVGuiPaint;
+bool* g_pSendPacket;
+PSPLICE_ENTRY g_pSplicVGuiPaint;
 
 double* globalTime;
 engine_studio_api_t IEngineStudio = { NULL };
@@ -68,6 +75,8 @@ engine_studio_api_t *g_pStudio = NULL;
 // cl_enginefunc_t g_Engine;
 cl_clientfunc_t g_Client;
 engine_studio_api_t g_Studio;
+globalvars_t* g_pGlobals;
+export_t* g_pExport;
 
 SCREENINFO g_Screen;
 
@@ -684,6 +693,16 @@ void HUD_Redraw(float x, int y)
 		}*/
 }
 
+int __cdecl Hooked_VGuiPaint()
+{
+	int result = g_pfnVGuiPaint();
+
+	// 在这里绘制菜单
+
+
+	return result;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // HUD_PlayerMove Client Function
 //////////////////////////////////////////////////////////////////////////
@@ -730,16 +749,21 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 	Vector viewAngles;
 	gEngfuncs.GetViewAngles(viewAngles);
 
-	if (Config::noRecoil)
+	if (Config::noRecoil > 0.0f)
 	{
 		if(Config::noRecoil == 1.0f)
 			ApplyNoRecoil(frametime, g_local.punchangle, cmd->viewangles);
 		else if(Config::noRecoil == 2.0f)
 			ApplyNoRecoil2(frametime, g_local.punchangle, cmd->viewangles);
+		else
+		{
+			cmd->viewangles.x -= g_local.punchangle.x * 2;
+			cmd->viewangles.y -= g_local.punchangle.y * 2;
+		}
 	}
 
 	//nospread
-	if (Config::noSpread)
+	if (Config::noSpread > 0.0f)
 	{
 		/*
 		float offset[3];
@@ -751,6 +775,11 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 
 		if (Config::noSpread == 1.0f)
 			g_local.DoAntiSpread(cmd);
+		else if (Config::noSpread == 2.0f)
+		{
+			cmd->viewangles.x += g_local.vSpread.x;
+			cmd->viewangles.y += g_local.vSpread.y;
+		}
 		else
 			g_local.DoNoSpread(cmd);
 	}
@@ -809,8 +838,21 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 			g_local.DoAutoStrafe(cmd);
 	}
 
-	g_local.CorrectMovement(viewAngles, cmd, cmd->forwardmove, cmd->sidemove);
+	// g_local.CorrectMovement(viewAngles, cmd, cmd->forwardmove, cmd->sidemove);
+	g_local.FixMovement(cmd, g_local.clViewAngles);
 }
+
+/*
+void __cdecl Hooked_SendPacket()
+{
+	if (g_bSendPacket)
+	{
+		g_pfnSendPacket();
+	}
+	
+	// g_bSendPacket = true;
+}
+*/
 
 //////////////////////////////////////////////////////////////////////////
 // Called before V_CalcRefdef Client Function
@@ -819,17 +861,16 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 extern SCREENINFO	screeninfo;
 void PreV_CalcRefdef(struct ref_params_s *pparams)
 {
-	if (Config::noRecoil)
-	{
-		VectorCopy(pparams->punchangle, g_local.punchangle);
-		//only for visual NoRecoil:
-		VectorClear(pparams->punchangle);
+	if (!g_local.alive)
+		VectorCopy(pparams->vieworg, g_local.pmEyePos);
+	
+	VectorCopy(pparams->punchangle, g_local.punchangle);
 
-		if (!g_local.alive)
-		{
-			VectorCopy(pparams->vieworg, g_local.pmEyePos);
-		}
-	}
+	if (IsWeaponReady())
+		UpdatePunchAngles(pparams);
+
+	if(Config::noVisibleRecoil)
+		VectorClear(pparams->punchangle);
 
 	if (NOT_LTFX_SLOTS())
 	{
@@ -848,6 +889,7 @@ void PostV_CalcRefdef(struct ref_params_s *pparams)
 
 	VectorCopy(pparams->viewangles, mainViewAngles);
 	VectorCopy(pparams->vieworg, mainViewOrigin);
+	VectorCopy(pparams->cl_viewangles, g_local.clViewAngles);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -990,7 +1032,11 @@ void HUD_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct
 		// g_local.iClip = to->weapondata[g_local.iWeaponId].m_iClip;
 	}
 
+	g_local.iRandomSeed = random_seed;
 	gNoSpread.HUD_PostRunCmd(from, to, cmd, runfuncs, time, random_seed);
+
+	if (IsWeaponReady())
+		UpdateSpreadAngles();
 }
 
 //////////////////////////////////////////////////////////////////////////
