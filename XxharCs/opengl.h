@@ -5,7 +5,8 @@
 
 void InstallGL();
 void UninstallGL();
-void DrawMenu(int x, int y);
+// void DrawMenu(int x, int y);
+void glPrint(float x, float y, float z, float r, float g, float b, const char *fmt, ...);
 
 typedef void(APIENTRY* FnglBegin)(GLenum);
 typedef void(APIENTRY* FnglEnd)();

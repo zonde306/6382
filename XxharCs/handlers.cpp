@@ -544,6 +544,17 @@ void HUD_Redraw(float x, int y)
 					DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
 			}
 		}
+
+		if (Config::playerLight)
+		{
+			dlight_t* light = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
+			light->color.r = r;
+			light->color.g = g;
+			light->color.b = b;
+			light->origin = g_playerList[i].origin();
+			light->die = gEngfuncs.GetClientTime() + 0.1f;
+			light->radius = 100.0f;
+		}
 	}
 
 	if (Config::entityEsp)
@@ -838,8 +849,11 @@ void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 			g_local.DoAutoStrafe(cmd);
 	}
 
-	// g_local.CorrectMovement(viewAngles, cmd, cmd->forwardmove, cmd->sidemove);
-	g_local.FixMovement(cmd, g_local.clViewAngles);
+	if (Config::noSpread > 1.0f)
+	{
+		// g_local.CorrectMovement(viewAngles, cmd, cmd->forwardmove, cmd->sidemove);
+		g_local.FixMovement(cmd, g_local.clViewAngles);
+	}
 }
 
 /*

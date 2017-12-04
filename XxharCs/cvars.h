@@ -83,6 +83,8 @@ namespace Config
 	extern float knifeBot;
 	extern float glowShell;
 	extern float chaseCam;
+	extern float fullBright;
+	extern float playerLight;
 
 	extern float radar_x;
 	extern float radar_y;

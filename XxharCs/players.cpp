@@ -499,7 +499,7 @@ void sMe::DoTriggerBot(usercmd_s * usercmd)
 		if (i == this->entindex || !g_playerList[i].isAlive() || g_playerList[i].team == this->team)
 			continue;
 
-		VectorCopy(g_playerDrawList[i].Origin, EntViewVec);
+		VectorCopy(g_entityDrawList[i].Origin, EntViewVec);
 		EntViewVec[2] += 25.0f;
 
 		// 获取瞄准向量

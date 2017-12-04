@@ -40,6 +40,8 @@ namespace Config
 	float knifeBot = 0.0f;
 	float glowShell = 0.0f;
 	float chaseCam = 0.0f;
+	float fullBright = 0.0f;
+	float playerLight = 0.0f;
 
 	float radar_x = 80.0f;
 	float radar_y = 80.0f;

@@ -20,6 +20,8 @@
 #include "./Misc/xorstr.h"
 
 extern cl_enginefunc_t g_Engine;
+extern engine_studio_api_t g_Studio;
+
 #pragma comment(lib,"OpenGL32.lib")
 #pragma comment(lib,"GLu32.lib")
 #pragma comment(lib,"Gdi32.lib")
@@ -78,7 +80,7 @@ FnglPushMatrix glPushMatrix_detour;
 FnglReadPixels glReadPixels_detour;
 FnBitBlt BitBlt_detour;
 
-ENTITIES g_playerDrawList[33] = { NULL };
+ENTITIES g_entityDrawList[33] = { NULL };
 
 float fCamera[3];
 float fLastPosition[3];
@@ -524,6 +526,13 @@ void APIENTRY hooked_glVertex3fv(const GLfloat *v)
 	if (bSmoke || ((Config::glWallhack || Config::glNoSky) && bSky && v[2] > 3000.0f))
 		return;
 
+	if (Config::fullBright)
+	{
+		cl_entity_t* entity = g_Studio.GetCurrentEntity();
+		if (entity != nullptr && !entity->player)
+			entity->curstate.rendermode |= kRenderGlow;
+	}
+
 	(*glVertex3fv_detour)(v);
 }
 
@@ -594,6 +603,16 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 		char data[128];
 		*/
 
+		float fClosestPos = 999999.0f;
+		DWORD TargetX = 0;
+		DWORD TargetY = 0;
+		float fTemp[3];
+		float ScrCenter[3];
+
+		ScrCenter[0] = float(viewport[2] / 2);
+		ScrCenter[1] = float(viewport[3] / 2);
+		ScrCenter[2] = 0.0f;
+
 		for (int i = 0; i < maxEnts; i++)
 		{
 			/*
@@ -622,13 +641,13 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 
 			if (Config::glHeadBox)
 			{
-				float x = (float)g_playerDrawList[i].Head.x;
-				float y = (float)g_playerDrawList[i].Head.y;
+				float x = (float)g_entityDrawList[i].Head.x;
+				float y = (float)g_entityDrawList[i].Head.y;
 				float w = 1;
-				float h = g_playerDrawList[i].BoxHeight;
+				float h = g_entityDrawList[i].BoxHeight;
 				UCHAR r, g, b, a;
 
-				if (g_playerDrawList[i].Visible)
+				if (g_entityDrawList[i].Visible)
 				{
 					r = 20; g = 255; b = 20; a = 200;
 				}
@@ -694,40 +713,38 @@ void APIENTRY xwglSwapBuffers(HDC hDC)
 				else
 					glEnd();
 			}
-		}
 
-		if (Config::glAimbot && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
-		{
-			float fClosestPos = 999999.0f;
-			DWORD TargetX = 0;
-			DWORD TargetY = 0;
-
-			for (int i = 0; i < maxEnts; i++)
+			if (Config::glAimbot)
 			{
-				float fTemp[3];
-				float ScrCenter[3];
-
-				ScrCenter[0] = float(viewport[2] / 2);
-				ScrCenter[1] = float(viewport[3] / 2);
-				ScrCenter[2] = 0.0f;
-
-				fTemp[0] = (float)g_playerDrawList[i].Head.x;
-				fTemp[1] = (float)g_playerDrawList[i].Head.y;
+				if (g_entityDrawList[i].entity != nullptr && g_entityDrawList[i].index >= 1 &&
+					g_entityDrawList[i].entity->player && g_entityDrawList[i].index <= 32 &&
+					g_playerList[g_entityDrawList[i].index].team == g_local.team)
+				{
+					goto finish_aimbot_select;
+				}
+				
+				fTemp[0] = (float)g_entityDrawList[i].Head.x;
+				fTemp[1] = (float)g_entityDrawList[i].Head.y;
 				fTemp[2] = 0.0f;
 
 				float nDist = GetDistance(fTemp, ScrCenter);
-
-				if ((Config::glAimThrough || (!Config::glAimThrough && g_playerDrawList[i].Visible)))
+				if ((Config::glAimThrough || (!Config::glAimThrough && g_entityDrawList[i].Visible)))
 				{
 					if (nDist < fClosestPos)
 					{
 						fClosestPos = nDist;
-						TargetX = g_playerDrawList[i].Head.x;
-						TargetY = g_playerDrawList[i].Head.y;
+						TargetX = g_entityDrawList[i].Head.x;
+						TargetY = g_entityDrawList[i].Head.y;
 					}
 				}
 			}
-			
+
+		finish_aimbot_select:
+			__asm nop;
+		}
+
+		if (Config::glAimbot && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+		{
 			if (TargetX && TargetY)
 			{
 				POINT Target;
@@ -1048,7 +1065,7 @@ void APIENTRY hooked_glPopMatrix(void)
 			fVertexL[2] = fHighestVertex[2];
 			fVertexL[2] -= 10.0f;
 
-			g_playerDrawList[maxEnts].Visible = false;
+			g_entityDrawList[maxEnts].Visible = false;
 
 			glGetDoublev(GL_MODELVIEW_MATRIX, ModelView);
 			glGetDoublev(GL_PROJECTION_MATRIX, ProjView);
@@ -1092,26 +1109,39 @@ void APIENTRY hooked_glPopMatrix(void)
 								}
 
 								if (pix >= Depthcheck[2])
-									g_playerDrawList[maxEnts].Visible = true;
+									g_entityDrawList[maxEnts].Visible = true;
 
-								g_playerDrawList[maxEnts].Origin[0] = fCenterVertex[0];
-								g_playerDrawList[maxEnts].Origin[1] = fCenterVertex[1];
-								g_playerDrawList[maxEnts].Origin[2] = fCenterVertex[2];
+								g_entityDrawList[maxEnts].Origin[0] = fCenterVertex[0];
+								g_entityDrawList[maxEnts].Origin[1] = fCenterVertex[1];
+								g_entityDrawList[maxEnts].Origin[2] = fCenterVertex[2];
 
-								g_playerDrawList[maxEnts].ESP.x = (LONG)x;
-								g_playerDrawList[maxEnts].ESP.y = (LONG)y;
+								g_entityDrawList[maxEnts].ESP.x = (LONG)x;
+								g_entityDrawList[maxEnts].ESP.y = (LONG)y;
 
-								g_playerDrawList[maxEnts].Head.x = (LONG)Head[0];
-								g_playerDrawList[maxEnts].Head.y = (LONG)Head[1];
+								g_entityDrawList[maxEnts].Head.x = (LONG)Head[0];
+								g_entityDrawList[maxEnts].Head.y = (LONG)Head[1];
+
+								if (ent != nullptr && ent->player && ent->index <= 32)
+								{
+									g_entityDrawList[maxEnts].entity = ent;
+									g_entityDrawList[maxEnts].index = ent->index;
+									g_playerList[ent->index].setAlive();
+								}
+								else
+								{
+									g_entityDrawList[maxEnts].entity = ent;
+									if(ent != nullptr)
+										g_entityDrawList[maxEnts].index = ent->index;
+								}
 
 								float BoxHeight = BoxL[1] - BoxH[1];
 
 								BoxHeight = BoxHeight / 4;
 
 								if (BoxHeight < 4)
-									g_playerDrawList[maxEnts].BoxHeight = 3;
+									g_entityDrawList[maxEnts].BoxHeight = 3;
 								else
-									g_playerDrawList[maxEnts].BoxHeight = BoxHeight;
+									g_entityDrawList[maxEnts].BoxHeight = BoxHeight;
 
 								maxEnts++;
 							}

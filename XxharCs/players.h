@@ -252,9 +252,12 @@ typedef struct _ENTITIES{
 	POINT Head;
 	float BoxHeight;
 	int team;
+
+	int index;
+	cl_entity_t* entity;
 }ENTITIES,*PENTITIES;
 
-extern ENTITIES g_playerDrawList[33];
+extern ENTITIES g_entityDrawList[33];
 
 //////////////////////////////////////////////////////////////////////////
 bool isValidEnt(cl_entity_s *ent);

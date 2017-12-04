@@ -87,6 +87,8 @@ void Menu::Init()
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Header Box"), &Config::glHeadBox, XorStr("在玩家头部显示一个框"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Full Bright"), &Config::fullBright, XorStr("地图高亮"),
+			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 	}
 
 	{
@@ -131,7 +133,9 @@ void Menu::Init()
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 		menu.item.emplace_back(XorStr("Bone ESP"), &Config::boneEsp, XorStr("显示玩家骨骼"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
-		menu.item.emplace_back(XorStr("Glow Shell"), &Config::glowShell, XorStr("玩家发光"),
+		menu.item.emplace_back(XorStr("Glow Shell"), &Config::glowShell, XorStr("玩家光圈效果"),
+			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
+		menu.item.emplace_back(XorStr("Player Lights"), &Config::playerLight, XorStr("玩家发光"),
 			true, 0.0f, true, 1.0f, 1.0f, 1.0f, true);
 	}
 
@@ -273,7 +277,7 @@ void Menu::MenuDraw(int y)
 	gEngfuncs.pfnDrawConsoleStringLen(maxLenStr.c_str(), &fontWidth, &fontHeight);
 
 	int x = 100;
-	g_gui.window(x, y, fontWidth + 50, fontHeight * line + 5, 0.5, XorStr("高科技菜单"));
+	g_gui.window(x, y, fontWidth + 50, fontHeight * line + 5, 0.5, XorStr("MainMenu"));
 	PrintDescription(description, colorList.get(8));
 	x += 2;
 
