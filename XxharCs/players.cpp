@@ -1537,8 +1537,12 @@ void PlayerInfo::drawBone(int bone1, int bone2, byte r, byte g, byte b, byte a)
 	float boneScreen1[2], boneScreen2[2];
 	if (CalcScreen(this->bone[bone1], boneScreen1) && CalcScreen(this->bone[bone2], boneScreen2))
 	{
+		/*
 		DrawLine((int)boneScreen1[0], (int)boneScreen1[1], (int)boneScreen2[0], (int)boneScreen2[1],
 			r, g, b, a);
+		*/
+		drawing::DrawLine((int)boneScreen1[0], (int)boneScreen1[1], (int)boneScreen2[0], (int)boneScreen2[1],
+			COLOR_RGBA(r, g, b, a));
 	}
 }
 

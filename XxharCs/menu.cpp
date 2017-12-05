@@ -3,6 +3,7 @@
 #include "./Misc/xorstr.h"
 #include "./Engine/keydefs.h"
 #include "cvars.h"
+#include "drawing/drawing.h"
 
 GLuint g_oglBase;
 HDC g_hOglHdc;
@@ -15,6 +16,7 @@ draw_s	g_oglDraw;
 Menu g_menu;
 
 extern cl_enginefuncs_s gEngfuncs;
+extern vgui::ISurface* g_pSurface;
 
 void Menu::PrintDescription(const std::string & description, ColorEntry * pClr)
 {
@@ -23,8 +25,10 @@ void Menu::PrintDescription(const std::string & description, ColorEntry * pClr)
 		description.c_str());
 	*/
 
-	gEngfuncs.pfnDrawSetTextColor(pClr->r, pClr->g, pClr->b);
-	gEngfuncs.pfnDrawConsoleString(10, screeninfo.iHeight - 111, (char*)description.c_str());
+	// gEngfuncs.pfnDrawSetTextColor(pClr->r, pClr->g, pClr->b);
+	// gEngfuncs.pfnDrawConsoleString(10, screeninfo.iHeight - 111, (char*)description.c_str());
+	drawing::DrawString(10, screeninfo.iHeight - 111, COLOR_ARGB(255, pClr->r, pClr->g, pClr->b),
+		drawing::FontRenderFlag_t::FONT_LEFT, description.c_str());
 }
 
 void Menu::Init()
@@ -274,12 +278,17 @@ void Menu::MenuDraw(int y)
 	}
 	
 	int fontWidth, fontHeight;
-	gEngfuncs.pfnDrawConsoleStringLen(maxLenStr.c_str(), &fontWidth, &fontHeight);
+	// gEngfuncs.pfnDrawConsoleStringLen(maxLenStr.c_str(), &fontWidth, &fontHeight);
+
+	wchar_t maxLenBuffer[1024];
+	MultiByteToWideChar(CP_UTF8, 0, maxLenStr.c_str(), maxLenStr.length(), maxLenBuffer, 1024);
+	g_pSurface->GetTextSize(drawing::fontMenu, maxLenBuffer, fontWidth, fontHeight);
 
 	int x = 100;
 	g_gui.window(x, y, fontWidth + 50, fontHeight * line + 5, 0.5, XorStr("MainMenu"));
 	PrintDescription(description, colorList.get(8));
 	x += 2;
+	y += 5;
 
 	/*
 	for (i = 0; i<iMenuSize(); i++)
@@ -307,6 +316,7 @@ void Menu::MenuDraw(int y)
 	if (!menuList.empty())
 	{
 		index = -1;
+		DWORD color = 0xFFFFFFFF;
 		for (const MenuStack& key : menuList)
 		{
 			// 遍历索引
@@ -318,22 +328,27 @@ void Menu::MenuDraw(int y)
 				// 当前选中的是菜单类别
 				// PrintWithFont(x, y + i * 11, 255, 128, 0, key.title.c_str());
 				PrintDescription(key.description, colorList.get(8));
-				gEngfuncs.pfnDrawSetTextColor(255, 128, 0);
+				// gEngfuncs.pfnDrawSetTextColor(255, 128, 0);
+				color = COLOR_RGB(255, 128, 0);
 			}
 			else if(index == opening)
 			{
 				// 未选中菜单类别，但是当前类别已经打开了
 				// PrintWithFont(x, y + i * 11, 0, 255, 128, key.title.c_str());
-				gEngfuncs.pfnDrawSetTextColor(0, 255, 128);
+				// gEngfuncs.pfnDrawSetTextColor(0, 255, 128);
+				color = COLOR_RGB(0, 255, 128);
 			}
 			else
 			{
 				// 未选中菜单类别
 				// PrintWithFont(x, y + i * 11, 255, 255, 255, key.title.c_str());
-				gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
+				// gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
+				color = COLOR_RGB(255, 255, 255);
 			}
 
-			gEngfuncs.pfnDrawConsoleString(x, y, (char*)key.title.c_str());
+			// gEngfuncs.pfnDrawConsoleString(x, y, (char*)key.title.c_str());
+			drawing::DrawString(x, y, color, drawing::FontRenderFlag_t::FONT_LEFT, key.title.c_str());
+
 			y += fontHeight;
 
 			// 已经打开的菜单类别
@@ -352,8 +367,10 @@ void Menu::MenuDraw(int y)
 					{
 						// 已经选中的菜单项目使用蓝色
 						PrintDescription(value.description, colorList.get(8));
-						gEngfuncs.pfnDrawSetTextColor(0, 128, 255);
-						gEngfuncs.pfnDrawConsoleString(x + 2, y, (char*)value.title.c_str());
+						// gEngfuncs.pfnDrawSetTextColor(0, 128, 255);
+						// gEngfuncs.pfnDrawConsoleString(x + 2, y, (char*)value.title.c_str());
+						drawing::DrawString(x + 2, y, COLOR_RGB(0, 128, 255),
+							drawing::FontRenderFlag_t::FONT_LEFT, value.title.c_str());
 
 						if (value.hasInteger)
 						{
@@ -363,7 +380,7 @@ void Menu::MenuDraw(int y)
 							*/
 
 							sprintf_s(buffer, "%.0f", *(value.pointer));
-							gEngfuncs.pfnDrawSetTextColor(128, 255, 255);
+							// gEngfuncs.pfnDrawSetTextColor(128, 255, 255);
 						}
 						else
 						{
@@ -373,14 +390,19 @@ void Menu::MenuDraw(int y)
 							*/
 
 							sprintf_s(buffer, "%.f", *(value.pointer));
-							gEngfuncs.pfnDrawSetTextColor(128, 255, 255);
+							// gEngfuncs.pfnDrawSetTextColor(128, 255, 255);
 						}
+
+						drawing::DrawString(x + fontWidth + 20 - strlen(buffer), y, COLOR_RGB(128, 255, 255),
+							drawing::FontRenderFlag_t::FONT_LEFT, buffer);
 					}
 					else
 					{
 						// 未选中的菜单项目使用白色
-						gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
-						gEngfuncs.pfnDrawConsoleString(x + 2, y, (char*)value.title.c_str());
+						// gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
+						// gEngfuncs.pfnDrawConsoleString(x + 2, y, (char*)value.title.c_str());
+						drawing::DrawString(x + 2, y, COLOR_RGB(255, 255, 255),
+							drawing::FontRenderFlag_t::FONT_LEFT, value.title.c_str());
 
 						if (value.hasInteger)
 						{
@@ -400,10 +422,14 @@ void Menu::MenuDraw(int y)
 
 							sprintf_s(buffer, "%.f", *(value.pointer));
 						}
+
+						drawing::DrawString(x + fontWidth + 20 - strlen(buffer), y, COLOR_RGB(255, 255, 255),
+							drawing::FontRenderFlag_t::FONT_LEFT, buffer);
 					}
 
 					// int padding = fontWidth - (value.title.length() + 2 + strlen(buffer));
-					gEngfuncs.pfnDrawConsoleString(x + fontWidth + 20 - strlen(buffer), y, buffer);
+					// gEngfuncs.pfnDrawConsoleString(x + fontWidth + 20 - strlen(buffer), y, buffer);
+					
 					y += fontHeight;
 				}
 

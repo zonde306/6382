@@ -11,7 +11,7 @@ CVMTHookManager::CVMTHookManager(PVOID object)
 
 CVMTHookManager::~CVMTHookManager()
 {
-	Unhook();
+	// Unhook();
 }
 
 bool CVMTHookManager::Init(PVOID object)

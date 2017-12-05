@@ -64,7 +64,8 @@ void drawMiniRadarPoint(const float* origin, int r, int g, int b, bool addbox, i
 	calcRadarPointX(origin, screenx, screeny);
 	//if(!blink)
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(screenx - 1, screeny - 1, boxsize, boxsize, r, g, b, 255);
+	// gEngfuncs.pfnFillRGBA(screenx - 1, screeny - 1, boxsize, boxsize, r, g, b, 255);
+	drawing::DrawFillRect(screenx - 1, screeny - 1, boxsize, boxsize, COLOR_RGBA(r, g, b, 255));
 	oglSubtractive = false;
 	if (addbox)blackBorder(screenx - 1, screeny - 1, boxsize, boxsize + 1);
 }
@@ -80,7 +81,9 @@ void drawRadarFrame()
 	int  size = Config::miniradar_size;
 	// ColorEntry* cDivider = colorList.get(0);
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(radar_x, radar_y - size, 1, 2 * size, 255, 128, 0, 255);
-	gEngfuncs.pfnFillRGBA(radar_x - size, radar_y, 2 * size, 1, 255, 128, 0, 255);
+	// gEngfuncs.pfnFillRGBA(radar_x, radar_y - size, 1, 2 * size, 255, 128, 0, 255);
+	// gEngfuncs.pfnFillRGBA(radar_x - size, radar_y, 2 * size, 1, 255, 128, 0, 255);
+	drawing::DrawFillRect(radar_x, radar_y - size, 1, 2 * size, COLOR_RGBA(255, 128, 0, 255));
+	drawing::DrawFillRect(radar_x - size, radar_y, 2 * size, 1, COLOR_RGBA(255, 128, 0, 255));
 	oglSubtractive = false;
 }

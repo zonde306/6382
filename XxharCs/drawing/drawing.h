@@ -51,9 +51,18 @@ void PrintWithFont(int x, int y, int r, int g, int b, std::string text);
 void DrawCrosshair(int mode);
 void gDrawFilledBoxAtLocation(float* origin, DWORD color, int radius);
 
+#define COLOR_A(_clr)				((_clr & 0xFF000000) >> 24)
+#define COLOR_R(_clr)				((_clr & 0x00FF0000) >> 16)
+#define COLOR_G(_clr)				((_clr & 0x0000FF00) >> 8)
+#define COLOR_B(_clr)				((_clr & 0x000000FF) >> 0)
+#define COLOR_ARGB(_a,_r,_g,_b)		((_a << 24)|(_r << 16)|(_g << 8)|(_b << 0))
+#define COLOR_RGBA(_r,_g,_b,_a)		COLOR_ARGB(_a,_r,_g,_b)
+#define COLOR_RGB(_r,_g,_b)			COLOR_ARGB(255,_r,_g,_b)
+
 namespace drawing
 {
 	extern vgui::HFont fontEsp, fontMenu;
+	extern bool bInPaint;
 	
 	enum FontRenderFlag_t
 	{
@@ -63,6 +72,7 @@ namespace drawing
 	};
 
 	void SetupFonts();
+	std::string FindFonts(const std::string & name);
 	void DrawLine(int x1, int y1, int x2, int y2, DWORD color);
 	void DrawRect(int x, int y, int w, int h, DWORD color);
 	void DrawFillRect(int x, int y, int w, int h, DWORD color);

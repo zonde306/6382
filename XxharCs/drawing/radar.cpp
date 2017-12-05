@@ -7,6 +7,7 @@
 #include "../players.h"
 #include "../cvars.h"
 #include "../opengl.h"
+#include "../drawing/drawing.h"
 
 extern cl_enginefuncs_s gEngfuncs;
 extern SCREENINFO screeninfo;
@@ -470,6 +471,7 @@ int clientopenglcalc(int number) // y axis correction :)
 }
 void drawcross(int x, int y, int w, int h, int r, int g, int b, int a)
 {
+	/*
 	gEngfuncs.pfnFillRGBA(x - w, y, w * 2, 2, r, g, b, a);
 	gEngfuncs.pfnFillRGBA(x, y - h, 2, h, r, g, b, a);
 
@@ -484,6 +486,18 @@ void drawcross(int x, int y, int w, int h, int r, int g, int b, int a)
 	gEngfuncs.pfnFillRGBA(x + 2, y - h, 1, h - 1, 0, 0, 0, a);
 
 	gEngfuncs.pfnFillRGBA(x - 1, y - h - 1, 4, 1, 0, 0, 0, a);
+	*/
+
+	drawing::DrawFillRect(x - w, y, w * 2, 2, COLOR_RGBA(r, g, b, a));
+	drawing::DrawFillRect(x, y - h, 2, h, COLOR_RGBA(r, g, b, a));
+	drawing::DrawFillRect(x - w, y - 1, w, 1, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x + 2, y - 1, w - 2, 1, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x - w, y + 2, w * 2, 1, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x - w - 1, y - 1, 1, 4, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x + w, y - 1, 1, 4, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x - 1, y - h, 1, h - 1, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x + 2, y - h, 1, h - 1, COLOR_RGBA(0, 0, 0, a));
+	drawing::DrawFillRect(x - 1, y - h - 1, 4, 1, COLOR_RGBA(0, 0, 0, a));
 }
 
 static bool LoadOvRadar = false;
@@ -631,10 +645,10 @@ void overview_draw_entity(const float* origin, int radius, int r, int g, int b, 
 	d = -4;
 
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x, y, radius2 - d, radius2 - d - 1, r, g, b, a);
+	// gEngfuncs.pfnFillRGBA(x, y, radius2 - d, radius2 - d - 1, r, g, b, a);
+	drawing::DrawFillRect(x, y, radius2 - d, radius2 - d - 1, COLOR_RGBA(r, g, b, a));
 	oglSubtractive = false;
 	whiteBorder(x, y, radius2 - d, radius2 - d - 1);
-
 }
 
 void overview_draw_me(float * origin, int radius, int r, int g, int b, int a)
@@ -657,8 +671,10 @@ void DrawRadar()
 
 	g_gui.window(Config::radar_x - size, CVARRADARY - size, 2 * size + 2, 2 * size + 2, 1, "Radar");
 
-	gEngfuncs.pfnFillRGBA(Config::radar_x, CVARRADARY - size, 1, 2 * size, 255, 255, 255, 180);
-	gEngfuncs.pfnFillRGBA(Config::radar_x - size, CVARRADARY, 2 * size, 1, 255, 255, 255, 180);
+	// gEngfuncs.pfnFillRGBA(Config::radar_x, CVARRADARY - size, 1, 2 * size, 255, 255, 255, 180);
+	// gEngfuncs.pfnFillRGBA(Config::radar_x - size, CVARRADARY, 2 * size, 1, 255, 255, 255, 180);
+	drawing::DrawFillRect(Config::radar_x, CVARRADARY - size, 1, 2 * size, COLOR_RGBA(255, 255, 255, 180));
+	drawing::DrawFillRect(Config::radar_x - size, CVARRADARY, 2 * size, 1, COLOR_RGBA(255, 255, 255, 180));
 }
 
 void drawRadarPoint(const float* origin, int r, int g, int b, int a, bool blink = false, int boxsize = 3)
@@ -721,9 +737,11 @@ void drawRadarPoint(const float* origin, int r, int g, int b, int a, bool blink 
 		screenx = Config::radar_x + int(x / range*float(Config::radar_size));
 		screeny = CVARRADARY + int(y / range*float(Config::radar_size));
 	}
-	oglSubtractive = true;
 
-	gEngfuncs.pfnFillRGBA(screenx - 1, screeny - 1, boxsize, boxsize, r, g, b, a);
+	oglSubtractive = true;
+	// gEngfuncs.pfnFillRGBA(screenx - 1, screeny - 1, boxsize, boxsize, r, g, b, a);
+	drawing::DrawFillRect(screenx - 1, screeny - 1, boxsize, boxsize, COLOR_RGBA(r, g, b, a));
 	oglSubtractive = false;
+
 	if (blink)blackBorder(screenx - 1, screeny - 1, boxsize, boxsize + 1);
 }

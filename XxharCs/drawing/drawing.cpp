@@ -127,35 +127,35 @@ void DrawCrosshair(int mode)
 
 	if (mode == 1)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY, 9, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY, 9, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 14, 1, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 5, 1, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY, 1, 1, R, G, B, A); // center
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY, 9, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY, 9, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 14, 1, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 5, 1, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY, 1, 1, COLOR_RGBA(R, G, B, A)); // center
 	}
 	else if (mode == 2)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY, 9, 2, r, g, b, a); // left
-		gEngfuncs.pfnFillRGBA(displayCenterX + 6, displayCenterY, 9, 2, r, g, b, a); // right
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 14, 2, 9, r, g, b, a); // top
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 7, 2, 9, r, g, b, a); // bottom
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY, 2, 2, R, G, B, A); // center
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY, 9, 2, COLOR_RGBA(r, g, b, a)); // left
+		drawing::DrawFillRect(displayCenterX + 6, displayCenterY, 9, 2, COLOR_RGBA(r, g, b, a)); // right
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 14, 2, 9, COLOR_RGBA(r, g, b, a)); // top
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 7, 2, 9, COLOR_RGBA(r, g, b, a)); // bottom
+		drawing::DrawFillRect(displayCenterX, displayCenterY, 2, 2, COLOR_RGBA(R, G, B, A)); // center
 	}
 	else if (mode == 3)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX - 25, displayCenterY, 50, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 25, 1, 50, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 25, displayCenterY, 50, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 25, 1, 50, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY, 10, 1, R, G, B, A);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 5, 1, 10, R, G, B, A);
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY, 10, 1, COLOR_RGBA(R, G, B, A));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 5, 1, 10, COLOR_RGBA(R, G, B, A));
 	}
 	else if (mode == 4)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX - 25, displayCenterY, 50, 2, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 25, 2, 50, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 25, displayCenterY, 50, 2, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 25, 2, 50, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY, 10, 2, R, G, B, A);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 5, 2, 10, R, G, B, A);
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY, 10, 2, COLOR_RGBA(R, G, B, A));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 5, 2, 10, COLOR_RGBA(R, G, B, A));
 	}
 	else if (mode == 5)
 	{
@@ -175,138 +175,138 @@ void DrawCrosshair(int mode)
 	}
 	else if (mode == 6)
 	{
-		gEngfuncs.pfnFillRGBA(0, displayCenterY, 2 * displayCenterX, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, 0, 1, 2 * displayCenterY, r, g, b, a);
+		drawing::DrawFillRect(0, displayCenterY, 2 * displayCenterX, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, 0, 1, 2 * displayCenterY, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY, 10, 1, R, G, B, A);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 5, 1, 10, R, G, B, A);
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY, 10, 1, COLOR_RGBA(R, G, B, A));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 5, 1, 10, COLOR_RGBA(R, G, B, A));
 	}
 	else if (mode == 7)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 1, displayCenterY + 1, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 2, displayCenterY + 2, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 3, displayCenterY + 3, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY + 5, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 6, displayCenterY + 6, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 7, displayCenterY + 7, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 8, displayCenterY + 8, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 9, displayCenterY + 9, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 10, displayCenterY + 10, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 11, displayCenterY + 11, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 12, displayCenterY + 12, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 13, displayCenterY + 13, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY + 14, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 15, displayCenterY + 15, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX, displayCenterY, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 1, displayCenterY + 1, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 2, displayCenterY + 2, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 3, displayCenterY + 3, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY + 5, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 6, displayCenterY + 6, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 7, displayCenterY + 7, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 8, displayCenterY + 8, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 9, displayCenterY + 9, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 10, displayCenterY + 10, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 11, displayCenterY + 11, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 12, displayCenterY + 12, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 13, displayCenterY + 13, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY + 14, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 15, displayCenterY + 15, 1, 1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 1, displayCenterY - 1, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 2, displayCenterY - 2, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 3, displayCenterY - 3, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY - 5, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 6, displayCenterY - 6, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 7, displayCenterY - 7, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 8, displayCenterY - 8, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 9, displayCenterY - 9, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 10, displayCenterY - 10, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 11, displayCenterY - 11, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 12, displayCenterY - 12, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 13, displayCenterY - 13, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY - 14, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 15, displayCenterY - 15, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 1, displayCenterY - 1, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 2, displayCenterY - 2, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 3, displayCenterY - 3, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY - 5, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 6, displayCenterY - 6, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 7, displayCenterY - 7, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 8, displayCenterY - 8, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 9, displayCenterY - 9, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 10, displayCenterY - 10, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 11, displayCenterY - 11, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 12, displayCenterY - 12, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 13, displayCenterY - 13, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY - 14, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 15, displayCenterY - 15, 1, 1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX + 1, displayCenterY + 1, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 2, displayCenterY + 2, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 3, displayCenterY + 3, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY + 5, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 6, displayCenterY + 6, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 7, displayCenterY + 7, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 8, displayCenterY + 8, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 9, displayCenterY + 9, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 10, displayCenterY + 10, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 11, displayCenterY + 11, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 12, displayCenterY + 12, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 13, displayCenterY + 13, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 14, displayCenterY + 14, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 15, displayCenterY + 15, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX + 1, displayCenterY + 1, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 2, displayCenterY + 2, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 3, displayCenterY + 3, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY + 5, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 6, displayCenterY + 6, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 7, displayCenterY + 7, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 8, displayCenterY + 8, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 9, displayCenterY + 9, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 10, displayCenterY + 10, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 11, displayCenterY + 11, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 12, displayCenterY + 12, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 13, displayCenterY + 13, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 14, displayCenterY + 14, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 15, displayCenterY + 15, 1, 1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX + 1, displayCenterY - 1, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 2, displayCenterY - 2, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 3, displayCenterY - 3, 1, 1, 255, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY - 5, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 6, displayCenterY - 6, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 7, displayCenterY - 7, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 8, displayCenterY - 8, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 9, displayCenterY - 9, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 10, displayCenterY - 10, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 11, displayCenterY - 11, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 12, displayCenterY - 12, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 13, displayCenterY - 13, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 14, displayCenterY - 14, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 15, displayCenterY - 15, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX + 1, displayCenterY - 1, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 2, displayCenterY - 2, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 3, displayCenterY - 3, 1, 1, COLOR_RGBA(255, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY - 5, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 6, displayCenterY - 6, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 7, displayCenterY - 7, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 8, displayCenterY - 8, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 9, displayCenterY - 9, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 10, displayCenterY - 10, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 11, displayCenterY - 11, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 12, displayCenterY - 12, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 13, displayCenterY - 13, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 14, displayCenterY - 14, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 15, displayCenterY - 15, 1, 1, COLOR_RGBA(r, g, b, a));
 
 	}
 	else if (mode == 8)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY, 9, 2, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY, 9, 2, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY, 9, -1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY, 9, -1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY, 9, 2, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY, 9, 2, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY, 9, -1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY, 9, -1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 14, 2, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 6, 2, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 14, -1, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 6, -1, 9, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 14, 2, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 6, 2, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 14, -1, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 6, -1, 9, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 3, displayCenterY, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 3, displayCenterY, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 3, displayCenterY, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 3, displayCenterY, 1, 1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 3, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 3, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 3, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 3, 1, 1, COLOR_RGBA(r, g, b, a));
 	}
 	else if (mode == 9)
 	{
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY, 9, 2, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY, 9, 2, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 14, displayCenterY, 9, -1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 5, displayCenterY, 9, -1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY, 9, 2, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY, 9, 2, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX - 14, displayCenterY, 9, -1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 5, displayCenterY, 9, -1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 14, 2, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 6, 2, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 14, -1, 9, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 6, -1, 9, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 14, 2, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 6, 2, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 14, -1, 9, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 6, -1, 9, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 3, displayCenterY, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 3, displayCenterY, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX - 3, displayCenterY, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX + 3, displayCenterY, 1, 1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 3, 1, 1, r, g, b, a);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY + 3, 1, 1, r, g, b, a);
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 3, 1, 1, COLOR_RGBA(r, g, b, a));
+		drawing::DrawFillRect(displayCenterX, displayCenterY + 3, 1, 1, COLOR_RGBA(r, g, b, a));
 
-		gEngfuncs.pfnFillRGBA(displayCenterX - 1, displayCenterY, 3, 1, R, G, B, A);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 1, 1, 3, R, G, B, A);
+		drawing::DrawFillRect(displayCenterX - 1, displayCenterY, 3, 1, COLOR_RGBA(R, G, B, A));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 1, 1, 3, COLOR_RGBA(R, G, B, A));
 	}
 	else if (mode == 10)
 	{
 		//Lineas ppales
-		gEngfuncs.pfnFillRGBA(displayCenterX - 20, displayCenterY, 40, 2, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY - 20, 2, 40, 0, 0, 0, 255);
+		drawing::DrawFillRect(displayCenterX - 20, displayCenterY, 40, 2, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX, displayCenterY - 20, 2, 40, COLOR_RGBA(0, 0, 0, 255));
 		//Izquierda
-		gEngfuncs.pfnFillRGBA(displayCenterX - 20, displayCenterY - 10, 1, 22, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 15, displayCenterY - 5, 1, 12, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 10, displayCenterY - 2, 1, 6, 0, 0, 0, 255);
+		drawing::DrawFillRect(displayCenterX - 20, displayCenterY - 10, 1, 22, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 15, displayCenterY - 5, 1, 12, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 10, displayCenterY - 2, 1, 6, COLOR_RGBA(0, 0, 0, 255));
 		//Derecha
-		gEngfuncs.pfnFillRGBA(displayCenterX + 20, displayCenterY - 10, 1, 22, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 15, displayCenterY - 5, 1, 12, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX + 10, displayCenterY - 2, 1, 6, 0, 0, 0, 255);
+		drawing::DrawFillRect(displayCenterX + 20, displayCenterY - 10, 1, 22, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 15, displayCenterY - 5, 1, 12, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX + 10, displayCenterY - 2, 1, 6, COLOR_RGBA(0, 0, 0, 255));
 		//Arriba
-		gEngfuncs.pfnFillRGBA(displayCenterX - 10, displayCenterY - 20, 22, 1, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY - 15, 12, 1, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 2, displayCenterY - 10, 6, 1, 0, 0, 0, 255);
+		drawing::DrawFillRect(displayCenterX - 10, displayCenterY - 20, 22, 1, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY - 15, 12, 1, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 2, displayCenterY - 10, 6, 1, COLOR_RGBA(0, 0, 0, 255));
 		//Abajo
-		gEngfuncs.pfnFillRGBA(displayCenterX - 10, displayCenterY + 20, 22, 1, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 5, displayCenterY + 15, 12, 1, 0, 0, 0, 255);
-		gEngfuncs.pfnFillRGBA(displayCenterX - 2, displayCenterY + 10, 6, 1, 0, 0, 0, 255);
+		drawing::DrawFillRect(displayCenterX - 10, displayCenterY + 20, 22, 1, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 5, displayCenterY + 15, 12, 1, COLOR_RGBA(0, 0, 0, 255));
+		drawing::DrawFillRect(displayCenterX - 2, displayCenterY + 10, 6, 1, COLOR_RGBA(0, 0, 0, 255));
 		//Punto blanco
-		gEngfuncs.pfnFillRGBA(displayCenterX, displayCenterY, 2, 2, R, G, B, A);
+		drawing::DrawFillRect(displayCenterX, displayCenterY, 2, 2, COLOR_RGBA(R, G, B, A));
 	}
 	oglSubtractive = false;
 
@@ -516,10 +516,16 @@ void gDrawBoxAtScreenXY(int x, int y, int r, int g, int b, int alpha, int radius
 {
 	int radius2 = radius << 1;
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x - radius + 2, y - radius, radius2 - 2, 2, r, g, b, alpha);
-	gEngfuncs.pfnFillRGBA(x - radius, y - radius, 2, radius2, r, g, b, alpha);
-	gEngfuncs.pfnFillRGBA(x - radius, y + radius, radius2, 2, r, g, b, alpha);
-	gEngfuncs.pfnFillRGBA(x + radius, y - radius, 2, radius2 + 2, r, g, b, alpha);
+	// gEngfuncs.pfnFillRGBA(x - radius + 2, y - radius, radius2 - 2, 2, r, g, b, alpha);
+	// gEngfuncs.pfnFillRGBA(x - radius, y - radius, 2, radius2, r, g, b, alpha);
+	// gEngfuncs.pfnFillRGBA(x - radius, y + radius, radius2, 2, r, g, b, alpha);
+	// gEngfuncs.pfnFillRGBA(x + radius, y - radius, 2, radius2 + 2, r, g, b, alpha);
+
+	drawing::DrawFillRect(x - radius + 2, y - radius, radius2 - 2, 2, COLOR_RGBA(r, g, b, alpha));
+	drawing::DrawFillRect(x - radius, y - radius, 2, radius2, COLOR_RGBA(r, g, b, alpha));
+	drawing::DrawFillRect(x - radius, y + radius, radius2, 2, COLOR_RGBA(r, g, b, alpha));
+	drawing::DrawFillRect(x + radius, y - radius, 2, radius2 + 2, COLOR_RGBA(r, g, b, alpha));
+
 	oglSubtractive = false;
 }
 void gDrawFilledBoxAtLocation(float* origin, DWORD color, int radius)
@@ -533,17 +539,22 @@ void gDrawFilledBoxAtLocation(float* origin, DWORD color, int radius)
 	int alpha = (color) & 0xFF;
 	int radius2 = radius << 1;
 
-	gEngfuncs.pfnFillRGBA(vecScreen[0] - radius, vecScreen[1] - radius, radius2, radius2, red, green, blue, alpha);
+	// gEngfuncs.pfnFillRGBA(vecScreen[0] - radius, vecScreen[1] - radius, radius2, radius2, red, green, blue, alpha);
+	drawing::DrawFillRect(vecScreen[0] - radius, vecScreen[1] - radius, radius2, radius2, COLOR_RGBA(red, green, blue, alpha));
 }
 //========================================================================================
 
 void whiteBorder(int x, int y, int w, int h)
 {
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x - 1, y - 1, w + 2, 1, 255, 255, 255, 255); //top
-	gEngfuncs.pfnFillRGBA(x - 1, y, 1, h - 1, 255, 255, 255, 255);	//left
-	gEngfuncs.pfnFillRGBA(x + w, y, 1, h - 1, 255, 255, 255, 255);	//right
-	gEngfuncs.pfnFillRGBA(x - 1, y + h - 1, w + 2, 1, 255, 255, 255, 255); //bottom
+	// gEngfuncs.pfnFillRGBA(x - 1, y - 1, w + 2, 1, 255, 255, 255, 255); //top
+	// gEngfuncs.pfnFillRGBA(x - 1, y, 1, h - 1, 255, 255, 255, 255);	//left
+	// gEngfuncs.pfnFillRGBA(x + w, y, 1, h - 1, 255, 255, 255, 255);	//right
+	// gEngfuncs.pfnFillRGBA(x - 1, y + h - 1, w + 2, 1, 255, 255, 255, 255); //bottom
+	drawing::DrawFillRect(x - 1, y - 1, w + 2, 1, COLOR_RGBA(255, 255, 255, 255));
+	drawing::DrawFillRect(x - 1, y, 1, h - 1, COLOR_RGBA(255, 255, 255, 255));
+	drawing::DrawFillRect(x + w, y, 1, h - 1, COLOR_RGBA(255, 255, 255, 255));
+	drawing::DrawFillRect(x - 1, y + h - 1, w + 2, 1, COLOR_RGBA(255, 255, 255, 255));
 	oglSubtractive = false;
 }
 
@@ -558,10 +569,19 @@ void blackBorder(int x, int y, int w, int h)
 	gEngfuncs.pfnFillRGBA(x+w,  y,  1,h-1,000,255,255,255); //right
 	gEngfuncs.pfnFillRGBA(x-1,y+h-1,w+2,1,000,255,255,255); //bottom
 	*/
+
+	/*
 	gEngfuncs.pfnFillRGBA(x - 1, y - 1, w + 2, 1, 0, 0, 0, 254); //top
 	gEngfuncs.pfnFillRGBA(x - 1, y, 1, h - 1, 0, 0, 0, 254);	//left
 	gEngfuncs.pfnFillRGBA(x + w, y, 1, h - 1, 0, 0, 0, 254);	//right
 	gEngfuncs.pfnFillRGBA(x - 1, y + h - 1, w + 2, 1, 0, 0, 0, 254); //bottom
+	*/
+
+	drawing::DrawFillRect(x - 1, y - 1, w + 2, 1, COLOR_RGBA(0, 0, 0, 254));
+	drawing::DrawFillRect(x - 1, y, 1, h - 1, COLOR_RGBA(0, 0, 0, 254));
+	drawing::DrawFillRect(x + w, y, 1, h - 1, COLOR_RGBA(0, 0, 0, 254));
+	drawing::DrawFillRect(x - 1, y + h - 1, w + 2, 1, COLOR_RGBA(0, 0, 0, 254));
+
 	oglSubtractive = false;
 }
 
@@ -570,7 +590,8 @@ void blackBorder(int x, int y, int w, int h)
 void tintArea(int x, int y, int w, int h, ColorEntry* clr)
 {
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x, y, w, h, clr->r, clr->g, clr->b, clr->a);
+	// gEngfuncs.pfnFillRGBA(x, y, w, h, clr->r, clr->g, clr->b, clr->a);
+	drawing::DrawFillRect(x, y, w, h, COLOR_RGBA(clr->r, clr->g, clr->b, clr->a));
 	oglSubtractive = false;
 }
 
@@ -579,7 +600,8 @@ void tintArea(int x, int y, int w, int h, ColorEntry* clr)
 void tintArea(int x, int y, int w, int h, int r, int g, int b, int a)
 {
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x, y, w, h, r, g, b, a);
+	// gEngfuncs.pfnFillRGBA(x, y, w, h, r, g, b, a);
+	drawing::DrawFillRect(x, y, w, h, COLOR_RGBA(r, g, b, a));
 	oglSubtractive = false;
 }
 
@@ -637,19 +659,95 @@ void PrintWithFont(int x, int y, int r, int g, int b, std::string text)
 }
 
 vgui::HFont drawing::fontEsp = 0, drawing::fontMenu = 0;
+bool drawing::bInPaint = false;
 
 void drawing::SetupFonts()
 {
 	fontEsp = g_pSurface->CreateFont();
 	fontMenu = g_pSurface->CreateFont();
-	g_pSurface->AddGlyphSetToFont(fontEsp, "Tahoma", 12, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
-	g_pSurface->AddGlyphSetToFont(fontMenu, "Tahoma", 14, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+
+	if (!g_pSurface->AddGlyphSetToFont(fontEsp,
+		"Microsoft YaHei Light & Microsoft YaHei UI Light", 14, FW_BOLD, NULL, NULL,
+		vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0))
+	{
+		g_pSurface->AddGlyphSetToFont(fontEsp, "Tahoma", 14, FW_BOLD, NULL, NULL,
+			vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+
+		g_pSurface->AddGlyphSetToFont(fontMenu, "Tahoma", 16, FW_BOLD, NULL, NULL,
+			vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+	}
+	else
+	{
+		g_pSurface->AddGlyphSetToFont(fontEsp,
+			"Microsoft YaHei Light & Microsoft YaHei UI Light", 14, FW_BOLD, NULL, NULL,
+			vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+
+		g_pSurface->AddGlyphSetToFont(fontMenu,
+			"Microsoft YaHei Light & Microsoft YaHei UI Light", 16, FW_BOLD, NULL, NULL,
+			vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+	}
 }
 
-#define COLOR_A(_clr)	((_clr & 0xFF000000) >> 24)
-#define COLOR_R(_clr)	((_clr & 0x00FF0000) >> 16)
-#define COLOR_G(_clr)	((_clr & 0x0000FF00) >> 8)
-#define COLOR_B(_clr)	((_clr & 0x000000FF) >> 0)
+std::string drawing::FindFonts(const std::string & name)
+{
+	//
+	// This code is not as safe as it should be.
+	// Assumptions we make:
+	//  -> GetWindowsDirectoryA does not fail.
+	//  -> The registry key exists.
+	//  -> The subkeys are ordered alphabetically
+	//  -> The subkeys name and data are no longer than 260 (MAX_PATH) chars.
+	//
+
+	char buffer[MAX_PATH];
+	HKEY registryKey;
+
+	GetWindowsDirectoryA(buffer, MAX_PATH);
+	std::string fontsFolder = buffer + std::string("\\Fonts\\");
+
+	if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts", 0,
+		KEY_READ, &registryKey))
+	{
+		return "";
+	}
+
+	uint32_t valueIndex = 0;
+	char valueName[MAX_PATH];
+	uint8_t valueData[MAX_PATH];
+	std::wstring wsFontFile;
+
+	for (;;)
+	{
+		uint32_t valueNameSize = MAX_PATH;
+		uint32_t valueDataSize = MAX_PATH;
+		uint32_t valueType;
+
+		auto error = RegEnumValueA(registryKey, valueIndex, valueName,
+			reinterpret_cast<DWORD*>(&valueNameSize), 0, reinterpret_cast<DWORD*>(&valueType),
+			valueData, reinterpret_cast<DWORD*>(&valueDataSize));
+
+		valueIndex++;
+
+		if (error == ERROR_NO_MORE_ITEMS)
+		{
+			RegCloseKey(registryKey);
+			break;
+		}
+
+		if (error || valueType != REG_SZ)
+		{
+			continue;
+		}
+
+		if (_strnicmp(name.data(), valueName, name.size()) == 0)
+		{
+			RegCloseKey(registryKey);
+			return (fontsFolder + std::string((char*)valueData, valueDataSize));
+		}
+	}
+
+	return "";
+}
 
 void drawing::DrawLine(int x1, int y1, int x2, int y2, DWORD color)
 {
@@ -729,7 +827,7 @@ void drawing::DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, 
 	va_end(ap);
 
 	wchar_t buffer_output[1024];
-	int length = MultiByteToWideChar(CP_UTF8, 0, buffer_oigin, 256, buffer_output, 256);
+	MultiByteToWideChar(CP_UTF8, 0, buffer_oigin, 1024, buffer_output, 1024);
 
 	int width, height;
 	g_pSurface->GetTextSize(fontMenu, buffer_output, width, height);
@@ -741,7 +839,7 @@ void drawing::DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, 
 	g_pSurface->DrawSetTextFont(fontMenu);
 	g_pSurface->DrawSetTextColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
 	g_pSurface->DrawSetTextPos(x, y - height / 2);
-	g_pSurface->DrawPrintText(buffer_output, length);
+	g_pSurface->DrawPrintText(buffer_output, wcslen(buffer_output));
 }
 
 void drawing::DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, const wchar_t * text, ...)
@@ -774,7 +872,7 @@ void drawing::DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, co
 	va_end(ap);
 
 	wchar_t buffer_output[1024];
-	int length = MultiByteToWideChar(CP_UTF8, 0, buffer_oigin, 256, buffer_output, 256);
+	MultiByteToWideChar(CP_UTF8, 0, buffer_oigin, 1024, buffer_output, 1024);
 
 	int width, height;
 	g_pSurface->GetTextSize(fontEsp, buffer_output, width, height);
@@ -786,7 +884,7 @@ void drawing::DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, co
 	g_pSurface->DrawSetTextFont(fontEsp);
 	g_pSurface->DrawSetTextColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
 	g_pSurface->DrawSetTextPos(x, y - height / 2);
-	g_pSurface->DrawPrintText(buffer_output, length);
+	g_pSurface->DrawPrintText(buffer_output, wcslen(buffer_output));
 }
 
 void drawing::DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, const wchar_t * text, ...)

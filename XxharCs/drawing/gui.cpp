@@ -11,12 +11,15 @@ float b[15];
 extern int heightenginefont;
 extern bool oglSubtractive;
 extern cl_enginefuncs_s gEngfuncs;
+extern vgui::ISurface* g_pSurface;
+
 cGui g_gui;
 
 void cGui::FillRGBA(GLfloat x, GLfloat y, int w, int h, UCHAR r, UCHAR g, UCHAR b, UCHAR a)
 {
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x, y, w, h, r, g, b, a);
+	// gEngfuncs.pfnFillRGBA(x, y, w, h, r, g, b, a);
+	drawing::DrawFillRect((int)x, (int)y, w, h, COLOR_RGBA(r, g, b, a));
 	oglSubtractive = false;
 	/*
 	glPushMatrix();
@@ -42,7 +45,8 @@ void cGui::FillRGBA(GLfloat x, GLfloat y, int w, int h, UCHAR r, UCHAR g, UCHAR 
 void cGui::FillRGBA(GLfloat x, GLfloat y, int w, int h, ColorEntry* clr)
 {
 	oglSubtractive = true;
-	gEngfuncs.pfnFillRGBA(x, y, w, h, clr->r, clr->g, clr->b, clr->a);
+	// gEngfuncs.pfnFillRGBA(x, y, w, h, clr->r, clr->g, clr->b, clr->a);
+	drawing::DrawFillRect((int)x, (int)y, w, h, COLOR_RGBA(clr->r, clr->g, clr->b, clr->a));
 	oglSubtractive = false;
 	/*
 	glPushMatrix();
@@ -120,7 +124,10 @@ void Print(int x, int y, int step, const char* fmt, ...)
 	va_start(va_alist, fmt);
 	_vsnprintf(buf, sizeof(buf), fmt, va_alist);
 	va_end(va_alist);
-	g_tableFont.drawString(false, x, y + step * 11, 255, 255, 255, buf);
+
+	// g_tableFont.drawString(false, x, y + step * 11, 255, 255, 255, buf);
+	drawing::DrawText(x, y + step * 11, COLOR_ARGB(255, 255, 255, 255),
+		drawing::FontRenderFlag_t::FONT_LEFT, buf);
 }
 int ammo = 0;
 
@@ -160,8 +167,10 @@ void cGui::DrawFade(int x, int y, int w)
 	//x-=28;
 	int i;//,r2=0,g2=150,b2=255;
 	y += 15;
-	for (i = 0; i<15; i++)
+	for (i = 0; i < 15; i++)
+	{
 		FillRGBA(x, y - i, w, 1, r[i], g[i], b[i], 180);
+	}
 }
 void cGui::DrawFade2(int x, int y, int w)
 {
@@ -187,8 +196,9 @@ void cGui::DrawTitleBox(int x, int y, int w, int h, char* title)
 	//blackBorder(x+5,y+6,5,5);			// Black Border
 
 	// PrintWithFont(x + 18, y + 5, 255, 255, 255, title);// Window Title
-	gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
-	gEngfuncs.pfnDrawConsoleString(x + 18, y + 15, title);
+	// gEngfuncs.pfnDrawSetTextColor(255, 255, 255);
+	// gEngfuncs.pfnDrawConsoleString(x + 18, y + 15, title);
+	drawing::DrawString(x + 18, y + 7, COLOR_RGB(255, 255, 255), drawing::FontRenderFlag_t::FONT_LEFT, title);
 	
 	/*if(cvar.guifont)g_tableFont.drawString(true,x
 	//-2

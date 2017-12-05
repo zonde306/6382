@@ -34,6 +34,7 @@
 #include "Engine/exporttable.h"
 #include "install.h"
 #include "Misc/splice.h"
+#include "Engine/IRunGameEngine.h"
 
 //////////////////////////////////////////////////////////////////////////
 // original variables
@@ -408,12 +409,6 @@ void HUD_Redraw(float x, int y)
 
 	InitVisuals();
 
-	if (g_oglDraw.menu)
-	{
-		// DrawMenu(50, 200);
-		g_menu.MenuDraw((int)Config::radar_y + (int)Config::radar_size + 50);
-	}
-
 	if (Config::glNoFlash)
 	{
 		screenfade_t sf;
@@ -425,19 +420,6 @@ void HUD_Redraw(float x, int y)
 			gEngfuncs.pfnSetScreenFade(&sf);
 		}
 	}
-
-	if (Config::radar)
-	{
-		if (mapLoaded)
-			overview_redraw();
-		else
-			DrawRadar();
-	}
-
-	if (Config::miniRadar)
-		drawRadarFrame();
-	else if (Config::crosshair)
-		DrawCrosshair((int)Config::crosshair);
 
 	for (int i = 1; i <= 32; ++i)
 	{
@@ -479,89 +461,6 @@ void HUD_Redraw(float x, int y)
 			b = 255;
 		}
 
-		if (Config::boneEsp)
-		{
-			g_playerList[i].drawBone(11, 18, r, g, b, a);
-			g_playerList[i].drawBone(10, 11, r, g, b, a);
-			g_playerList[i].drawBone(10, 6, r, g, b, a);
-			g_playerList[i].drawBone(6, 0, r, g, b, a);
-			g_playerList[i].drawBone(6, 24, r, g, b, a);
-			g_playerList[i].drawBone(25, 24, r, g, b, a);
-			g_playerList[i].drawBone(26, 25, r, g, b, a);
-
-			// g_playerList[i].drawBone(0, 44, r, g, b, a);
-			// g_playerList[i].drawBone(0, 50, r, g, b, a);
-
-			if (strstr(info.model, "leet") || strstr(info.model, "arctic") || strstr(info.model, "sas"))
-			{
-				g_playerList[i].drawBone(43, 0, r, g, b, a);
-				g_playerList[i].drawBone(49, 0, r, g, b, a);
-				g_playerList[i].drawBone(44, 43, r, g, b, a);
-				g_playerList[i].drawBone(50, 49, r, g, b, a);
-			}
-			else
-			{
-				g_playerList[i].drawBone(45, 0, r, g, b, a);
-				g_playerList[i].drawBone(51, 0, r, g, b, a);
-				g_playerList[i].drawBone(45, 44, r, g, b, a);
-				g_playerList[i].drawBone(48, 47, r, g, b, a);
-			}
-		}
-
-		if (g_playerList[i].team == 1)
-		{
-			r = 255;
-			g = 0;
-			b = 0;
-		}
-		/*
-		else if (g_playerList[i].team == 2)
-		{
-			r = 0;
-			g = 0;
-			b = 255;
-		}
-		*/
-
-		if (Config::radar)
-			drawRadarPoint(g_playerList[i].origin(), r, g, b, a, true, 4);
-		if (Config::miniRadar)
-			drawMiniRadarPoint(g_playerList[i].origin(), r, g, b, true, 4);
-
-		float screen[2];
-		bool inScreen = CalcScreen(g_playerList[i].origin(), screen);
-
-		if (Config::nameEsp)
-		{
-			if (info.name != nullptr && info.name[0] != '\0' && inScreen)
-				DrawConStringCenter((int)(screen[0] + 15), (int)(screen[1] + 10), r, g, b, info.name);
-		}
-
-		if (Config::weaponEsp)
-		{
-			model_s* weaponModel = g_Studio.GetModelByIndex(ent->curstate.weaponmodel);
-			if (weaponModel != nullptr && weaponModel->name != nullptr &&
-				weaponModel->name[0] != '\0')
-			{
-				char weaponName[32];
-				if (!strstr(weaponModel->name, "shield"))
-				{
-					size_t len = strlen(weaponModel->name + 9) - 4;
-					strncpy(weaponName, weaponModel->name + 9, len);
-					weaponName[len] = '\0';
-				}
-				else
-				{
-					size_t len = strlen(weaponModel->name + 16) - 4;
-					strncpy(weaponName, weaponModel->name + 16, len);
-					weaponName[len] = '\0';
-				}
-
-				if (inScreen)
-					DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
-			}
-		}
-
 		if (Config::playerLight)
 		{
 			dlight_t* light = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
@@ -571,73 +470,6 @@ void HUD_Redraw(float x, int y)
 			light->origin = g_playerList[i].origin();
 			light->die = gEngfuncs.GetClientTime() + 0.1f;
 			light->radius = 100.0f;
-		}
-	}
-
-	if (Config::entityEsp)
-	{
-		cl_entity_s* ent = nullptr;
-		for (int i = 33; i < 1024; ++i)
-		{
-			ent = gEngfuncs.GetEntityByIndex(i);
-			if (ent == nullptr || ent->curstate.messagenum + 10 <= g_local.ent->curstate.messagenum ||
-				ent->model == nullptr || ent->model->name == nullptr || ent->player)
-				continue;
-
-			float screen[2];
-			if (!CalcScreen(ent->origin, screen))
-				continue;
-
-			std::string entName = ent->model->name;
-			size_t wBegin = entName.find("w_");
-			if (wBegin != std::string::npos)
-			{
-				// 去掉 models/w_
-				wBegin += 2;
-				entName = entName.substr(wBegin, entName.rfind(".mdl") - wBegin);
-
-				if (entName == "thighpack")
-				{
-					// 给 CT 阵营的玩家显示拆弹钳
-					if (g_local.team == 2 && Config::radar)
-						drawRadarPoint(ent->origin, 128, 0, 255, 255, true, 2);
-
-					g_tableFont.drawString(true, screen[0], screen[1], 128, 0, 255, "thighpack");
-				}
-				else if (entName == "backpack")
-				{
-					if (Config::radar)
-						drawRadarPoint(ent->origin, 255, 0, 128, 255, true, 3);
-					if (Config::miniRadar)
-						drawMiniRadarPoint(ent->origin, 255, 0, 128, true, 3);
-
-					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
-				}
-				else if (entName == "c4")
-				{
-					if (Config::radar)
-						drawRadarPoint(ent->origin, 255, 0, 255, 255, true, 3);
-					if (Config::miniRadar)
-						drawMiniRadarPoint(ent->origin, 255, 0, 255, true, 3);
-
-					g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
-				}
-				else
-				{
-					if (Config::radar)
-						drawRadarPoint(ent->origin, 255, 128, 128, 255, true, 4);
-
-					g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
-				}
-			}
-			else if (entName.find("hostage") != std::string::npos)
-			{
-				if (Config::radar)
-					drawRadarPoint(ent->origin, 255, 128, 0, 255, true, 4);
-				if (Config::miniRadar)
-					drawMiniRadarPoint(ent->origin, 255, 128, 0, true, 4);
-				// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
-			}
 		}
 	}
 
@@ -734,8 +566,11 @@ int __cdecl Hooked_VGuiPaint()
 extern vgui::IPanel* g_pPanel;
 extern vgui::ISurface* g_pSurface;
 extern FnPaintTraverse g_pfnPaintTraverse;
+extern IRunGameEngine* g_pRunGameEngine;
+
 void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPanel* panel, bool forceRepaint, bool allowForce)
 {
+	drawing::bInPaint = true;
 	g_pfnPaintTraverse(_ecx, panel, forceRepaint, allowForce);
 
 	static vgui::IPanel* StaticPanel = nullptr;
@@ -752,7 +587,225 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 	if (StaticPanel == panel)
 	{
 		// 在这里使用 g_pSurface 绘图
+		if (g_oglDraw.menu)
+		{
+			// DrawMenu(50, 200);
+			g_menu.MenuDraw((int)Config::radar_y + (int)Config::radar_size + 50);
+		}
+
+		if (!g_pRunGameEngine->IsInGame())
+			goto finish_static_panel;
+
+		if (Config::radar)
+		{
+			if (mapLoaded)
+				overview_redraw();
+			else
+				DrawRadar();
+		}
+
+		if (Config::miniRadar)
+			drawRadarFrame();
+		else if (Config::crosshair)
+			DrawCrosshair((int)Config::crosshair);
+
+		for (int i = 1; i <= 32; ++i)
+		{
+			if (!bIsEntValid(g_playerList[i].getEnt(), i))
+				continue;
+			
+			hud_player_info_t info;
+			gEngfuncs.pfnGetPlayerInfo(i, &info);
+			cl_entity_s* ent = g_playerList[i].getEnt();
+			if (i == g_local.entindex || ent->model == nullptr || info.model == nullptr ||
+				info.name == nullptr || ent->model->name == nullptr || !ent->player)
+				continue;
+
+			byte r = 255, g = 255, b = 255, a = 255;
+			if (g_playerList[i].team == 1)
+			{
+				r = 255;
+				g = 64;
+				b = 0;
+			}
+			else if (g_playerList[i].team == 2)
+			{
+				r = 0;
+				g = 255;
+				b = 255;
+			}
+
+			if (Config::boneEsp)
+			{
+				g_playerList[i].drawBone(11, 18, r, g, b, a);
+				g_playerList[i].drawBone(10, 11, r, g, b, a);
+				g_playerList[i].drawBone(10, 6, r, g, b, a);
+				g_playerList[i].drawBone(6, 0, r, g, b, a);
+				g_playerList[i].drawBone(6, 24, r, g, b, a);
+				g_playerList[i].drawBone(25, 24, r, g, b, a);
+				g_playerList[i].drawBone(26, 25, r, g, b, a);
+
+				// g_playerList[i].drawBone(0, 44, r, g, b, a);
+				// g_playerList[i].drawBone(0, 50, r, g, b, a);
+
+				if (strstr(info.model, "leet") || strstr(info.model, "arctic") || strstr(info.model, "sas"))
+				{
+					g_playerList[i].drawBone(43, 0, r, g, b, a);
+					g_playerList[i].drawBone(49, 0, r, g, b, a);
+					g_playerList[i].drawBone(44, 43, r, g, b, a);
+					g_playerList[i].drawBone(50, 49, r, g, b, a);
+				}
+				else
+				{
+					g_playerList[i].drawBone(45, 0, r, g, b, a);
+					g_playerList[i].drawBone(51, 0, r, g, b, a);
+					g_playerList[i].drawBone(45, 44, r, g, b, a);
+					g_playerList[i].drawBone(48, 47, r, g, b, a);
+				}
+			}
+
+			if (g_playerList[i].team == 1)
+			{
+				r = 255;
+				g = 0;
+				b = 0;
+			}
+			/*
+			else if (g_playerList[i].team == 2)
+			{
+			r = 0;
+			g = 0;
+			b = 255;
+			}
+			*/
+
+			if (Config::radar)
+				drawRadarPoint(g_playerList[i].origin(), r, g, b, a, true, 4);
+			if (Config::miniRadar)
+				drawMiniRadarPoint(g_playerList[i].origin(), r, g, b, true, 4);
+
+			float screen[2];
+			bool inScreen = CalcScreen(g_playerList[i].origin(), screen);
+
+			if (Config::nameEsp)
+			{
+				if (info.name != nullptr && info.name[0] != '\0' && inScreen)
+				{
+					// DrawConStringCenter((int)(screen[0] + 15), (int)(screen[1] + 10), r, g, b, info.name);
+					drawing::DrawText((int)(screen[0] + 15), (int)(screen[1] + 10), COLOR_RGB(r, g, b),
+						drawing::FontRenderFlag_t::FONT_CENTER, info.name);
+				}
+			}
+
+			if (Config::weaponEsp)
+			{
+				model_s* weaponModel = g_Studio.GetModelByIndex(ent->curstate.weaponmodel);
+				if (weaponModel != nullptr && weaponModel->name != nullptr &&
+					weaponModel->name[0] != '\0')
+				{
+					char weaponName[32];
+					if (!strstr(weaponModel->name, "shield"))
+					{
+						size_t len = strlen(weaponModel->name + 9) - 4;
+						strncpy(weaponName, weaponModel->name + 9, len);
+						weaponName[len] = '\0';
+					}
+					else
+					{
+						size_t len = strlen(weaponModel->name + 16) - 4;
+						strncpy(weaponName, weaponModel->name + 16, len);
+						weaponName[len] = '\0';
+					}
+
+					if (inScreen)
+					{
+						// DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
+						drawing::DrawText((int)(screen[0] + 10), (int)(screen[1]), COLOR_RGB(r, g, b),
+							drawing::FontRenderFlag_t::FONT_CENTER, weaponName);
+					}
+				}
+			}
+		}
+
+		if (Config::entityEsp)
+		{
+			cl_entity_s* ent = nullptr;
+			for (int i = 33; i < 1024; ++i)
+			{
+				ent = gEngfuncs.GetEntityByIndex(i);
+				if (ent == nullptr || ent->curstate.messagenum + 10 <= g_local.ent->curstate.messagenum ||
+					ent->model == nullptr || ent->model->name == nullptr || ent->player)
+					continue;
+
+				float screen[2];
+				if (!CalcScreen(ent->origin, screen))
+					continue;
+
+				std::string entName = ent->model->name;
+				size_t wBegin = entName.find("w_");
+				if (wBegin != std::string::npos)
+				{
+					// 去掉 models/w_
+					wBegin += 2;
+					entName = entName.substr(wBegin, entName.rfind(".mdl") - wBegin);
+
+					if (entName == "thighpack")
+					{
+						// 给 CT 阵营的玩家显示拆弹钳
+						if (g_local.team == 2 && Config::radar)
+							drawRadarPoint(ent->origin, 128, 0, 255, 255, true, 2);
+
+						// g_tableFont.drawString(true, screen[0], screen[1], 128, 0, 255, "thighpack");
+						drawing::DrawText(screen[0], screen[1], COLOR_RGB(128, 0, 255),
+							drawing::FontRenderFlag_t::FONT_CENTER, "thighpack");
+					}
+					else if (entName == "backpack")
+					{
+						if (Config::radar)
+							drawRadarPoint(ent->origin, 255, 0, 128, 255, true, 3);
+						if (Config::miniRadar)
+							drawMiniRadarPoint(ent->origin, 255, 0, 128, true, 3);
+
+						// g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
+						drawing::DrawText(screen[0], screen[1], COLOR_RGB(255, 0, 128),
+							drawing::FontRenderFlag_t::FONT_CENTER, "backpack");
+					}
+					else if (entName == "c4")
+					{
+						if (Config::radar)
+							drawRadarPoint(ent->origin, 255, 0, 255, 255, true, 3);
+						if (Config::miniRadar)
+							drawMiniRadarPoint(ent->origin, 255, 0, 255, true, 3);
+
+						// g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
+						drawing::DrawText(screen[0], screen[1], COLOR_RGB(255, 0, 255),
+							drawing::FontRenderFlag_t::FONT_CENTER, "c4");
+					}
+					else
+					{
+						if (Config::radar)
+							drawRadarPoint(ent->origin, 255, 128, 128, 255, true, 4);
+
+						// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
+						drawing::DrawText(screen[0], screen[1], COLOR_RGB(255, 128, 128),
+							drawing::FontRenderFlag_t::FONT_CENTER, entName.c_str());
+					}
+				}
+				else if (entName.find("hostage") != std::string::npos)
+				{
+					if (Config::radar)
+						drawRadarPoint(ent->origin, 255, 128, 0, 255, true, 4);
+					if (Config::miniRadar)
+						drawMiniRadarPoint(ent->origin, 255, 128, 0, true, 4);
+					
+					// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
+				}
+			}
+		}
 	}
+
+finish_static_panel:
+	drawing::bInPaint = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
