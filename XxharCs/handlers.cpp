@@ -429,6 +429,12 @@ void HUD_Redraw(float x, int y)
 			continue;
 		}
 
+		if (g_playerList[i].getEnt()->curstate.sequence > 100)
+		{
+			g_playerList[i].killed = true;
+			continue;
+		}
+
 		if (g_playerList[i].killed)
 		{
 			if (g_playerList[i].deathTotal >= 50)
@@ -614,6 +620,12 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 			if (!bIsEntValid(g_playerList[i].getEnt(), i))
 				continue;
 			
+			if (g_playerList[i].getEnt()->curstate.sequence > 100)
+			{
+				g_playerList[i].killed = true;
+				continue;
+			}
+
 			hud_player_info_t info;
 			gEngfuncs.pfnGetPlayerInfo(i, &info);
 			cl_entity_s* ent = g_playerList[i].getEnt();
@@ -692,7 +704,7 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 				if (info.name != nullptr && info.name[0] != '\0' && inScreen)
 				{
 					// DrawConStringCenter((int)(screen[0] + 15), (int)(screen[1] + 10), r, g, b, info.name);
-					drawing::DrawText((int)(screen[0] + 15), (int)(screen[1] + 10), COLOR_RGB(r, g, b),
+					drawing::DrawText((int)(screen[0] + 15), (int)(screen[1] + 25), COLOR_RGB(r, g, b),
 						drawing::FontRenderFlag_t::FONT_CENTER, info.name);
 				}
 			}
@@ -719,9 +731,11 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 
 					if (inScreen)
 					{
-						// DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
+						DrawConStringCenter((int)(screen[0] + 10), (int)(screen[1]), r, g, b, weaponName);
+						/*
 						drawing::DrawText((int)(screen[0] + 10), (int)(screen[1]), COLOR_RGB(r, g, b),
 							drawing::FontRenderFlag_t::FONT_CENTER, weaponName);
+						*/
 					}
 				}
 			}
@@ -755,9 +769,11 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 						if (g_local.team == 2 && Config::radar)
 							drawRadarPoint(ent->origin, 128, 0, 255, 255, true, 2);
 
-						// g_tableFont.drawString(true, screen[0], screen[1], 128, 0, 255, "thighpack");
+						g_tableFont.drawString(true, screen[0], screen[1], 128, 0, 255, "thighpack");
+						/*
 						drawing::DrawText(screen[0], screen[1], COLOR_RGB(128, 0, 255),
 							drawing::FontRenderFlag_t::FONT_CENTER, "thighpack");
+						*/
 					}
 					else if (entName == "backpack")
 					{
@@ -766,9 +782,11 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 						if (Config::miniRadar)
 							drawMiniRadarPoint(ent->origin, 255, 0, 128, true, 3);
 
-						// g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
+						g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 128, "backpack");
+						/*
 						drawing::DrawText(screen[0], screen[1], COLOR_RGB(255, 0, 128),
 							drawing::FontRenderFlag_t::FONT_CENTER, "backpack");
+						*/
 					}
 					else if (entName == "c4")
 					{
@@ -777,18 +795,22 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 						if (Config::miniRadar)
 							drawMiniRadarPoint(ent->origin, 255, 0, 255, true, 3);
 
-						// g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
+						g_tableFont.drawString(true, screen[0], screen[1], 255, 0, 255, "c4");
+						/*
 						drawing::DrawText(screen[0], screen[1], COLOR_RGB(255, 0, 255),
 							drawing::FontRenderFlag_t::FONT_CENTER, "c4");
+						*/
 					}
 					else
 					{
 						if (Config::radar)
 							drawRadarPoint(ent->origin, 255, 128, 128, 255, true, 4);
 
-						// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
+						g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 128, entName.c_str());
+						/*
 						drawing::DrawText(screen[0], screen[1], COLOR_RGB(255, 128, 128),
 							drawing::FontRenderFlag_t::FONT_CENTER, entName.c_str());
+						*/
 					}
 				}
 				else if (entName.find("hostage") != std::string::npos)
@@ -798,7 +820,7 @@ void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPane
 					if (Config::miniRadar)
 						drawMiniRadarPoint(ent->origin, 255, 128, 0, true, 4);
 					
-					// g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
+					g_tableFont.drawString(true, screen[0], screen[1], 255, 128, 0, "hostage");
 				}
 			}
 		}
