@@ -1,12 +1,17 @@
-#include "drawing.h"
+﻿#include "drawing.h"
 #include "tablefont.h"
 #include "../clientdll.h"
 #include "../misc/xorstr.h"
 #include "../players.h"
 #include "../opengl.h"
+#include "../Engine/ISurface.h"
+#include "../Engine/IEngineVGui.h"
 
 ColorManager colorList;
 extern cl_enginefuncs_s gEngfuncs;
+
+vgui::ISurface* g_pSurface;
+vgui::IEngineVGui* g_pEngineVGui;
 
 void ColorManager::Init()
 {
@@ -629,4 +634,178 @@ void PrintWithFont(int x, int y, int r, int g, int b, const char *fmt, ...)
 void PrintWithFont(int x, int y, int r, int g, int b, std::string text)
 {
 	g_tableFont.drawString(false, x, y, r, g, b, text.c_str());
+}
+
+vgui::HFont drawing::fontEsp = 0, drawing::fontMenu = 0;
+
+void drawing::SetupFonts()
+{
+	fontEsp = g_pSurface->CreateFont();
+	fontMenu = g_pSurface->CreateFont();
+	g_pSurface->AddGlyphSetToFont(fontEsp, "Tahoma", 12, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+	g_pSurface->AddGlyphSetToFont(fontMenu, "Tahoma", 14, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0);
+}
+
+#define COLOR_A(_clr)	((_clr & 0xFF000000) >> 24)
+#define COLOR_R(_clr)	((_clr & 0x00FF0000) >> 16)
+#define COLOR_G(_clr)	((_clr & 0x0000FF00) >> 8)
+#define COLOR_B(_clr)	((_clr & 0x000000FF) >> 0)
+
+void drawing::DrawLine(int x1, int y1, int x2, int y2, DWORD color)
+{
+	g_pSurface->DrawSetColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawLine(x1, y1, x2, y2);
+}
+
+void drawing::DrawRect(int x, int y, int w, int h, DWORD color)
+{
+	g_pSurface->DrawSetColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawOutlinedRect(x, y, x + w, y + h);
+}
+
+void drawing::DrawFillRect(int x, int y, int w, int h, DWORD color)
+{
+	g_pSurface->DrawSetColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawFilledRect(x, y, x + w, y + h);
+}
+
+void drawing::DrawCornerRect(int x, int y, int w, int h, int length, DWORD color)
+{
+	if (length == 0)
+	{
+		if (w == 0)
+			return;
+
+		length = w / 3;
+	}
+
+	g_pSurface->DrawSetColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+
+	// 左上
+	g_pSurface->DrawLine(x, y, x + length, y);
+	g_pSurface->DrawLine(x, y, x, y - length);
+
+	// 右上
+	g_pSurface->DrawLine(x + w, y, x + w - length, y);
+	g_pSurface->DrawLine(x + w, y, x + w, y - length);
+
+	// 左下
+	g_pSurface->DrawLine(x, y + h, x + length, y + h);
+	g_pSurface->DrawLine(x, y + h, x, y + h + length);
+
+	// 右下
+	g_pSurface->DrawLine(x + w, y + h, x + w - length, y + h);
+	g_pSurface->DrawLine(x + w, y + h, x + w, y + h + length);
+}
+
+void drawing::DrawCircle(int x, int y, int radius, DWORD color, int resolution)
+{
+	std::vector<int> vertice_x, vertice_y;
+
+	float curAngle;
+	float angle = (float)((2.0f * M_PI_F) / resolution);
+	for (int i = 0; i <= resolution; ++i)
+	{
+		curAngle = i * angle;
+		vertice_x.emplace_back((int)(x + radius * cos(curAngle)));
+		vertice_y.emplace_back((int)(y - radius * sin(curAngle)));
+	}
+
+	g_pSurface->DrawSetColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawPolyLine(&vertice_x[0], &vertice_y[0], vertice_x.size());
+}
+
+void drawing::DrawFillCircle(int x, int y, int radius, DWORD color, int resolution)
+{
+	
+}
+
+void drawing::DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, const char * text, ...)
+{
+	va_list ap;
+	char buffer_oigin[1024];
+	va_start(ap, text);
+	vsprintf_s(buffer_oigin, text, ap);
+	va_end(ap);
+
+	wchar_t buffer_output[1024];
+	int length = MultiByteToWideChar(CP_UTF8, 0, buffer_oigin, 256, buffer_output, 256);
+
+	int width, height;
+	g_pSurface->GetTextSize(fontMenu, buffer_output, width, height);
+	if (alignment & FONT_RIGHT)
+		x -= width;
+	if (alignment & FONT_CENTER)
+		x -= width / 2;
+
+	g_pSurface->DrawSetTextFont(fontMenu);
+	g_pSurface->DrawSetTextColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawSetTextPos(x, y - height / 2);
+	g_pSurface->DrawPrintText(buffer_output, length);
+}
+
+void drawing::DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, const wchar_t * text, ...)
+{
+	va_list ap;
+	wchar_t buffer_output[1024];
+	va_start(ap, text);
+	int length = vswprintf_s(buffer_output, text, ap);
+	va_end(ap);
+
+	int width, height;
+	g_pSurface->GetTextSize(fontMenu, buffer_output, width, height);
+	if (alignment & FONT_RIGHT)
+		x -= width;
+	if (alignment & FONT_CENTER)
+		x -= width / 2;
+
+	g_pSurface->DrawSetTextFont(fontMenu);
+	g_pSurface->DrawSetTextColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawSetTextPos(x, y - height / 2);
+	g_pSurface->DrawPrintText(buffer_output, length);
+}
+
+void drawing::DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, const char * text, ...)
+{
+	va_list ap;
+	char buffer_oigin[1024];
+	va_start(ap, text);
+	vsprintf_s(buffer_oigin, text, ap);
+	va_end(ap);
+
+	wchar_t buffer_output[1024];
+	int length = MultiByteToWideChar(CP_UTF8, 0, buffer_oigin, 256, buffer_output, 256);
+
+	int width, height;
+	g_pSurface->GetTextSize(fontEsp, buffer_output, width, height);
+	if (alignment & FONT_RIGHT)
+		x -= width;
+	if (alignment & FONT_CENTER)
+		x -= width / 2;
+
+	g_pSurface->DrawSetTextFont(fontEsp);
+	g_pSurface->DrawSetTextColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawSetTextPos(x, y - height / 2);
+	g_pSurface->DrawPrintText(buffer_output, length);
+}
+
+void drawing::DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, const wchar_t * text, ...)
+{
+	va_list ap;
+	wchar_t buffer_output[1024];
+	va_start(ap, text);
+	int length = vswprintf_s(buffer_output, text, ap);
+	va_end(ap);
+
+	int width, height;
+	g_pSurface->GetTextSize(fontEsp, buffer_output, width, height);
+	if (alignment & FONT_RIGHT)
+		x -= width;
+	if (alignment & FONT_CENTER)
+		x -= width / 2;
+
+	g_pSurface->DrawSetTextFont(fontEsp);
+	g_pSurface->DrawSetTextColor(COLOR_R(color), COLOR_G(color), COLOR_B(color), COLOR_A(color));
+	g_pSurface->DrawSetTextPos(x, y - height / 2);
+	g_pSurface->DrawPrintText(buffer_output, length);
 }

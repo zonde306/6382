@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "../clientdll.h"
+#include "../Engine/ISurface.h"
 
 struct ColorEntry
 {
@@ -49,3 +50,27 @@ void PrintWithFont(int x, int y, int r, int g, int b, const char *fmt, ...);
 void PrintWithFont(int x, int y, int r, int g, int b, std::string text);
 void DrawCrosshair(int mode);
 void gDrawFilledBoxAtLocation(float* origin, DWORD color, int radius);
+
+namespace drawing
+{
+	extern vgui::HFont fontEsp, fontMenu;
+	
+	enum FontRenderFlag_t
+	{
+		FONT_LEFT = 0,
+		FONT_RIGHT = 1,
+		FONT_CENTER = 2
+	};
+
+	void SetupFonts();
+	void DrawLine(int x1, int y1, int x2, int y2, DWORD color);
+	void DrawRect(int x, int y, int w, int h, DWORD color);
+	void DrawFillRect(int x, int y, int w, int h, DWORD color);
+	void DrawCornerRect(int x, int y, int w, int h, int length, DWORD color);
+	void DrawCircle(int x, int y, int radius, DWORD color, int resolution = 8);
+	void DrawFillCircle(int x, int y, int radius, DWORD color, int resolution = 8);
+	void DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, const char* text, ...);
+	void DrawString(int x, int y, DWORD color, FontRenderFlag_t alignment, const wchar_t* text, ...);
+	void DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, const char* text, ...);
+	void DrawText(int x, int y, DWORD color, FontRenderFlag_t alignment, const wchar_t* text, ...);
+};

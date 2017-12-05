@@ -306,7 +306,7 @@ GLvoid BuildFont(GLvoid)
 	HFONT	font;
 	HFONT	oldfont;
 	g_oglBase = (*glGenLists)(96);
-	font = CreateFont(14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Tahoma");
+	font = CreateFontA(14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Tahoma");
 	oldfont = (HFONT)SelectObject(g_hOglHdc, font);
 	wglUseFontBitmaps(g_hOglHdc, 32, 96, g_oglBase);
 	SelectObject(g_hOglHdc, oldfont);

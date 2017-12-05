@@ -132,6 +132,9 @@
     <ClCompile Include="imeinput.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Misc\vmt.cpp">
+      <Filter>杂项</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Misc\engine.h">
@@ -241,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="imeinput.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\vmt.h">
+      <Filter>杂项</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

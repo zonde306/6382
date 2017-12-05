@@ -14,6 +14,14 @@
 #include "peb.h"
 #include "eventhook.h"
 #include "Engine/exporttable.h"
+#include "drawing/drawing.h"
+#include "Misc/vmt.h"
+
+#include "Engine/ISurface.h"
+#include "Engine/IEngineVGui.h"
+#include "Engine/IRunGameEngine.h"
+#include "Engine/IGameUI.h"
+#include "Engine/IGameConsole.h"
 
 extern COffsets g_offsetScanner;
 extern cl_clientfunc_t *g_pClient;
@@ -28,14 +36,23 @@ extern bool* g_pSendPacket;
 extern FnGetWeaponByID g_pfnGetWeaponByID;
 extern PSPLICE_ENTRY g_pSplicVGuiPaint;
 
+extern vgui::IPanel* g_pPanel;
+extern vgui::ISurface* g_pSurface;
+extern vgui::IEngineVGui* g_pEngineVGui;
+extern IRunGameEngine* g_pRunGameEngine;
+extern IGameUI* g_pGameUi;
+extern IGameConsole* g_pGameConsole;
+
 extern int	HookUserMsg(char *szMsgName, pfnUserMsgHook pfn);
 extern void StudioEntityLight(struct alight_s *plight);
 extern void PreS_DynamicSound(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
-extern void __cdecl Hooked_SendPacket();
 extern int __cdecl Hooked_VGuiPaint();
 extern PreS_DynamicSound_t g_oDynamicSound;
 extern decltype(g_pStudio->StudioEntityLight) g_oStudioEntityLight;
 DetourXS g_hookDynamicSound, g_hookFireBullets, g_hookSendPacket;
+
+CVMTHookManager g_hookPanel;
+FnPaintTraverse g_pfnPaintTraverse;
 
 //////////////////////////////////////////////////////////////////////////
 // global offsets
@@ -113,7 +130,16 @@ void InitOffsets()
 		ExitProcess(0);
 	}
 
-	__try { pClient = (_CLIENT_*)(*(DWORD*)(utilsFindPattern((DWORD)Base, Size, (BYTE*)"\x8B\x44\x24\x04\x6A\x00\x68\x00\x00\x00\x00\x68\x00\x00\x00\x00\x50\xC7\x05", "xxxxxxx????x????xxx")+7)); } __except ( EXCEPTION_CONTINUE_EXECUTION ) { pClient = 0; } 
+	__try
+	{
+		pClient = (_CLIENT_*)(*(DWORD*)(utilsFindPattern((DWORD)Base, Size,
+			(BYTE*)"\x8B\x44\x24\x04\x6A\x00\x68\x00\x00\x00\x00\x68\x00\x00\x00\x00\x50\xC7\x05",
+			"xxxxxxx????x????xxx")+7));
+	}
+	__except ( EXCEPTION_CONTINUE_EXECUTION )
+	{
+		pClient = 0;
+	} 
 	if ( IsBadReadPtr((void*)pClient, sizeof(_CLIENT_)) )
 	{
 		MessageBoxA(0, "BadReadPtr: pClient", "Fatal Error", MB_OK|MB_ICONWARNING);
@@ -159,6 +185,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pExport = (export_t*)g_offsetScanner.ExportPointer();
 	g_offsetScanner.GameInfo();
 
+	// 调试用
 	g_pEngine->Con_Printf(XorStr("clientBase = 0x%X\n"), (DWORD)clientBase);
 	g_pEngine->Con_Printf(XorStr("g_pClient = 0x%X\n"), (DWORD)g_pClient);
 	g_pEngine->Con_Printf(XorStr("g_pEngine = 0x%X\n"), (DWORD)g_pEngine);
@@ -174,6 +201,12 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->Con_Printf(XorStr("g_pfnGetWeaponByID = 0x%X\n"), (DWORD)g_pfnGetWeaponByID);
 	g_pEngine->Con_Printf(XorStr("g_pGlobals = 0x%X\n"), (DWORD)g_pGlobals);
 	g_pEngine->Con_Printf(XorStr("g_pExport = 0x%X\n"), (DWORD)g_pExport);
+	g_pEngine->Con_Printf(XorStr("g_pPanel = 0x%X\n"), (DWORD)g_pPanel);
+	g_pEngine->Con_Printf(XorStr("g_pEngineVGui = 0x%X\n"), (DWORD)g_pEngineVGui);
+	g_pEngine->Con_Printf(XorStr("g_pGameConsole = 0x%X\n"), (DWORD)g_pGameConsole);
+	g_pEngine->Con_Printf(XorStr("g_pSurface = 0x%X\n"), (DWORD)g_pSurface);
+	g_pEngine->Con_Printf(XorStr("g_pRunGameEngine = 0x%X\n"), (DWORD)g_pRunGameEngine);
+	g_pEngine->Con_Printf(XorStr("g_pGameUI = 0x%X\n"), (DWORD)g_pGameUi);
 
 	InitOffsets();
 	if (g_pClient == nullptr || g_pEngine == nullptr || g_pStudio == nullptr)
@@ -282,6 +315,17 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	enginePatchEngine();
 	InstallGL();
 	HookUserMsg2();
+
+	if (g_pSurface != nullptr)
+	{
+		drawing::SetupFonts();
+		if (g_pPanel != nullptr)
+		{
+			g_hookPanel.Init(g_pPanel);
+			g_pfnPaintTraverse = (FnPaintTraverse)g_hookPanel.HookFunction(41, Hooked_PaintTraverse);
+			g_hookPanel.Hook();
+		}
+	}
 
 	pEngfuncs = &g_Engine;
 	pClient = (decltype(pClient))&g_Client;

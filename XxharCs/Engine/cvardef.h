@@ -33,4 +33,14 @@ typedef struct cvar_s
 	float	value;
 	struct cvar_s *next;
 } cvar_t;
+
+typedef void(*xcommand_t)(void);
+typedef struct cmd_s
+{
+	struct cmd_s *next;
+	const char *name;
+	xcommand_t function;
+	int flags;
+} cmd_t, *pcmd_t;
+
 #endif

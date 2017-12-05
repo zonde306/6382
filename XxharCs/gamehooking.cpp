@@ -10,6 +10,12 @@
 #include "cvars.h"
 #include "players.h"
 
+#include "Engine/ISurface.h"
+#include "Engine/IEngineVGui.h"
+#include "Engine/IRunGameEngine.h"
+#include "Engine/IGameUI.h"
+#include "Engine/IGameConsole.h"
+
 //////////////////////////////////////////////////////////////////////////
 _CLIENT_* pClient;
 
@@ -27,6 +33,12 @@ extern engine_studio_api_t *g_pStudio;
 extern cl_enginefunc_t g_Engine;
 extern cl_clientfunc_t g_Client;
 extern engine_studio_api_t g_Studio;
+
+IRunGameEngine* g_pRunGameEngine;
+vgui::IPanel* g_pPanel;
+IGameConsole* g_pGameConsole;
+IGameUI* g_pGameUi;
+
 PUserMgsList g_pUserMsgList;
 std::unordered_map<std::string, FnUserMsgHook> g_userMsgFunc;
 
@@ -507,8 +519,8 @@ BOOL ActivateClient()
 }
 
 //////////////////////////////////////////////////////////////////////
-void(*g_pfnOldNextWeapon)(void) = nullptr;
-void(*g_pfnOldPrevWeapon)(void) = nullptr;
+xcommand_t g_pfnOldNextWeapon = nullptr;
+xcommand_t g_pfnOldPrevWeapon = nullptr;
 
 void CmdFunc_NextWeapon(void)
 {
@@ -540,6 +552,7 @@ int AddCommand(char *cmd_name, void(*function)(void))
 {
 	//add_log("AddCommand: %s",cmd_name);
 
+	/*
 	if (strcmpi(cmd_name, "invnext") == 0)
 	{
 		g_pfnOldNextWeapon = function;
@@ -552,6 +565,7 @@ int AddCommand(char *cmd_name, void(*function)(void))
 		gEngfuncs.pfnAddCommand(cmd_name, CmdFunc_PrevWeapon);
 		return 1;
 	}
+	*/
 
 	return 0;
 }

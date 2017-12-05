@@ -3,11 +3,23 @@
 #include "../install.h"
 #include "../clientdll.h"
 #include "xorstr.h"
+#include "../Engine/ISurface.h"
+#include "../Engine/IRunGameEngine.h"
+#include "../Engine/IGameConsole.h"
+#include "../Engine/IGameUI.h"
+#include "../Engine/IEngineVGui.h"
 
 extern cl_clientfunc_t *g_pClient;
 extern cl_enginefunc_t *g_pEngine;
 extern engine_studio_api_t *g_pStudio;
 extern cl_clientslots_s* g_pSlots;
+
+extern vgui::IPanel* g_pPanel;
+extern vgui::ISurface* g_pSurface;
+extern vgui::IEngineVGui* g_pEngineVGui;
+extern IRunGameEngine* g_pRunGameEngine;
+extern IGameUI* g_pGameUi;
+extern IGameConsole* g_pGameConsole;
 
 #define RENDERTYPE_UNDEFINED	0
 #define RENDERTYPE_SOFTWARE		1
@@ -77,6 +89,33 @@ bool COffsets::Initialize(void)
 
 	VgBase = (DWORD)GetModuleHandle("GameUI.dll");
 	VgSize = (DWORD)0x000E4000;
+
+	Engine_CreateInterface = (CreateInterfaceFn)FindPattern(HwBase, HwEnd,
+		XorStr("53 55 56 57 8B 3D ? ? ? ? 85 FF 74 ? 8B 6C ? ? 8B 47 ? 8B F5 8A 10 8A 1E 8A CA 3A D3 75 ? 84 C9 74 ? 8A 50 ? 8A 5E ? 8A CA 3A D3 75 ? 83 C0 ? 83 C6 ? 84 C9 75 ? 33 C0 EB ? 1B C0 83 D8 ? 85 C0 74 ? 8B 7F ? 85 FF 75 ? 8B 44 ? ? 85 C0 74 ? C7 00 ? ? ? ? 5F 5E 5D 33 C0 5B C3 8B 44 ? ? 85 C0 74 ? C7 00 ? ? ? ? FF 17 5F 5E 5D 5B C3 90 90 90 90 90 90 90 8B 44 ? ? 8B 4C ? ? 50 51 FF 15 ? ? ? ? C3 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 81 EC ? ? ? ? 56 8B B4 ? ? ? ? ? 57 8B 3D ? ? ? ? 56 FF D7 85 C0 75 ? 56 68 ? ? ? ? 8D 44 ? ? 68 ? ? ? ? 50 E8 ? ? ? ? 83 C4 ? 8D 4C ? ? 51 FF D7 5F 5E 81 C4 ? ? ? ? C3 90 90 90 90 90 90 90 90 90 90 90 90 8B 44 ? ? 85 C0 74 ? 50 FF 15 ? ? ? ? C3 8B 44 ? ? 85 C0 75 ? C3 68 ? ? ? ? 50 FF 15 ? ? ? ? C3 90 90 90 90 90 90 90 90 90 90 B8 ? ? ? ? C3 90 90 90 90 90 90 90 90 90 90 8B 44 ? ? 68 ? ? ? ? 50 E8"));
+	
+	if(vgui2 != NULL)
+		VGui2_CreateInterface = (CreateInterfaceFn)GetProcAddress((HMODULE)vgui2, CREATEINTERFACE_PROCNAME);
+	
+	if(GameUI != NULL)
+		GameUI_CreateInterface = (CreateInterfaceFn)GetProcAddress((HMODULE)GameUI, CREATEINTERFACE_PROCNAME);
+
+	if (Engine_CreateInterface != NULL)
+	{
+		g_pSurface = (vgui::ISurface*)Engine_CreateInterface(VGUI_SURFACE_INTERFACE_VERSION, 0);
+		g_pEngineVGui = (vgui::IEngineVGui*)Engine_CreateInterface(VENGINE_VGUI_VERSION, 0);
+	};
+
+	if (GameUI_CreateInterface != NULL)
+	{
+		g_pRunGameEngine = (IRunGameEngine*)GameUI_CreateInterface(RUNGAMEENGINE_INTERFACE_OLD_VERSION, 0);
+		g_pGameUi = (IGameUI*)GameUI_CreateInterface(GAMEUI_INTERFACE_VERSION, 0);
+		g_pGameConsole = (IGameConsole*)GameUI_CreateInterface(GAMECONSOLE_INTERFACE_VERSION, 0);
+	}
+
+	if (VGui2_CreateInterface != NULL)
+	{
+		g_pPanel = (vgui::IPanel*)VGui2_CreateInterface(VGUI_PANEL_INTERFACE_VERSION, 0);
+	}
 
 	return (ClBase && HwBase && GameUI && vgui && vgui2 && particleman);
 }

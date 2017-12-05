@@ -143,6 +143,8 @@ void HookStudio(void)
 }
 
 static bool Init = false;
+extern xcommand_t g_pfnOldNextWeapon;
+extern xcommand_t g_pfnOldPrevWeapon;
 
 void InitHack()
 {
@@ -164,10 +166,25 @@ void InitHack()
 	g_gui.InitFade();
 	g_menu.Init();
 
+	pcmd_t pCmdIter = gEngfuncs.GetFirstCmdFunctionHandle();
+	while (pCmdIter != nullptr)
+	{
+		if (!_stricmp(pCmdIter->name, "invnext"))
+		{
+			g_pfnOldNextWeapon = pCmdIter->function;
+			pCmdIter->function = CmdFunc_NextWeapon;
+		}
+		else if (!_stricmp(pCmdIter->name, "previnv"))
+		{
+			g_pfnOldPrevWeapon = pCmdIter->function;
+			pCmdIter->function = CmdFunc_PrevWeapon;
+		}
+
+		pCmdIter = pCmdIter->next;
+	}
+
 	gEngfuncs.pfnAddCommand("nextinv", CmdFunc_NextWeapon);
 	gEngfuncs.pfnAddCommand("previnv", CmdFunc_PrevWeapon);
-	gEngfuncs.pfnClientCmd("alias invnext nextinv");
-	gEngfuncs.pfnClientCmd("alias invprev previnv");
 
 	gEngfuncs.pfnClientCmd("version");
 	gEngfuncs.pfnClientCmd("toggleconsole");
@@ -712,6 +729,30 @@ int __cdecl Hooked_VGuiPaint()
 
 
 	return result;
+}
+
+extern vgui::IPanel* g_pPanel;
+extern vgui::ISurface* g_pSurface;
+extern FnPaintTraverse g_pfnPaintTraverse;
+void __fastcall Hooked_PaintTraverse(vgui::IPanel* _ecx, PVOID _edx, vgui::IPanel* panel, bool forceRepaint, bool allowForce)
+{
+	g_pfnPaintTraverse(_ecx, panel, forceRepaint, allowForce);
+
+	static vgui::IPanel* StaticPanel = nullptr;
+	if (StaticPanel == nullptr)
+	{
+		const char* panelName = g_pPanel->GetName(panel);
+		if (strstr(panelName, "StaticPanel"))
+		{
+			StaticPanel = panel;
+			gEngfuncs.Con_Printf("%s = 0x%X\n", panelName, (DWORD)panel);
+		}
+	}
+
+	if (StaticPanel == panel)
+	{
+		// 在这里使用 g_pSurface 绘图
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

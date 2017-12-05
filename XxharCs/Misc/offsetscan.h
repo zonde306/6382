@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include "../Engine/interface.h"
 
 struct Color24
 {
@@ -16,6 +17,10 @@ public:
 	DWORD ClBase, ClSize, ClEnd;
 	DWORD HwBase, HwSize, HwEnd;
 	DWORD VgBase, VgSize;
+
+	CreateInterfaceFn Engine_CreateInterface;
+	CreateInterfaceFn VGui2_CreateInterface;
+	CreateInterfaceFn GameUI_CreateInterface;
 
 	bool Initialize(void);
 	void *GameConsole(void);

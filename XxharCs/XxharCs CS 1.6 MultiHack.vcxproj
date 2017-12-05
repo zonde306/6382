@@ -114,6 +114,7 @@
     <ClCompile Include="Misc\parsemsg.cpp" />
     <ClCompile Include="Misc\splice.cpp" />
     <ClCompile Include="Misc\utils.cpp" />
+    <ClCompile Include="Misc\vmt.cpp" />
     <ClCompile Include="ModuleSecurity.cpp" />
     <ClCompile Include="NoRecoil.cpp" />
     <ClCompile Include="NoSpread.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Misc\parsemsg.h" />
     <ClInclude Include="Misc\splice.h" />
     <ClInclude Include="Misc\utils.h" />
+    <ClInclude Include="Misc\vmt.h" />
     <ClInclude Include="Misc\xorstr.h" />
     <ClInclude Include="ModuleSecurity.h" />
     <ClInclude Include="NoRecoil.h" />
