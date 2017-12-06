@@ -45,7 +45,7 @@ extern IGameConsole* g_pGameConsole;
 
 extern int	HookUserMsg(char *szMsgName, pfnUserMsgHook pfn);
 extern void StudioEntityLight(struct alight_s *plight);
-extern void PreS_DynamicSound(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
+extern void PreS_DynamicSound(int, DWORD, const char*, float[3], float, float, int, int);
 extern int __cdecl Hooked_VGuiPaint();
 extern PreS_DynamicSound_t g_oDynamicSound;
 extern decltype(g_pStudio->StudioEntityLight) g_oStudioEntityLight;
@@ -162,7 +162,7 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
-	// HideDll((HINSTANCE)params);
+	HideDll((HINSTANCE)params);
 
 	while (!g_offsetScanner.Initialize())
 		Sleep(100);

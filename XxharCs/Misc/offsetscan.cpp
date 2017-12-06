@@ -164,7 +164,7 @@ void *COffsets::GameConsole(void)
 	while (!GetModuleHandle("GameUI.dll") && !GetModuleHandle("vgui.dll") && !GetModuleHandle("vgui2.dll"))
 		Sleep(100);
 	BYTE bPushAddrPattern[] = { 0x68, 0x90, 0x90, 0x90, 0x90 };
-	char cVgBase[] = "GameConsole003";
+	PCHAR cVgBase = XorStr("GameConsole003");
 	DWORD VgBaseString = FindCodeSignature(VgBase, VgBase + VgSize, (PBYTE)cVgBase, sizeof(cVgBase) - 1, 0);
 	*(DWORD *)(bPushAddrPattern + 1) = VgBaseString;
 	DWORD Addres = 0;
@@ -202,7 +202,7 @@ void COffsets::GameInfo(void)
 {
 	static bool search = false;
 	BYTE bPushAddrPattern[] = { 0x68, 0x90, 0x90, 0x90, 0x90 };
-	char cProt[] = "fullinfo <complete info string>";
+	PCHAR cProt = XorStr("fullinfo <complete info string>");
 	DWORD dwGameInfo = FindCodeSignature(HwBase, HwBase + HwSize, (PBYTE)cProt, sizeof(cProt) - 1, 0);
 	*(DWORD *)(bPushAddrPattern + 1) = dwGameInfo;
 	DWORD Addres = 0;
@@ -258,7 +258,7 @@ finish:
 void *COffsets::Sound(void)
 {
 	BYTE bPushAddrPattern[] = { 0x68, 0x90, 0x90, 0x90, 0x90 };
-	char cSoundString[] = "S_StartDynamicSound: %s volume > 255";
+	PCHAR cSoundString = XorStr("S_StartDynamicSound: %s volume > 255");
 	DWORD dwSoundString = FindCodeSignature(HwBase, HwBase + HwSize, (PBYTE)cSoundString, sizeof(cSoundString) - 1, 0);
 	*(DWORD *)(bPushAddrPattern + 1) = dwSoundString;
 	DWORD Addres = 0;
@@ -296,7 +296,7 @@ void * COffsets::GetCurosrTeam()
 void *COffsets::SpeedHackPtr(void)
 {
 	DWORD Old = NULL;
-	PCHAR String = "Texture load: %6.1fms";
+	PCHAR String = XorStr("Texture load: %6.1fms");
 	DWORD Address = (DWORD)FindMemoryClone(HwBase, HwBase + HwSize, String, strlen(String));
 	void* SpeedPtr = (void*)*(DWORD*)(FindReference(HwBase, HwBase + HwSize, Address) - 7);
 	if (FarProc((DWORD)SpeedPtr, HwBase, HwEnd))
@@ -308,7 +308,7 @@ void *COffsets::SpeedHackPtr(void)
 
 void * COffsets::FireBullets()
 {
-	PCHAR FireString = "%.4f %.4f %.4f";
+	PCHAR FireString = XorStr("%.4f %.4f %.4f");
 	DWORD FireBullets = (DWORD)FindMemoryClone(ClBase, ClEnd, FireString, strlen(FireString));
 	FireBullets = (DWORD)(FindReference(ClBase, ClEnd, FireBullets) + 0x1C);
 	return (PVOID)FireBullets;
@@ -316,7 +316,7 @@ void * COffsets::FireBullets()
 
 void * COffsets::FireBullets3()
 {
-	PCHAR FireString = "weapons/ric_metal-1.wav";
+	PCHAR FireString = XorStr("weapons/ric_metal-1.wav");
 	DWORD FireBullets = (DWORD)FindMemoryClone(ClBase, ClEnd, FireString, strlen(FireString));
 	FireBullets = (DWORD)FindReference(ClBase, ClEnd, FireBullets);
 	return (PVOID)FireBullets;
@@ -324,7 +324,7 @@ void * COffsets::FireBullets3()
 
 void * COffsets::InitPoint()
 {
-	DWORD initPoint = FindPattern(ClBase, ClEnd, "83 F8 1D 0F 87 ? ? ? ? FF 24 85 ? ? ? ? B8");
+	DWORD initPoint = FindPattern(ClBase, ClEnd, XorStr("83 F8 1D 0F 87 ? ? ? ? FF 24 85 ? ? ? ? B8"));
 	if (initPoint != 0)
 		return (PVOID)(*(DWORD*)(initPoint + 0x11));
 
@@ -333,11 +333,11 @@ void * COffsets::InitPoint()
 
 void * COffsets::SendPacket()
 {
-	DWORD sendPacket = FindPattern(HwBase, HwEnd, "56 57 33 FF 3B C7 0F 84 ? ? ? ? 83");
+	DWORD sendPacket = FindPattern(HwBase, HwEnd, XorStr("56 57 33 FF 3B C7 0F 84 ? ? ? ? 83"));
 	if (sendPacket == 0)
 		return nullptr;
 
-	sendPacket = FindPattern(sendPacket - 0x12, HwEnd, "C3 90");
+	sendPacket = FindPattern(sendPacket - 0x12, HwEnd, XorStr("C3 90"));
 	if (sendPacket != 0)
 		return (PVOID)(*(PDWORD)(sendPacket + 0x03));
 
@@ -347,7 +347,7 @@ void * COffsets::SendPacket()
 void * COffsets::VGuiPaint()
 {
 	// 90 E8 ? ? ? ? 85 C0 74 ? E8 + 0x01
-	DWORD vguiPaint = FindPattern(HwBase, HwEnd, "E8 ? ? ? ? 85 C0 74 ? E8 ? ? ? ? F7 D8");
+	DWORD vguiPaint = FindPattern(HwBase, HwEnd, XorStr("E8 ? ? ? ? 85 C0 74 ? E8 ? ? ? ? F7 D8"));
 	if (vguiPaint != 0)
 		return (PVOID)vguiPaint;
 
@@ -357,7 +357,7 @@ void * COffsets::VGuiPaint()
 void * COffsets::GetWeaponByID()
 {
 	// 8B 44 24 04 48 83 F8 1D 0F 87 ? ? ? ?
-	DWORD dwGetWeaponByID = FindPattern(ClBase, ClEnd, "8B 44 ? ? 48 83 F8 ? 0F 87 ? ? ? ? FF 24 ? ? ? ? ? B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8");
+	DWORD dwGetWeaponByID = FindPattern(ClBase, ClEnd, XorStr("8B 44 ? ? 48 83 F8 ? 0F 87 ? ? ? ? FF 24 ? ? ? ? ? B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8"));
 	if (dwGetWeaponByID != 0)
 		return (PVOID)dwGetWeaponByID;
 
@@ -366,7 +366,7 @@ void * COffsets::GetWeaponByID()
 
 void * COffsets::GlobalVars()
 {
-	DWORD dwGlobals = FindPattern(ClBase, ClEnd, "A1 ? ? ? ? 8D 48 34 8D 50 40 D9 5C 24 1C");
+	DWORD dwGlobals = FindPattern(ClBase, ClEnd, XorStr("A1 ? ? ? ? 8D 48 34 8D 50 40 D9 5C 24 1C"));
 	if (dwGlobals != 0)
 		return (PVOID)(*(PDWORD)(dwGlobals + 1));
 
@@ -375,7 +375,7 @@ void * COffsets::GlobalVars()
 
 void * COffsets::ExportPointer()
 {
-	DWORD dwExportPointer = FindPattern(HwBase, HwEnd, "68 ? ? ? ? E8 ? ? ? ? 83 C4 0C E8 ? ? ? ? E8 ? ? ? ?");
+	DWORD dwExportPointer = FindPattern(HwBase, HwEnd, XorStr("68 ? ? ? ? E8 ? ? ? ? 83 C4 0C E8 ? ? ? ? E8 ? ? ? ?"));
 	if (dwExportPointer != 0)
 		return (PVOID)(*(PDWORD)(dwExportPointer + 0x01));
 
@@ -384,7 +384,7 @@ void * COffsets::ExportPointer()
 
 void *COffsets::ClientFuncs(void)
 {
-	PCHAR String = "ScreenFade";
+	PCHAR String = XorStr("ScreenFade");
 	DWORD Address = (DWORD)FindMemoryClone(HwBase, HwBase + HwSize, String, strlen(String));
 	void* ClientPtr = (void*)*(DWORD*)(FindReference(HwBase, HwBase + HwSize, Address) + 0x13);
 	if (FarProc((DWORD)ClientPtr, HwBase, HwEnd))
@@ -394,7 +394,7 @@ void *COffsets::ClientFuncs(void)
 
 void *COffsets::EngineFuncs(void)
 {
-	PCHAR String = "ScreenFade";
+	PCHAR String = XorStr("ScreenFade");
 	DWORD Address = FindMemoryClone(HwBase, HwBase + HwSize, String, strlen(String));
 	void* EnginePtr = (void*)*(DWORD*)(FindReference(HwBase, HwBase + HwSize, Address) + 0x0D);
 	if (FarProc((DWORD)EnginePtr, HwBase, HwEnd))
@@ -404,7 +404,7 @@ void *COffsets::EngineFuncs(void)
 
 DWORD COffsets::EngineStudio(void)
 {
-	PCHAR String = "Couldn't get client .dll studio model rendering interface.";
+	PCHAR String = XorStr("Couldn't get client .dll studio model rendering interface.");
 	DWORD Address = FindMemoryClone(HwBase, HwBase + HwSize, String, strlen(String));
 	void* EngineStudioPtr = (void*)*(DWORD*)(FindReference(HwBase, HwBase + HwSize, Address) - 0x14);
 	if (FarProc((DWORD)EngineStudioPtr, HwBase, HwEnd))

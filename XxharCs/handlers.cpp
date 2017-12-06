@@ -429,9 +429,9 @@ void HUD_Redraw(float x, int y)
 			continue;
 		}
 
-		if (g_playerList[i].getEnt()->curstate.sequence > 100)
+		if (g_playerList[i].isAlive() && g_playerList[i].getEnt()->curstate.sequence > 100)
 		{
-			g_playerList[i].killed = true;
+			g_playerList[i].setDead();
 			continue;
 		}
 
@@ -1275,12 +1275,18 @@ void FillRGBA(int x, int y, int width, int height, int r, int g, int b, int a)
 //////////////////////////////////////////////////////////////////////////
 #include "install.h"
 PreS_DynamicSound_t g_oDynamicSound;
-void PreS_DynamicSound(int entid, DWORD u, const char *szSoundFile, float fOrigin[3], DWORD dont, DWORD know, DWORD ja, DWORD ck)
+void PreS_DynamicSound(int entid, DWORD entchannel, const char *szSoundFile, float fOrigin[3], float fVolume, float fAttenuation, int iTimeOff, int iPitch)
 {
 	try
 	{
 		if (entid > 0 && entid <= 32)
 		{
+			cl_entity_s* entity = gEngfuncs.GetEntityByIndex(entid);
+			if (entity != nullptr && !entity->curstate.origin.IsZero() && entity->curstate.origin != fOrigin)
+			{
+				fOrigin = entity->curstate.origin;
+			}
+
 			g_playerList[entid].setAlive();
 			VectorCopy(fOrigin, g_playerList[entid].SoundOrigin);
 			playerSound(entid, fOrigin, szSoundFile);
@@ -1291,7 +1297,7 @@ void PreS_DynamicSound(int entid, DWORD u, const char *szSoundFile, float fOrigi
 
 	}
 
-	return g_oDynamicSound(entid, u, szSoundFile, fOrigin, dont, know, ja, ck);
+	return g_oDynamicSound(entid, entchannel, szSoundFile, fOrigin, fVolume, fAttenuation, iTimeOff, iPitch);
 }
 
 decltype(g_pStudio->StudioEntityLight) g_oStudioEntityLight;
@@ -1317,11 +1323,11 @@ void StudioEntityLight(struct alight_s *plight)
 		for (int i = 1; i <= 12; i++)
 		{
 			pHitbox = (mstudiobbox_t*)((byte*)pStudioHeader + pStudioHeader->hitboxindex);
+			VectorTransform(pHitbox[i].bbmin, (*pBoneMatrix)[pHitbox[i].bone], vBBMin);
+			VectorTransform(pHitbox[i].bbmax, (*pBoneMatrix)[pHitbox[i].bone], vBBMax);
+
 			if (Config::useHitbox) // hitbox
 			{
-				VectorTransform(pHitbox[i].bbmin, (*pBoneMatrix)[pHitbox[i].bone], vBBMin);
-				VectorTransform(pHitbox[i].bbmax, (*pBoneMatrix)[pHitbox[i].bone], vBBMax);
-
 				g_playerList[plindex].hitbox[i] = (vBBMax + vBBMin) * 0.5f;
 			}
 			else // bone
@@ -1331,11 +1337,12 @@ void StudioEntityLight(struct alight_s *plight)
 				g_playerList[plindex].hitbox[i][2] = (*pBoneMatrix)[i][2][3];
 			}
 
+			g_playerList[plindex].hitboxMin[i] = std::move(vBBMin);
+			g_playerList[plindex].hitboxMax[i] = std::move(vBBMax);
+
 			if (g_local.alive && (g_local.pmEyePos[0] != 0.0f ||
 				g_local.pmEyePos[1] != 0.0f || g_local.pmEyePos[2] != 0.0f) &&
-				(g_playerList[plindex].hitbox[i][0] != 0.0f ||
-					g_playerList[plindex].hitbox[i][1] != 0.0f ||
-					g_playerList[plindex].hitbox[i][2] != 0.0f))
+				(g_playerList[plindex].hitbox[i] != 0.0f))
 			{
 				distance = VectorDistance(g_local.pmEyePos, g_playerList[plindex].hitbox[i]);
 				if (distance < g_playerList[plindex].nearHitboxDist)
@@ -1355,9 +1362,7 @@ void StudioEntityLight(struct alight_s *plight)
 
 			if (g_local.alive && (g_local.pmEyePos[0] != 0.0f ||
 				g_local.pmEyePos[1] != 0.0f || g_local.pmEyePos[2] != 0.0f) &&
-				(g_playerList[plindex].bone[i][0] != 0.0f ||
-					g_playerList[plindex].bone[i][1] != 0.0f ||
-					g_playerList[plindex].bone[i][2] != 0.0f))
+				(g_playerList[plindex].bone[i] != 0.0f))
 			{
 				distance = VectorDistance(g_local.pmEyePos, g_playerList[plindex].bone[i]);
 				if (distance < g_playerList[plindex].nearBoneDist)

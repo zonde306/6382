@@ -15,7 +15,7 @@ typedef struct _UserMgsList
 typedef void(__cdecl* FnSendPacket)();
 typedef int(__cdecl *FnVGuiPaint)();
 typedef weapon_t*(__cdecl* FnGetWeaponByID)(int weaponId);
-typedef void(*PreS_DynamicSound_t)(int, DWORD, const char*, float[3], DWORD, DWORD, DWORD, DWORD);
+typedef void(*PreS_DynamicSound_t)(int, DWORD, const char*, float[3], float, float, int, int);
 DWORD WINAPI InstallCheat(LPVOID params);
 void UninstallCheat();
 

@@ -76,16 +76,35 @@ public:
 	// Operators
 	Vector operator-(void) const;
 	bool operator==(const Vector& v) const;
+	bool operator==(float* v) const;
+	bool operator==(float v) const;
 	bool operator!=(const Vector& v) const;
+	bool operator!=(float* v) const;
+	bool operator!=(float v) const;
 	Vector operator+(const Vector& v) const;
+	Vector operator+(float* v) const;
+	Vector operator+(float v) const;
 	Vector operator-(const Vector& v) const;
+	Vector operator-(float* v) const;
+	Vector operator-(float v) const;
+	Vector operator*(const Vector& v) const;
 	Vector operator*(float fl) const;
+	Vector operator*(float* v) const;
+	Vector operator/(const Vector& v) const;
 	Vector operator/(float fl) const;
+	Vector operator/(float* v) const;
 	Vector& operator=(const Vector& v);
 	Vector& operator=(const Vector&& v);
+	Vector& operator=(float* v);
 
 	Vector& operator*=(float fl);
 	Vector& operator/=(float fl);
+	Vector& operator+=(float fl);
+	Vector& operator-=(float fl);
+	Vector& operator*=(float* fl);
+	Vector& operator/=(float* fl);
+	Vector& operator+=(float* fl);
+	Vector& operator-=(float* fl);
 	Vector& operator+=(const Vector& v);
 	Vector& operator-=(const Vector& v);
 	Vector& operator*=(const Vector& v);

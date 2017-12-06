@@ -113,6 +113,14 @@ Vector & Vector::operator=(const Vector && v)
 	return *this;
 }
 
+Vector & Vector::operator=(float * v)
+{
+	x = v[0];
+	y = v[1];
+	z = v[2];
+	return *this;
+}
+
 Vector Vector::operator-(void) const
 {
 	return Vector(-x, -y, -z);
@@ -123,7 +131,27 @@ bool Vector::operator==(const Vector& v) const
 	return x == v.x && y == v.y && z == v.z;
 }
 
+bool Vector::operator==(float * v) const
+{
+	return x == v[0] && y == v[1] && z == v[2];
+}
+
+bool Vector::operator==(float v) const
+{
+	return x == v && y == v && z == v;
+}
+
 bool Vector::operator!=(const Vector& v) const
+{
+	return !(*this == v);
+}
+
+bool Vector::operator!=(float* v) const
+{
+	return !(*this == v);
+}
+
+bool Vector::operator!=(float v) const
 {
 	return !(*this == v);
 }
@@ -133,9 +161,34 @@ Vector Vector::operator+(const Vector& v) const
 	return Vector(x + v.x, y + v.y, z + v.z);
 }
 
+Vector Vector::operator+(float * v) const
+{
+	return Vector(x + v[0], y + v[1], z + v[2]);
+}
+
+Vector Vector::operator+(float v) const
+{
+	return Vector(x + v, y + v, z + v);
+}
+
 Vector Vector::operator-(const Vector& v) const
 {
 	return Vector(x - v.x, y - v.y, z - v.z);
+}
+
+Vector Vector::operator-(float * v) const
+{
+	return Vector(x - v[0], y - v[1], z - v[2]);
+}
+
+Vector Vector::operator-(float v) const
+{
+	return Vector(x - v, y - v, z - v);
+}
+
+Vector Vector::operator*(const Vector & v) const
+{
+	return Vector(x * v.x, y * v.y, z * v.z);
 }
 
 Vector Vector::operator*(float fl) const
@@ -143,9 +196,24 @@ Vector Vector::operator*(float fl) const
 	return Vector(x*fl, y*fl, z*fl);
 }
 
+Vector Vector::operator*(float * v) const
+{
+	return Vector(x * v[0], y * v[1], z * v[2]);
+}
+
+Vector Vector::operator/(const Vector & v) const
+{
+	return Vector(x / v.x, y / v.y, z / v.z);
+}
+
 Vector Vector::operator/(float fl) const
 {
 	return Vector(x / fl, y / fl, z / fl);
+}
+
+Vector Vector::operator/(float * v) const
+{
+	return Vector(x / v[0], y / v[1], z / v[2]);
 }
 
 void Vector::CopyToArray(float* rgfl) const
@@ -368,6 +436,54 @@ Vector & Vector::operator/=(float fl)
 	x /= fl;
 	y /= fl;
 	z /= fl;
+	return *this;
+}
+
+Vector & Vector::operator+=(float fl)
+{
+	x += fl;
+	y += fl;
+	z += fl;
+	return *this;
+}
+
+Vector & Vector::operator-=(float fl)
+{
+	x -= fl;
+	y -= fl;
+	z -= fl;
+	return *this;
+}
+
+Vector & Vector::operator*=(float * fl)
+{
+	x *= fl[0];
+	y *= fl[1];
+	z *= fl[2];
+	return *this;
+}
+
+Vector & Vector::operator/=(float * fl)
+{
+	x /= fl[0];
+	y /= fl[1];
+	z /= fl[2];
+	return *this;
+}
+
+Vector & Vector::operator+=(float * fl)
+{
+	x += fl[0];
+	y += fl[1];
+	z += fl[2];
+	return *this;
+}
+
+Vector & Vector::operator-=(float * fl)
+{
+	x -= fl[0];
+	y -= fl[1];
+	z -= fl[2];
 	return *this;
 }
 

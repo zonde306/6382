@@ -424,6 +424,59 @@ void _fastcall VectorAngles(const float *forward, float *angles)
 #define M_PI_F			(float)M_PI
 #endif
 
+bool IsBoxIntersectingRay(const Vector& boxMin, const Vector& boxMax, const Vector& origin, const Vector& delta)
+{
+	ASSERT(boxMin[0] <= boxMax[0]);
+	ASSERT(boxMin[1] <= boxMax[1]);
+	ASSERT(boxMin[2] <= boxMax[2]);
+
+	// FIXME: Surely there's a faster way
+	float tmin = -FLT_MAX;
+	float tmax = FLT_MAX;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		// Parallel case...
+		if (fabs(delta[i]) < 1e-8)
+		{
+			// Check that origin is in the box
+			// if not, then it doesn't intersect..
+			if ((origin[i] < boxMin[i]) || (origin[i] > boxMax[i]))
+				return false;
+
+			continue;
+		}
+
+		// non-parallel case
+		// Find the t's corresponding to the entry and exit of
+		// the ray along x, y, and z. The find the furthest entry
+		// point, and the closest exit point. Once that is done,
+		// we know we don't collide if the closest exit point
+		// is behind the starting location. We also don't collide if
+		// the closest exit point is in front of the furthest entry point
+
+		float invDelta = 1.0f / delta[i];
+		float t1 = (boxMin[i] - origin[i]) * invDelta;
+		float t2 = (boxMax[i] - origin[i]) * invDelta;
+		if (t1 > t2)
+		{
+			float temp = t1;
+			t1 = t2;
+			t2 = temp;
+		}
+		if (t1 > tmin)
+			tmin = t1;
+		if (t2 < tmax)
+			tmax = t2;
+		if (tmin > tmax)
+			return false;
+		if (tmax < 0)
+			return false;
+	}
+
+	return true;
+}
+
 void sMe::DoTriggerBot(usercmd_s * usercmd)
 {
 	if (this->iClip <= 0)
@@ -445,6 +498,7 @@ void sMe::DoTriggerBot(usercmd_s * usercmd)
 	}
 	*/
 
+	// 准星 ID 检测，正确率高，但速度非常慢
 	if (g_pCrossHairTeam != nullptr)
 	{
 		if(*g_pCrossHairTeam == 1)
@@ -481,6 +535,7 @@ void sMe::DoTriggerBot(usercmd_s * usercmd)
 	forward *= 3000.0f;
 	forward = Vector(this->pmEyePos) + right;
 	
+	// 光线检测，没什么用
 	pmtrace_s* trace = gEngfuncs.PM_TraceLine(this->pmEyePos, forward, PM_TRACELINE_ANYVISIBLE,
 		PM_STUDIO_BOX | PM_GLASS_IGNORE, this->entindex);
 	if (trace->ent > 0 && trace->ent <= 32 && trace->ent != this->entindex)
@@ -493,6 +548,40 @@ void sMe::DoTriggerBot(usercmd_s * usercmd)
 		}
 	}
 
+	// 包围盒光线检测
+	gEngfuncs.pfnAngleVectors(finalAngle, forward, right, up);
+	forward = forward.Normalize();
+	for (int i = 1; i <= 32; ++i)
+	{
+		if (i == this->entindex || !isValidEnt(g_playerList[i].getEnt()) || !g_playerList[i].isAlive())
+			continue;
+
+		cl_entity_t* entity = g_playerList[i].getEnt();
+
+		// 检查是否瞄准了这个玩家，减少循环以节省 CPU 资源
+		if (!IsBoxIntersectingRay(entity->curstate.mins, entity->curstate.maxs, this->pmEyePos, forward))
+			continue;
+
+		// 防止射击队友
+		if (g_playerList[i].team == this->team)
+			break;
+
+		for (int i2 = 0; i2 <= 12; ++i2)
+		{
+			if (g_playerList[i].hitbox[i2] == 0.0f)
+				continue;
+
+			// 进行碰撞盒检查，确定是不是瞄准了有效的位置
+			if (IsBoxIntersectingRay(g_playerList[i].hitboxMin[i2], g_playerList[i].hitboxMax[i2],
+				this->pmEyePos, forward))
+			{
+				usercmd->buttons |= IN_ATTACK;
+				return;
+			}
+		}
+	}
+
+	// 角度差异检测
 	static float EntViewVec[3], distance;
 	for (int i = 1; i <= 32; ++i)
 	{

@@ -148,6 +148,8 @@ public:
 	bool bDrawn;
 	bool ducking;
 	Vector hitbox[13];
+	Vector hitboxMin[13];
+	Vector hitboxMax[13];
 	Vector bone[MAXSTUDIOBONES];
 	Vector SoundOrigin;
 	Vector eyePosition;
