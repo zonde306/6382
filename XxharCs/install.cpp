@@ -22,6 +22,8 @@
 #include "Engine/IRunGameEngine.h"
 #include "Engine/IGameUI.h"
 #include "Engine/IGameConsole.h"
+#include "../imgui/goldsrc/CBaseUI.h"
+#include "IBaseUI.h"
 
 extern COffsets g_offsetScanner;
 extern cl_clientfunc_t *g_pClient;
@@ -40,7 +42,7 @@ extern vgui::IPanel* g_pPanel;
 extern vgui::ISurface* g_pSurface;
 extern vgui::IEngineVGui* g_pEngineVGui;
 extern IRunGameEngine* g_pRunGameEngine;
-extern IGameUI* g_pGameUi;
+extern IBaseUI* g_pGameUI;
 extern IGameConsole* g_pGameConsole;
 
 extern int	HookUserMsg(char *szMsgName, pfnUserMsgHook pfn);
@@ -51,7 +53,7 @@ extern PreS_DynamicSound_t g_oDynamicSound;
 extern decltype(g_pStudio->StudioEntityLight) g_oStudioEntityLight;
 DetourXS g_hookDynamicSound, g_hookFireBullets, g_hookSendPacket;
 
-CVMTHookManager g_hookPanel;
+CVmtHook g_hookPanel;
 FnPaintTraverse g_pfnPaintTraverse;
 
 //////////////////////////////////////////////////////////////////////////
@@ -147,8 +149,6 @@ void InitOffsets()
 	}
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////
 PSPLICE_ENTRY xQPC;
 extern BOOL bClientActive;
@@ -162,7 +162,9 @@ BOOL WINAPI xQueryPerformanceCounter(LARGE_INTEGER* pLI)
 DWORD WINAPI InstallCheat(LPVOID params)
 {
 	// xQPC = SpliceHookFunction(QueryPerformanceCounter, xQueryPerformanceCounter); 
+#ifndef _DEBUG
 	HideDll((HINSTANCE)params);
+#endif
 
 	while (!g_offsetScanner.Initialize())
 		Sleep(100);
@@ -206,7 +208,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	g_pEngine->Con_Printf(XorStr("g_pGameConsole = 0x%X\n"), (DWORD)g_pGameConsole);
 	g_pEngine->Con_Printf(XorStr("g_pSurface = 0x%X\n"), (DWORD)g_pSurface);
 	g_pEngine->Con_Printf(XorStr("g_pRunGameEngine = 0x%X\n"), (DWORD)g_pRunGameEngine);
-	g_pEngine->Con_Printf(XorStr("g_pGameUI = 0x%X\n"), (DWORD)g_pGameUi);
+	g_pEngine->Con_Printf(XorStr("g_pGameUI = 0x%X\n"), (DWORD)g_pGameUI);
 
 	InitOffsets();
 	if (g_pClient == nullptr || g_pEngine == nullptr || g_pStudio == nullptr)
@@ -315,6 +317,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 	enginePatchEngine();
 	InstallGL();
 	HookUserMsg2();
+	// BaseUI_InstallHook();
 
 	if (g_pSurface != nullptr)
 	{
@@ -323,7 +326,7 @@ DWORD WINAPI InstallCheat(LPVOID params)
 		{
 			g_hookPanel.Init(g_pPanel);
 			g_pfnPaintTraverse = (FnPaintTraverse)g_hookPanel.HookFunction(41, Hooked_PaintTraverse);
-			g_hookPanel.Hook();
+			g_hookPanel.InstallHook();
 		}
 	}
 

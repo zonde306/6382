@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+﻿#include <Windows.h>
 #include <unordered_map>
 #include "gamehooking.h"
 #include "NoSpread.h"
@@ -15,6 +15,8 @@
 #include "Engine/IRunGameEngine.h"
 #include "Engine/IGameUI.h"
 #include "Engine/IGameConsole.h"
+#include "../imgui/goldsrc/CBaseUI.h"
+#include "IBaseUI.h"
 
 //////////////////////////////////////////////////////////////////////////
 _CLIENT_* pClient;
@@ -37,7 +39,7 @@ extern engine_studio_api_t g_Studio;
 IRunGameEngine* g_pRunGameEngine;
 vgui::IPanel* g_pPanel;
 IGameConsole* g_pGameConsole;
-IGameUI* g_pGameUi;
+IBaseUI* g_pGameUI;
 
 PUserMgsList g_pUserMsgList;
 std::unordered_map<std::string, FnUserMsgHook> g_userMsgFunc;
@@ -464,7 +466,7 @@ BOOL ActivateClient()
 		}
 	}
 
-	if (g_offsetScanner.BuildInfo.Protocol >= 48 || g_pSlots == nullptr)
+	if (g_offsetScanner.BuildInfo.Protocol >= 48 || g_offsetScanner.BuildInfo.Build >= 4554 || g_pSlots == nullptr)
 	{
 		// Hook client  functions
 		// g_pClient->Initialize = (INITIALIZE_FUNCTION)&Initialize;
@@ -479,6 +481,7 @@ BOOL ActivateClient()
 		g_pClient->HUD_Key_Event = (HUD_KEY_EVENT_FUNCTION)&HUD_Key_Event;
 		g_pClient->HUD_UpdateClientData = (HUD_UPDATECLIENTDATA_FUNCTION)&HUD_UpdateClientData;
 		// g_pClient->HUD_GetStudioModelInterface = (HUD_STUDIO_INTERFACE_FUNCTION)&HUD_GetStudioModelInterface;
+		g_pClient->IN_MouseEvent = &IN_MouseEvent;
 
 		g_Engine.pfnConsolePrint(XorStr("Install Defalut Hooks...\n"));
 	}
@@ -505,6 +508,7 @@ BOOL ActivateClient()
 		g_pSlots->HUD_PostRunCmd = (decltype(g_pSlots->HUD_PostRunCmd))Gateway1_HUD_PostRunCmd;
 		g_pSlots->HUD_Frame = (decltype(g_pSlots->HUD_Frame))Gateway1_HUD_Frame;
 		g_pSlots->HUD_Key_Event = (decltype(g_pSlots->HUD_Key_Event))Gateway1_HUD_Key_Event;
+		g_pSlots->IN_MouseEvent = IN_MouseEvent;
 
 		g_Engine.pfnConsolePrint(XorStr("Install LTFX Slots...\n"));
 	}

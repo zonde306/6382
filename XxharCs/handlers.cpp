@@ -167,6 +167,7 @@ void InitHack()
 	g_gui.InitFade();
 	g_menu.Init();
 
+	int hookStatus = 0;
 	pcmd_t pCmdIter = gEngfuncs.GetFirstCmdFunctionHandle();
 	while (pCmdIter != nullptr)
 	{
@@ -174,12 +175,17 @@ void InitHack()
 		{
 			g_pfnOldNextWeapon = pCmdIter->function;
 			pCmdIter->function = CmdFunc_NextWeapon;
+			hookStatus |= 1;
 		}
 		else if (!_stricmp(pCmdIter->name, "previnv"))
 		{
 			g_pfnOldPrevWeapon = pCmdIter->function;
 			pCmdIter->function = CmdFunc_PrevWeapon;
+			hookStatus |= 2;
 		}
+
+		if (hookStatus & 3)
+			break;
 
 		pCmdIter = pCmdIter->next;
 	}
@@ -196,7 +202,7 @@ void HUD_Frame(double time)
 	if (!Init)
 	{
 		InitHack();
-		g_offsetScanner.ConsoleColorInitalize();
+		// g_offsetScanner.ConsoleColorInitalize();
 		Init = true;
 	}
 

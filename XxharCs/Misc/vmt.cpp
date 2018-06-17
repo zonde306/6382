@@ -1,85 +1,123 @@
 #include "vmt.h"
 
-CVMTHookManager::CVMTHookManager()
+CVmtHook::CVmtHook() : m_pOriginTable(nullptr), m_pCopyTable(nullptr), m_iHeightIndex(0), m_bHasHooked(false)
 {
 }
 
-CVMTHookManager::CVMTHookManager(PVOID object)
+CVmtHook::~CVmtHook()
 {
-	Init(object);
+	if (m_bHasHooked)
+		UninstallHook();
+	
+	delete[] m_pCopyTable;
 }
 
-CVMTHookManager::~CVMTHookManager()
+CVmtHook::CVmtHook(LPVOID pointer) : CVmtHook::CVmtHook()
 {
-	// Unhook();
+	Init(pointer);
 }
 
-bool CVMTHookManager::Init(PVOID object)
+void CVmtHook::Init(LPVOID pointer)
 {
-	origin = *(PDWORD*)object;
-	count = GetCount();
-	if (count <= 0)
-		return false;
+	m_pOriginTable = *(reinterpret_cast<PDWORD*>(pointer));
+	m_iHeightIndex = GetCount();
 
-	copy = (PDWORD)VirtualAlloc(NULL, sizeof(void*) * count, MEM_COMMIT, PAGE_READWRITE);
-	if (copy == NULL)
-		return false;
-
-	RtlCopyMemory(copy, origin, sizeof(void*) * count);
-	this->object = (PDWORD)object;
-
-	return true;
+	m_pCopyTable = new DWORD[m_iHeightIndex + 1];
+	m_pCopyTable[m_iHeightIndex] = 0;
+	memcpy_s(m_pCopyTable, sizeof(LPVOID) * m_iHeightIndex, m_pOriginTable, sizeof(LPVOID) * m_iHeightIndex);
+	m_pInstance = reinterpret_cast<PDWORD>(pointer);
 }
 
-int CVMTHookManager::GetCount()
+LPVOID CVmtHook::HookFunction(DWORD index, LPVOID function, bool update)
 {
-	int index = 0;
-	DWORD** table = (DWORD**)origin;
-	__try
+	if (index >= m_iHeightIndex)
+		return nullptr;
+
+	m_pCopyTable[index] = reinterpret_cast<DWORD>(function);
+	if (update)
+		InstallHook();
+
+	return reinterpret_cast<LPVOID>(m_pOriginTable[index]);
+}
+
+LPVOID CVmtHook::UnhookFunction(DWORD index, bool update)
+{
+	if (index >= m_iHeightIndex)
+		return nullptr;
+
+	LPVOID hookedFunction = reinterpret_cast<LPVOID>(m_pCopyTable[index]);
+	m_pCopyTable[index] = m_pOriginTable[index];
+
+	if (update)
+		InstallHook();
+
+	return hookedFunction;
+}
+
+LPVOID CVmtHook::GetOriginalFunction(DWORD index)
+{
+	if (index >= m_iHeightIndex)
+		return nullptr;
+
+	return reinterpret_cast<LPVOID>(m_pOriginTable[index]);
+}
+
+bool CVmtHook::InstallHook()
+{
+	try
 	{
-		for (DWORD* fn; (fn = table[index]) != nullptr; ++index)
+		*m_pInstance = reinterpret_cast<DWORD>(m_pCopyTable);
+		m_bHasHooked = true;
+		return true;
+	}
+	catch(...)
+	{
+		
+	}
+
+	return false;
+}
+
+bool CVmtHook::UninstallHook()
+{
+	try
+	{
+		*m_pInstance = reinterpret_cast<DWORD>(m_pOriginTable);
+		m_bHasHooked = false;
+		return true;
+	}
+	catch (...)
+	{
+		
+	}
+
+	return false;
+}
+
+DWORD CVmtHook::GetCount()
+{
+	if (m_pOriginTable == nullptr)
+		return 0;
+	
+	DWORD index = 0;
+	PDWORD* table = reinterpret_cast<PDWORD*>(m_pOriginTable);
+	try
+	{
+		for (PDWORD func = nullptr; (func = table[index]) != nullptr; ++index)
 		{
-			if (!CanReadPointer(fn))
+			if (!CanReadPointer(func))
 				break;
 		}
 	}
-	__except (EXCEPTION_CONTINUE_EXECUTION)
+	catch (...)
 	{
-		__asm nop;
+
 	}
 
 	return index;
 }
 
-bool CVMTHookManager::Hook()
-{
-	__try
-	{
-		*object = (DWORD)copy;
-	}
-	__except (EXCEPTION_CONTINUE_EXECUTION)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool CVMTHookManager::Unhook() noexcept
-{
-	__try
-	{
-		*object = (DWORD)origin;
-	}
-	__except (EXCEPTION_CONTINUE_EXECUTION)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool CVMTHookManager::CanReadPointer(PVOID pointer)
+bool CVmtHook::CanReadPointer(LPVOID pointer)
 {
 	if (pointer == nullptr)
 		return false;
@@ -91,79 +129,38 @@ bool CVMTHookManager::CanReadPointer(PVOID pointer)
 	if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS))
 		return false;
 
-	return (mbi.Protect & (PAGE_READWRITE | PAGE_EXECUTE_READWRITE | PAGE_READONLY | PAGE_WRITECOPY | PAGE_EXECUTE_READ | PAGE_EXECUTE_WRITECOPY));
+	return (mbi.Protect & (PAGE_READWRITE | PAGE_EXECUTE_READWRITE | PAGE_READONLY |
+		PAGE_WRITECOPY | PAGE_EXECUTE_READ | PAGE_EXECUTE_WRITECOPY));
 }
 
-PVOID CVMTHookManager::HookFunction(int index, PVOID func)
+LPVOID CVmtHook::GetOriginalTable()
 {
-	if (index < 0 || index >= count)
-		return nullptr;
-
-	copy[index] = (DWORD)func;
-	return (PVOID)(origin[index]);
+	return m_pOriginTable;
 }
 
-PVOID CVMTHookManager::UnhookFunction(int index)
+LPVOID CVmtHook::GetHookedTable()
 {
-	if (index < 0 || index >= count)
-		return nullptr;
-
-	PVOID func = (PVOID)(copy[index]);
-	copy[index] = origin[index];
-	return func;
+	return m_pCopyTable;
 }
 
-PVOID CVMTHookManager::GetOriginalFunction(int index)
+LPVOID CVmtHook::CheckHookFunction(DWORD index, LPVOID function, bool update, std::true_type)
 {
-	if (index < 0 || index >= count)
-		return nullptr;
+	return HookFunction(index, function, update);
+}
 
-	return (PVOID)(origin[index]);
+template<typename Fn>
+Fn* CVmtHook::HookFunctionEx(DWORD index, Fn* function, bool update)
+{
+	return reinterpret_cast<Fn>(CheckHookFunction(index, reinterpret_cast<LPVOID>(function), update, std::is_function<Fn>::value));
+	// return reinterpret_cast<Fn*>(HookFunction(index, reinterpret_cast<LPVOID>(function), update));
 }
 
 template<typename R, typename ...Arg>
-std::function<R(Arg...)> CVMTHookManager::SetupHook(int index, std::function<R(Arg...)> func)
+R CVmtHook::Invoke(DWORD index, Arg ...arg)
 {
-	using Fn = R(Arg...);
+	if (index >= m_iHeightIndex)
+		return nullptr;
 	
-	if (index < 0 || index >= count)
-		return std::function<Fn>();
-
-	copy[index] = (DWORD)(func.target<Fn>());
-	return std::function<Fn>((Fn)(origin[index]));
-}
-
-template<typename R, typename ...Arg>
-std::function<R(Arg...)> CVMTHookManager::UninstallHook(int index)
-{
-	using Fn = R(Arg...);
-	
-	if (index < 0 || index >= count)
-		return nullptr;
-
-	std::function<Fn> func = (Fn*)(copy[index]);
-	copy[index] = origin[index];
-	return std::move(func);
-}
-
-template<typename R, typename ...Arg>
-std::function<R(Arg...)> CVMTHookManager::GetOriginFunction(int index)
-{
-	using Fn = R(Arg...);
-
-	if (index < 0 || index >= count)
-		return std::function<Fn>();
-
-	return std::function<Fn>((Fn)(origin[index]));
-}
-
-template<typename R, typename ...Arg>
-R CVMTHookManager::invoke(int index, Arg ...arg)
-{
-	using Fn = R(Arg...);
-
-	if (index < 0 || index >= count)
-		return std::function<Fn>();
-
-	return std::forward<R>(((Fn)(origin[index]))(std::forward<Arg>(arg)...));
+	typedef R(*__thiscall Fn)(Arg...);
+	return reinterpret_cast<Fn>(m_pOriginTable[index])(std::forward<Arg>(arg)...);
 }

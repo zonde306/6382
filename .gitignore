@@ -259,3 +259,9 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/imgui/examples/directx9_example
+/imgui/examples/directx11_example
+/imgui/examples/directx10_example
+/imgui/examples/apple_example
+/imgui/examples/allegro5_example
+/imgui/examples

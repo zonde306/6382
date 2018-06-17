@@ -14,8 +14,8 @@
     <ProjectGuid>{8EF68236-C4EE-4AE2-8000-E1D995BDB757}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CS16Wallhack</RootNamespace>
-    <ProjectName>harCs</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <ProjectName>CSOneSixSimple</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -43,11 +43,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>./GL;../imgui;../imgui/examples/opengl2_example;$(IncludePath)</IncludePath>
+    <LibraryPath>./GL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Eigene Datei\Documents\Visual Studio 2012\XxharCs CS 1.6 MultiHack\XxharCs CS 1.6 MultiHack\GL;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Eigene Datei\Documents\Visual Studio 2012\XxharCs CS 1.6 MultiHack\XxharCs CS 1.6 MultiHack\GL;$(LibraryPath)</LibraryPath>
+    <IncludePath>./GL;../imgui;../imgui/examples/opengl2_example;$(IncludePath)</IncludePath>
+    <LibraryPath>./GL;$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -93,10 +95,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\imgui\goldsrc\CBaseUI.cpp" />
+    <ClCompile Include="..\imgui\goldsrc\imgui_impl_gl.cpp" />
+    <ClCompile Include="..\imgui\imgui.cpp" />
+    <ClCompile Include="..\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\imgui\imgui_draw.cpp" />
     <ClCompile Include="Aimbot.cpp" />
     <ClCompile Include="cvars.cpp" />
     <ClCompile Include="detours\detourxs.cpp" />
     <ClCompile Include="drawing\drawing.cpp" />
+    <ClCompile Include="drawing\drawing2.cpp" />
     <ClCompile Include="drawing\gui.cpp" />
     <ClCompile Include="drawing\miniradar.cpp" />
     <ClCompile Include="drawing\radar.cpp" />
@@ -131,18 +139,28 @@
     <ClCompile Include="xEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\imgui\goldsrc\CBaseUI.h" />
+    <ClInclude Include="..\imgui\goldsrc\imgui_impl_gl.h" />
+    <ClInclude Include="..\imgui\imconfig.h" />
+    <ClInclude Include="..\imgui\imgui.h" />
+    <ClInclude Include="..\imgui\imgui_internal.h" />
+    <ClInclude Include="..\imgui\stb_rect_pack.h" />
+    <ClInclude Include="..\imgui\stb_textedit.h" />
+    <ClInclude Include="..\imgui\stb_truetype.h" />
     <ClInclude Include="Aimbot.h" />
     <ClInclude Include="clientdll.h" />
     <ClInclude Include="cvars.h" />
     <ClInclude Include="detours.h" />
     <ClInclude Include="detours\detourxs.h" />
     <ClInclude Include="drawing\drawing.h" />
+    <ClInclude Include="drawing\drawing2.h" />
     <ClInclude Include="drawing\gui.h" />
     <ClInclude Include="drawing\miniradar.h" />
     <ClInclude Include="drawing\radar.h" />
     <ClInclude Include="drawing\tablefont.h" />
     <ClInclude Include="eventhook.h" />
     <ClInclude Include="gamehooking.h" />
+    <ClInclude Include="IBaseUI.h" />
     <ClInclude Include="imeinput.h" />
     <ClInclude Include="install.h" />
     <ClInclude Include="menu.h" />

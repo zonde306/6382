@@ -1,56 +1,40 @@
-﻿#pragma once
+#pragma once
 #include <Windows.h>
 #include <functional>
+#include <vector>
 
-class CVMTHookManager
+class CVmtHook
 {
 public:
-	CVMTHookManager();
-	CVMTHookManager(PVOID object);
-	~CVMTHookManager();
+	CVmtHook();
+	~CVmtHook();
+	CVmtHook(LPVOID pointer);
+	void Init(LPVOID pointer);
 
-	// 初始化
-	bool Init(PVOID object);
+	LPVOID HookFunction(DWORD index, LPVOID function, bool update = false);
+	LPVOID UnhookFunction(DWORD index, bool update = false);
+	LPVOID GetOriginalFunction(DWORD index);
 
-	// 获取虚表大小
-	int GetCount();
+	bool InstallHook();
+	bool UninstallHook();
 
-	// 启动虚表 Hook
-	bool Hook();
+	DWORD GetCount();
+	static bool CanReadPointer(LPVOID pointer);
 
-	// 卸载虚表 Hook
-	bool Unhook() noexcept;
-
-	// 检查指针是否有效
-	bool CanReadPointer(PVOID pointer);
-
-	// 添加虚表 Hook
-	PVOID HookFunction(int index, PVOID func);
-
-	// 卸载已经添加的虚表 Hook
-	PVOID UnhookFunction(int index);
-
-	// 获取原函数
-	PVOID GetOriginalFunction(int index);
-
-	// 添加虚表 Hook
-	template<typename R, typename ...Arg>
-	std::function<R(Arg...)> SetupHook(int index, std::function<R(Arg...)> func);
+	template<typename Fn>
+	Fn* HookFunctionEx(DWORD index, Fn* function, bool update = false);
 
 	template<typename R, typename ...Arg>
-	std::function<R(Arg...)> UninstallHook(int index);
+	R Invoke(DWORD index, Arg ...arg);
 
-	// 获取原函数
-	template<typename R, typename ...Arg>
-	std::function<R(Arg...)> GetOriginFunction(int index);
+	LPVOID GetOriginalTable();
+	LPVOID GetHookedTable();
 
-	// 直接调用原函数
-	template<typename R, typename ...Arg>
-	R invoke(int index, Arg ...arg);
+protected:
+	LPVOID CheckHookFunction(DWORD index, LPVOID function, bool update, std::true_type);
 
-private:
-	int count;
-	PDWORD origin;
-	PDWORD copy;
-	PDWORD object;
+protected:
+	PDWORD m_pOriginTable, m_pCopyTable, m_pInstance;
+	DWORD m_iHeightIndex;
+	bool m_bHasHooked;
 };

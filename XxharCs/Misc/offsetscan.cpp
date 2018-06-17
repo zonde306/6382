@@ -8,6 +8,7 @@
 #include "../Engine/IGameConsole.h"
 #include "../Engine/IGameUI.h"
 #include "../Engine/IEngineVGui.h"
+#include "../IBaseUI.h"
 
 extern cl_clientfunc_t *g_pClient;
 extern cl_enginefunc_t *g_pEngine;
@@ -18,7 +19,7 @@ extern vgui::IPanel* g_pPanel;
 extern vgui::ISurface* g_pSurface;
 extern vgui::IEngineVGui* g_pEngineVGui;
 extern IRunGameEngine* g_pRunGameEngine;
-extern IGameUI* g_pGameUi;
+extern IBaseUI* g_pGameUI;
 extern IGameConsole* g_pGameConsole;
 
 #define RENDERTYPE_UNDEFINED	0
@@ -108,7 +109,7 @@ bool COffsets::Initialize(void)
 	if (GameUI_CreateInterface != NULL)
 	{
 		g_pRunGameEngine = (IRunGameEngine*)GameUI_CreateInterface(RUNGAMEENGINE_INTERFACE_OLD_VERSION, 0);
-		g_pGameUi = (IGameUI*)GameUI_CreateInterface(GAMEUI_INTERFACE_VERSION, 0);
+		g_pGameUI = (IBaseUI*)GameUI_CreateInterface(BASEUI_INTERFACE_VERSION, 0);
 		g_pGameConsole = (IGameConsole*)GameUI_CreateInterface(GAMECONSOLE_INTERFACE_VERSION, 0);
 	}
 
@@ -200,6 +201,7 @@ unsigned Absolute(DWORD Addr)
 // Game Version Info, auto offset by _or_75
 void COffsets::GameInfo(void)
 {
+	/*
 	static bool search = false;
 	BYTE bPushAddrPattern[] = { 0x68, 0x90, 0x90, 0x90, 0x90 };
 	PCHAR cProt = XorStr("fullinfo <complete info string>");
@@ -231,15 +233,19 @@ finish:
 	BuildInfo.GameVersion = *(char**)(unsigned(Addres) + 6);
 	BuildInfo.Protocol = *(BYTE*)(unsigned(Addres) + 11);
 	Addres = (DWORD)Absolute(unsigned(Addres) + 23);
+	*/
 
-	/*
+	BuildInfo.Protocol = 47;
 	int(*GetBuildNumber)(void) = (int(*)(void))FindPattern(HwBase, HwBase + HwSize, XorStr("A1 ? ? ? ? 83 EC 08 ? 33 ? 85 C0"));
-	if(GetBuildNumber == nullptr)
-		GetBuildNumber = (int(*)(void))FindPattern(HwBase, HwBase + HwSize, XorStr("55 8B EC 83 EC 08 A1 ? ? ? ? 56 33 F6 85 C0 0F 85 ? ? ? ? 53 33 DB 8B 04 9D"));
 	
+	if (GetBuildNumber == nullptr)
+	{
+		GetBuildNumber = (int(*)(void))FindPattern(HwBase, HwBase + HwSize, XorStr("55 8B EC 83 EC 08 A1 ? ? ? ? 56 33 F6 85 C0 0F 85 ? ? ? ? 53 33 DB 8B 04 9D"));
+		BuildInfo.Protocol = 48;
+	}
+
 	if (GetBuildNumber != nullptr)
 		BuildInfo.Build = GetBuildNumber();
-	*/
 
 	/*
 	DWORD build = 0;
@@ -333,6 +339,7 @@ void * COffsets::InitPoint()
 
 void * COffsets::SendPacket()
 {
+	/*
 	DWORD sendPacket = FindPattern(HwBase, HwEnd, XorStr("56 57 33 FF 3B C7 0F 84 ? ? ? ? 83"));
 	if (sendPacket == 0)
 		return nullptr;
@@ -340,6 +347,11 @@ void * COffsets::SendPacket()
 	sendPacket = FindPattern(sendPacket - 0x12, HwEnd, XorStr("C3 90"));
 	if (sendPacket != 0)
 		return (PVOID)(*(PDWORD)(sendPacket + 0x03));
+	*/
+
+	DWORD sendPacket = FindPattern(HwBase, HwEnd, XorStr("A1 ? ? ? ? 81 EC ? ? ? ? 53 55 56 57 33 FF"));
+	if (sendPacket != 0)
+		return (LPVOID)sendPacket;
 
 	return nullptr;
 }
